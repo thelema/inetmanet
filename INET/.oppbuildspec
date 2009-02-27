@@ -1,2 +1,0 @@
-version 4.0
-src: --deep --make-so -O out --meta:auto-include-path --meta:export-library --meta:use-exported-libs

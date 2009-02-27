@@ -1,0 +1,75 @@
+# Tkenv configuration
+option updatefreq_fast	{50}
+option updatefreq_express	{100000}
+option stepdelay	{288 ms}
+option use_mainwindow	{1}
+option print_banners	{1}
+option short_banners	{0}
+option animation_enabled	{1}
+option nexteventmarkers	{1}
+option senddirect_arrows	{1}
+option anim_methodcalls	{0}
+option methodcalls_delay	{39}
+option animation_msgnames	{1}
+option animation_msgclassnames	{1}
+option animation_msgcolors	{1}
+option penguin_mode	{0}
+option showlayouting	{0}
+option usenewlayouter	{0}
+option bubbles	{1}
+option animation_speed	{0.72}
+option expressmode_autoupdate	{0}
+option stoponmsgcancel	{1}
+config concurrent-anim	{1}
+config confirm-exit	{1}
+config display-timeline	{1}
+config display-treeview	{1}
+config dontshow	{}
+config editor-backwards	{1}
+config editor-case-sensitive	{0}
+config editor-findstring	{}
+config editor-regexp	{0}
+config editor-whole-words	{0}
+config editor-wrap	{none}
+config filtobjlist-category	{mqsgvo}
+config filtobjlist-class	{*packet*}
+config filtobjlist-maxcount	{100000}
+config filtobjlist-name	{}
+config filtobjlist-order	{Class}
+config last-nedfile	{}
+config log-save-filename	{omnetpp.out}
+config logwindow-scrollbacklines	{100000}
+config mainwin-geom	{1166x596+60+193}
+config mainwin-state	{normal}
+config rununtil-event	{}
+config rununtil-mode	{Express (tracing off)}
+config rununtil-msg	{}
+config rununtil-time	{3000}
+config timeline-maxnumevents	{1000}
+config timeline-msgclassnamepattern	{*}
+config timeline-msgnamepattern	{*}
+config timeline-wantnonselfmsgs	{1}
+config timeline-wantselfmsgs	{1}
+inspector "Net80211_control.host[0]" "MobileManetRoutingHost" "2" "579x517+696+477"
+inspector "Net80211_control" "Net80211_control" "2" "922x677+275+318"
+inspector "Net80211_control.host[4]" "MobileManetRoutingHost" "2" "579x517+25+477"
+inspector "net80211_aodv.fixhost[0].networkLayer" "NetworkLayer" "2" "601x360+604+132"
+inspector "simulation.scheduled-events.RouteReply.RouteReply" "Mac80211Pkt" "1" "545x319+21+480"
+inspector "Net80211_mesh" "Net80211_mesh" "2" "922x677+5+49"
+inspector "net80211" "Net80211" "2" "1x1+20+96"
+inspector "Net80211_mesh.basic[5]" "BasicMobileManetMesh" "2" "579x435+10+559"
+inspector "Net80211_aodv.host[6].wlan.mac" "Ieee80211gMac" "1" "590x315+13+356"
+inspector "net80211_aodv.host[0].manetrouting" "ManetRouting" "2" "383x185+181+256"
+inspector "net80211_aodv.host[0].manetrouting.dsrprotocol." "DSRPkt" "1" "905x620+3+24"
+inspector "Net80211_aodv.host[0]" "MobileManetRoutingHost" "2" "579x517+696+288"
+inspector "net80211_aodv.host[0]" "MobileManetRoutingHost" "2" "428x493+112+329"
+inspector "net80211_aodv.host[3].wlan.mac.wlan-ack" "Ieee80211ACKFrame" "1" "971x543+25+144"
+inspector "net80211_aodv.host[7].networkLayer" "NetworkLayer" "2" "594x360+503+211"
+inspector "Net80211_mesh.fixhost[0]" "MobileManetRoutingMesh" "2" "579x517+696+477"
+inspector "Net80211_aodv.host[2]" "MobileManetRoutingHost" "2" "579x520+13+300"
+inspector "simulation.scheduled-events.UDPBasicAppData-0" "AirFrame" "1" "722x491+5+49"
+inspector "net80211_aodv" "Net80211_aodv" "2" "923x675+244+141"
+inspector "net80211_aodv.host[4].networkLayer" "NetworkLayer" "2" "598x360+651+369"
+inspector "net80211_aodv.fixhost[0]" "FixManetRoutingHost" "2" "428x493+770+348"
+inspector "Net80211_aodv.fixhost[0]" "FixManetRoutingHost" "2" "579x517+144+303"
+
