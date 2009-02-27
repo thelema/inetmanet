@@ -3,18 +3,17 @@
 // Copyright (C) 2005 Wei Yang, Ng
 //
 // This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
+// modify it under the terms of the GNU Lesser General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// GNU Lesser General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
 
@@ -70,14 +69,14 @@ void IPv6::updateDisplayString()
     getDisplayString().setTagArg("t",0,buf);
 }
 
-void IPv6::endService(cMessage *msg)
+void IPv6::endService(cPacket *msg)
 {
     if (msg->getArrivalGate()->isName("transportIn") ||
        (msg->getArrivalGate()->isName("ndIn") && dynamic_cast<IPv6NDMessage*>(msg)) ||
        (msg->getArrivalGate()->isName("icmpIn") && dynamic_cast<ICMPv6Message*>(msg)))//Added this for ICMP msgs from ICMP module-WEI
     {
         // packet from upper layers or ND: encapsulate and send out
-        handleMessageFromHL(PK(msg));
+        handleMessageFromHL( msg );
     }
     else
     {

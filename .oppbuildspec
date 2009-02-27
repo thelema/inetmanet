@@ -1,4 +1,8 @@
 <buildspec version="4.0">
+<<<<<<< HEAD:.oppbuildspec
 <dir makemake-options="--deep --make-so -o inet -O out --meta:auto-include-path --meta:export-library --meta:use-exported-libs" path="src" type="makemake"/>
 <dir makemake-options="--deep -O out --meta:auto-include-path --meta:use-exported-libs" path="." type="custom"/>
+=======
+<dir makemake-options="--deep --make-so -o INET -O out -pINET -lpcap --meta:auto-include-path --meta:export-library --meta:use-exported-libs" path="src" type="makemake"/>
+>>>>>>> b01a2255f658d065a889275a4176676809291ca6:.oppbuildspec
 </buildspec>

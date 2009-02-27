@@ -2,18 +2,17 @@
 // Copyright (C) 2004, 2008 Andras Varga
 //
 // This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
+// modify it under the terms of the GNU Lesser General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// GNU Lesser General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
 #ifndef __INET_ABSTRACTQUEUE_H
@@ -35,7 +34,7 @@ class INET_API AbstractQueue : public cSimpleModule
     virtual ~AbstractQueue();
 
   private:
-    cMessage *msgServiced;
+    cPacket *msgServiced;
     cMessage *endServiceMsg;
 
   private:
@@ -63,7 +62,7 @@ class INET_API AbstractQueue : public cSimpleModule
      *
      * Most straightforward implementation: <tt>queue.insert(msg);</tt>
      */
-    virtual void arrival(cMessage *msg) = 0;
+    virtual void arrival(cPacket *msg) = 0;
 
     /**
      * Called when a message arrives at the module when the queue is
@@ -77,14 +76,14 @@ class INET_API AbstractQueue : public cSimpleModule
      *
      * Most straightforward implementation: <tt>return msg;</tt>
      */
-    virtual cMessage *arrivalWhenIdle(cMessage *msg) = 0;
+    virtual cPacket *arrivalWhenIdle(cPacket *msg) = 0;
 
     /**
      * Called when a message starts service, and should return the service time.
      *
      * Example implementation: <tt>return 1.0;</tt>
      */
-    virtual simtime_t startService(cMessage *msg) = 0;
+    virtual simtime_t startService(cPacket *msg) = 0;
 
     /**
      * Called when a message completes service. The function may send it
@@ -92,7 +91,7 @@ class INET_API AbstractQueue : public cSimpleModule
      *
      * Most straightforward implementation: <tt>send(msg,"out");</tt>
      */
-    virtual void endService(cMessage *msg) = 0;
+    virtual void endService(cPacket *msg) = 0;
     //@}
 };
 

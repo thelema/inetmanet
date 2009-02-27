@@ -1,32 +1,25 @@
 //
-// Copyright (C) 2000 Institut fuer Telematik, Universitaet Karlsruhe
 // Copyright (C) 2003 Andras Varga
 //
 // This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
+// modify it under the terms of the GNU Lesser General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// GNU Lesser General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
 //
 // @titlepage
 //
-// <center><h1>INETMANET for OMNeT++/OMNEST</h1></center>
-// <center>release 2008-09-20</center>
-//
-// INETMANET extends the INET Framework with MANET protocols
-// (AODV, DSDV, DSR, DYMO, OLSR), 802.11a/g models, new radio models, etc.
-// INETMANET is being maintained by Alfonso Ariza Quintana,
-// see <a href="http://webpersonal.uma.es/~AARIZAQ" target="_top">web page</a>.
+// <center><h1>INET Framework for OMNeT++/OMNEST</h1></center>
+// <center>release 2006-10-20</center>
 //
 // <nohtml>INET Framework contains IPv4, IPv6, TCP, UDP protocol implementations,
 // and several application models. The framework also includes an MPLS model
