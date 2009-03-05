@@ -1,0 +1,3 @@
+#!/bin/sh
+cd ./src
+opp_makemake -f --deep --make-so -o inet -O out
