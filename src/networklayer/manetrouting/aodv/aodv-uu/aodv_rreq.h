@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordström, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #ifndef _AODV_RREQ_H
@@ -35,7 +35,7 @@
 #endif
 #endif
 
-#include "defs.h"
+#include "defs_aodv.h"
 #include "seek_list.h"
 #include "routing_table.h"
 

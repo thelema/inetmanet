@@ -37,9 +37,9 @@
 #include "aodv_hello.h"
 #include "aodv_socket.h"
 #include "aodv_neighbor.h"
-#include "timer_queue.h"
-#include "defs.h"
-#include "debug.h"
+#include "timer_queue_aodv.h"
+#include "defs_aodv.h"
+#include "debug_aodv.h"
 #include "params.h"
 #include "seek_list.h"
 #include "nl.h"
@@ -231,8 +231,8 @@ rt_table_t *NS_CLASS rt_table_update(rt_table_t * rt, struct in_addr next,
 #endif
 #endif
 
-	} 
-	else if (rt->next_hop.s_addr != 0 && 
+	}
+	else if (rt->next_hop.s_addr != 0 &&
         	     rt->next_hop.s_addr != next.s_addr) {
 		DEBUG(LOG_INFO, 0, "rt->next_hop=%s, new_next_hop=%s",
 		      ip_to_str(rt->next_hop), ip_to_str(next));
@@ -257,7 +257,7 @@ rt_table_t *NS_CLASS rt_table_update(rt_table_t * rt, struct in_addr next,
 		/* Must also do a "link break" when updating a 1 hop
 		neighbor in case another routing entry use this as
 		next hop... */
-#ifndef OMNETPP      
+#ifndef OMNETPP
 	        neighbor_link_break(rt);
 #else
                 // Added in version aodv-uu 0.9.3, it's commented for performance reasons

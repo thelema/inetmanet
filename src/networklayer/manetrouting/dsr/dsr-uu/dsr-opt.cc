@@ -19,7 +19,7 @@
 #include "dsr-uu-omnetpp.h"
 #endif
 
-#include "debug.h"
+#include "debug_dsr.h"
 #include "dsr.h"
 #include "dsr-opt.h"
 #include "dsr-rreq.h"
@@ -28,7 +28,7 @@
 #include "dsr-srt.h"
 #include "dsr-ack.h"
 
-struct dsr_opt_hdr *dsr_opt_hdr_add(char *buf, unsigned int len, 
+struct dsr_opt_hdr *dsr_opt_hdr_add(char *buf, unsigned int len,
 				    unsigned int protocol)
 {
 	struct dsr_opt_hdr *opt_hdr;
@@ -54,7 +54,7 @@ struct iphdr *dsr_build_ip(struct dsr_pkt *dp, struct in_addr src,
 	struct iphdr *iph;
 
 	dp->nh.iph = iph = (struct iphdr *)dp->ip_data;
-	
+
 	if (dp->skb && dp->skb->nh.raw) {
 		memcpy(dp->ip_data, dp->skb->nh.raw, ip_len);
 	} else {
@@ -67,7 +67,7 @@ struct iphdr *dsr_build_ip(struct dsr_pkt *dp, struct in_addr src,
 		iph->saddr = src.s_addr;
 		iph->daddr = dst.s_addr;
 	}
-	
+
 	iph->tot_len = htons(tot_len);
 	iph->protocol = protocol;
 
@@ -133,9 +133,9 @@ int dsr_opt_parse(struct dsr_pkt *dp)
 
 	l = DSR_OPT_HDR_LEN;
 	dopt = DSR_GET_OPT(dp->dh.opth);
-	
+
 	dp->num_rrep_opts = dp->num_rerr_opts = dp->num_rreq_opts = dp->num_ack_opts = 0;
-	
+
 	dp->srt_opt = NULL;
 	dp->ack_req_opt = NULL;
 
@@ -210,7 +210,7 @@ int dsr_opt_parse(struct dsr_pkt *dp)
 		dopt = DSR_GET_NEXT_OPT(dopt);
 		n++;
 	}
-	
+
 	return n;
 }
 
@@ -252,14 +252,14 @@ int NSCLASS dsr_opt_recv(struct dsr_pkt *dp)
 		case DSR_OPT_RREQ:
 			if (dp->flags & PKT_PROMISC_RECV)
 				break;
-			
+
 			action |= dsr_rreq_opt_recv(dp, (struct dsr_rreq_opt *)dopt);
 			break;
 		case DSR_OPT_RREP:
 			if (dp->flags & PKT_PROMISC_RECV)
 				break;
-			
-			action |= dsr_rrep_opt_recv(dp, (struct dsr_rrep_opt *)dopt);		       
+
+			action |= dsr_rrep_opt_recv(dp, (struct dsr_rrep_opt *)dopt);
 			break;
 		case DSR_OPT_RERR:
 			if (dp->flags & PKT_PROMISC_RECV)

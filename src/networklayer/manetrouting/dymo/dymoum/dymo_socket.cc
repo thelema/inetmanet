@@ -28,7 +28,7 @@
 #endif
 #else
 #include "dymo_socket.h"
-#include "debug.h"
+#include "debug_dymo.h"
 
 #include <unistd.h>
 #include <stdio.h>

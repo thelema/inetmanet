@@ -21,7 +21,7 @@
 #endif
 
 #include "tbl.h"
-#include "debug.h"
+#include "debug_dsr.h"
 #include "dsr-opt.h"
 #include "dsr-ack.h"
 #include "link-cache.h"

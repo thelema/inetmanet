@@ -33,8 +33,8 @@
 extern int h_errno;
 
 #include "locality.h"
-#include "defs.h"
-#include "debug.h"
+#include "defs_aodv.h"
+#include "debug_aodv.h"
 
 extern int gw_prefix;
 #endif
@@ -104,7 +104,7 @@ int NS_CLASS locality(struct in_addr dest, unsigned int ifindex)
     subnet.s_addr = interface.s_addr & mask.s_addr;
     if (subnet.s_addr!=0) {
 	if (dstnet.s_addr!=0) {
-	    if (subnet.s_addr==dstnet.s_addr) 
+	    if (subnet.s_addr==dstnet.s_addr)
 		return HOST_ADHOC;
 	    else
 	    	return HOST_INET;

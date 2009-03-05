@@ -17,13 +17,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordström, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #ifndef _PARAMS_H
 #define _PARAMS_H
 
-#include "defs.h"
+#include "defs_aodv.h"
 
 #define K_PARAM   5
 

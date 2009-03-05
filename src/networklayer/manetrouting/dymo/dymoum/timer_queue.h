@@ -22,7 +22,7 @@
 #define __TIMER_QUEUE_H__
 
 #ifndef NS_NO_GLOBALS
-#include "defs.h"
+#include "defs_dymo.h"
 #include "dlist.h"
 
 #ifndef _WIN32
@@ -45,7 +45,7 @@ struct timer
 NS_STATIC NS_INLINE long timeval_diff(struct timeval *t1, struct timeval *t2)
 {
 	long long res;
-	
+
 	// Sanity check
 	if (t1 && t2)
 	{

@@ -35,8 +35,8 @@
 #include "routing_table.h"
 #include "aodv_socket.h"
 #include "aodv_timeout.h"
-#include "defs.h"
-#include "debug.h"
+#include "defs_aodv.h"
+#include "debug_aodv.h"
 #include "params.h"
 #endif
 

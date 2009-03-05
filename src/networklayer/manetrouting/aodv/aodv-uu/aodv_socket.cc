@@ -37,15 +37,15 @@
 #include <net/if.h>
 #include <netinet/udp.h>
 #include "aodv_socket.h"
-#include "timer_queue.h"
+#include "timer_queue_aodv.h"
 #include "aodv_rreq.h"
 #include "aodv_rerr.h"
 #include "aodv_rrep.h"
 #include "params.h"
 #include "aodv_hello.h"
 #include "aodv_neighbor.h"
-#include "debug.h"
-#include "defs.h"
+#include "debug_aodv.h"
+#include "defs_aodv.h"
 
 #endif				/* NS_PORT */
 
@@ -527,7 +527,7 @@ void NS_CLASS aodv_socket_send(AODV_msg * aodv_msg, struct in_addr dst,
 
 	/* If we broadcast this message we update the time of last broadcast
 	   to prevent unnecessary broadcasts of HELLO msg's */
-	if (dst.s_addr == AODV_BROADCAST) 
+	if (dst.s_addr == AODV_BROADCAST)
 	{
   	     gettimeofday(&this_host.bcast_time, NULL);
 
@@ -562,8 +562,8 @@ void NS_CLASS aodv_socket_send(AODV_msg * aodv_msg, struct in_addr dst,
 			 return;
 	     }
 #endif
-	} 
-	else 
+	}
+	else
 	{
 
 #ifdef NS_PORT

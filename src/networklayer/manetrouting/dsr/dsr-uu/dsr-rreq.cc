@@ -24,7 +24,7 @@
 #endif
 
 
-#include "debug.h"
+#include "debug_dsr.h"
 #include "dsr.h"
 #include "tbl.h"
 #include "dsr-rrep.h"
@@ -104,7 +104,7 @@ static inline int crit_delete_tbl_enty(void *pos, void *data)
 
 	list_t *p,*tmp;
 	struct id_entry *e = (struct id_entry *)pos;
-	list_for_each_safe(p,tmp, &e->rreq_id_tbl_routes.head) 
+	list_for_each_safe(p,tmp, &e->rreq_id_tbl_routes.head)
 	{
 		list_del(p);
 		struct id_entry_route *id_e = (struct id_entry_route *)p;
@@ -121,7 +121,7 @@ static inline int crit_duplicate_path(struct id_entry *e, struct rreq_tbl_query 
 {
 	list_t *p;
 	id_entry_route *worst=NULL;
-	list_for_each(p, &e->rreq_id_tbl_routes.head) 
+	list_for_each(p, &e->rreq_id_tbl_routes.head)
 	{
 		struct id_entry_route *id_e = (struct id_entry_route *)p;
 		if (id_e->length<*(q->length))
@@ -158,7 +158,7 @@ static inline int crit_duplicate_2(void *pos, void *data)
 			    id_e->id == *(q->id))
 			{
 				list_t *pos;
-				list_for_each(pos, &id_e->rreq_id_tbl_routes.head) 
+				list_for_each(pos, &id_e->rreq_id_tbl_routes.head)
 				{
 					struct id_entry_route *id_e_route = (struct id_entry_route *)pos;
 					if (id_e_route->length<*(q->length))
@@ -187,7 +187,7 @@ static inline int crit_duplicate(void *pos, void *data)
 			if (id_e->trg_addr.s_addr == q->target->s_addr &&
 			    id_e->id == *(q->id))
 			{
-				
+
  					return 1;
 			}
 		}
@@ -383,10 +383,10 @@ rreq_tbl_add_id(struct in_addr initiator, struct in_addr target,
 	struct rreq_tbl_entry *e;
 	struct id_entry *id_e;
 	struct id_entry *id_entry=NULL;
-	int exist=1; 
+	int exist=1;
 	list_t *pos;
 	struct id_entry_route *id_r;
-	
+
 	int res = 0;
 
 	DSR_WRITE_LOCK(&rreq_tbl.lock);
@@ -409,7 +409,7 @@ rreq_tbl_add_id(struct in_addr initiator, struct in_addr target,
 
 	gettime(&e->last_used);
 
-	list_for_each(pos, &e->rreq_id_tbl.head) 
+	list_for_each(pos, &e->rreq_id_tbl.head)
 	{
 		id_e = (struct id_entry *)pos;
 		if ((id ==id_e->id) && (id_e->trg_addr.s_addr == target.s_addr))
@@ -417,9 +417,9 @@ rreq_tbl_add_id(struct in_addr initiator, struct in_addr target,
 			exist=0;
 			id_entry= id_e;
 		}
-			
+
 	}
-	
+
 
 	if (exist)
 	{
@@ -455,7 +455,7 @@ rreq_tbl_add_id(struct in_addr initiator, struct in_addr target,
 		{
 			if (TBL_FULL(&id_entry->rreq_id_tbl_routes))
 				goto out;
- 			list_for_each(pos, &id_entry->rreq_id_tbl_routes.head) 
+ 			list_for_each(pos, &id_entry->rreq_id_tbl_routes.head)
 			{
 				id_r = (struct id_entry_route *)pos;
 				if (id_r->length<length)
@@ -682,9 +682,9 @@ int NSCLASS dsr_rreq_opt_recv(struct dsr_pkt *dp, struct dsr_rreq_opt *rreq_opt)
 
 	if (!dp || !rreq_opt || dp->flags & PKT_PROMISC_RECV)
 		return DSR_PKT_DROP;
-	
+
 	dp->num_rreq_opts++;
-	
+
 	if (dp->num_rreq_opts > 1) {
 		DEBUG("More than one RREQ opt!!! - Ignoring\n");
 		return DSR_PKT_ERROR;
@@ -707,9 +707,9 @@ int NSCLASS dsr_rreq_opt_recv(struct dsr_pkt *dp, struct dsr_rreq_opt *rreq_opt)
 	}
 
 
-	
+
 	trg.s_addr = rreq_opt->target;
-	
+
 #ifdef OMNETPP
 	cost = PathCost(dp);
 #else
@@ -777,13 +777,13 @@ int NSCLASS dsr_rreq_opt_recv(struct dsr_pkt *dp, struct dsr_rreq_opt *rreq_opt)
 
 		action = DSR_PKT_NONE;
 		goto out;
-	} 
-	
+	}
+
 	n = DSR_RREQ_ADDRS_LEN(rreq_opt) / sizeof(struct in_addr);
-	
+
 	if (dp->srt->src.s_addr == myaddr.s_addr)
 		return DSR_PKT_DROP;
-	
+
 	for (i = 0; i < n; i++)
 		if (dp->srt->addrs[i].s_addr == myaddr.s_addr) {
 			action = DSR_PKT_DROP;
@@ -804,11 +804,11 @@ int NSCLASS dsr_rreq_opt_recv(struct dsr_pkt *dp, struct dsr_rreq_opt *rreq_opt)
 		srt_rc = lc_srt_find(myaddr, trg);
 #endif
 	}
-	
+
 	if (srt_rc) {
 		struct dsr_srt *srt_cat;
 		/* Send cached route reply */
-		
+
 		DEBUG("Send cached RREP\n");
 
 		srt_cat = dsr_srt_concatenate(dp->srt, srt_rc);
@@ -822,12 +822,12 @@ int NSCLASS dsr_rreq_opt_recv(struct dsr_pkt *dp, struct dsr_rreq_opt *rreq_opt)
 		}
 
 		DEBUG("srt_cat: %s\n", print_srt(srt_cat));
-		
+
 		if (dsr_srt_check_duplicate(srt_cat) > 0) {
 			DEBUG("Duplicate address in source route!!!\n");
 			FREE(srt_rc);
 			FREE(srt_cat);
-			goto rreq_forward;				
+			goto rreq_forward;
 		}
 #ifdef NS2
 		dp->nh.iph->daddr() = (nsaddr_t) rreq_opt->target;
@@ -836,14 +836,14 @@ int NSCLASS dsr_rreq_opt_recv(struct dsr_pkt *dp, struct dsr_rreq_opt *rreq_opt)
 #endif
 		DEBUG("Sending cached RREP to %s\n", print_ip(dp->src));
 		dsr_rrep_send(srt_rev, srt_cat);
-		
-		action = DSR_PKT_NONE;	
+
+		action = DSR_PKT_NONE;
 
 		FREE(srt_rc);
 		FREE(srt_cat);
 	} else {
 
-	rreq_forward:	
+	rreq_forward:
 		dsr_pkt_alloc_opts_expand(dp, sizeof(struct in_addr));
 
 		if (!DSR_LAST_OPT(dp, rreq_opt)) {

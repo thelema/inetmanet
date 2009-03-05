@@ -9,7 +9,7 @@
 #define _DSR_SRT_H
 
 #include "dsr.h"
-#include "debug.h"
+#include "debug_dsr.h"
 
 #ifdef NS2
 #ifndef OMNETPP
@@ -25,7 +25,7 @@
 struct dsr_srt_opt {
 	u_int8_t type;
 	u_int8_t length;
-#if defined(__LITTLE_ENDIAN_BITFIELD)	
+#if defined(__LITTLE_ENDIAN_BITFIELD)
 /* TODO: Fix bit/byte order */
 	u_int16_t f:1;
 	u_int16_t l:1;

@@ -21,7 +21,7 @@
 #ifndef __DLIST_H__
 #define __DLIST_H__
 
-#include "defs.h"
+#include "defs_dymo.h"
 
 /* Doubly linked list based on the Linux kernel implementation */
 

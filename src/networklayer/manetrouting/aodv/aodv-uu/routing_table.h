@@ -17,14 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordström, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #ifndef _ROUTING_TABLE_H
 #define _ROUTING_TABLE_H
 
 #ifndef NS_NO_GLOBALS
-#include "defs.h"
+#include "defs_aodv.h"
 #include "list.h"
 
 typedef struct rt_table rt_table_t;

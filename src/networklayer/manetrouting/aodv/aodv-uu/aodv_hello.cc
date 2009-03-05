@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordstr�m, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #define NS_PORT
@@ -36,11 +36,11 @@
 #include "aodv_rrep.h"
 #include "aodv_rreq.h"
 #include "routing_table.h"
-#include "timer_queue.h"
+#include "timer_queue_aodv.h"
 #include "params.h"
 #include "aodv_socket.h"
-#include "defs.h"
-#include "debug.h"
+#include "defs_aodv.h"
+#include "debug_aodv.h"
 #define DEBUG_HELLO
 extern int unidir_hack, receive_n_hellos, hello_jittering, optimized_hellos;
 static struct timer hello_timer;
@@ -147,7 +147,7 @@ void NS_CLASS hello_send(void *arg)
 		ext->type = RREP_HELLO_NEIGHBOR_SET_EXT;
 		ext->length = 0;
 #endif
-              
+
 		for (i = 0; i < RT_TABLESIZE; i++) {
 		    list_t *pos;
 		    list_foreach(pos, &rt_tbl.tbl[i]) {

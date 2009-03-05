@@ -28,7 +28,7 @@
 #define MAX_QUEUE_TIME 10000 /* Maximum time packets can be queued (ms) */
 #define GARBAGE_COLLECT_TIME 1000 /* Interval between running the
 				   * garbage collector (ms) */
-#include "dymoum/defs.h"
+#include "dymoum/defs_dymo.h"
 #include "dymoum/dlist.h"
 
 /* Verdicts for queued packets: */

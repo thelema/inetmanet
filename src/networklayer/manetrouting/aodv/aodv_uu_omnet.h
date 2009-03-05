@@ -51,7 +51,7 @@
 
 /* Global definitions and lib functions */
 #include "aodv-uu/params.h"
-#include "aodv-uu/defs.h"
+#include "aodv-uu/defs_aodv.h"
 
 /* System-dependent datatypes */
 /* Needed by some network-related datatypes */
@@ -74,14 +74,14 @@ class AODVUU;
 #undef NS_NO_GLOBALS
 #define NS_NO_DECLARATIONS
 
-#include "aodv-uu/timer_queue.h"
+#include "aodv-uu/timer_queue_aodv.h"
 #include "aodv-uu/aodv_hello.h"
 #include "aodv-uu/aodv_rerr.h"
 #include "aodv-uu/aodv_rrep.h"
 #include "aodv-uu/aodv_rreq.h"
 #include "aodv-uu/aodv_socket.h"
 #include "aodv-uu/aodv_timeout.h"
-#include "aodv-uu/debug.h"
+#include "aodv-uu/debug_aodv.h"
 #include "aodv-uu/routing_table.h"
 #include "aodv-uu/seek_list.h"
 #include "aodv-uu/locality.h"
@@ -182,7 +182,7 @@ class AODVUU : public ManetRoutingBase {
 #include "aodv-uu/aodv_timeout.h"
 
 #undef _DEBUG_H
-#include "aodv-uu/debug.h"
+#include "aodv-uu/debug_aodv.h"
 
 #undef _ROUTING_TABLE_H
 #include "aodv-uu/routing_table.h"
@@ -191,7 +191,7 @@ class AODVUU : public ManetRoutingBase {
 #include "aodv-uu/seek_list.h"
 
 #undef _TIMER_QUEUE_H
-#include "aodv-uu/timer_queue.h"
+#include "aodv-uu/timer_queue_aodv.h"
 
 #undef _LOCALITY_H
 #include "aodv-uu/locality.h"
@@ -236,7 +236,7 @@ class AODVUU : public ManetRoutingBase {
 	list_t seekHead;
 #define seekhead this->seekHead
 
-/* From timer_queue.c */
+/* From timer_queue_aodv.c */
 	list_t timeList;
 #define TQ this->timeList
 

@@ -17,15 +17,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordström, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #ifndef _SEEK_LIST_H
 #define _SEEK_LIST_H
 
 #ifndef NS_NO_GLOBALS
-#include "defs.h"
-#include "timer_queue.h"
+#include "defs_aodv.h"
+#include "timer_queue_aodv.h"
 #include "list.h"
 
 #define IP_DATA_MAX_LEN 60 + 8	/* Max IP header + 64 bits of data */

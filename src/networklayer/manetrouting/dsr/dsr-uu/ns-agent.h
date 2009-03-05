@@ -36,7 +36,7 @@ class DSRUU;
 #include "timer.h"
 
 #define NO_DECLS
-#include "debug.h"
+#include "debug_dsr.h"
 #include "dsr.h"
 #include "dsr-opt.h"
 #include "send-buf.h"
@@ -157,7 +157,7 @@ class DSRUU:public Tap, public Agent {
 #include "link-cache.h"
 
 #undef _DEBUG_H
-#include "debug.h"
+#include "debug_dsr.h"
 
 #undef NO_GLOBALS
 

@@ -28,7 +28,7 @@
 #define MAX_QUEUE_TIME 10000 /* Maximum time packets can be queued (ms) */
 #define GARBAGE_COLLECT_TIME 1000 /* Interval between running the
 				   * garbage collector (ms) */
-#include "aodv-uu/defs.h"
+#include "aodv-uu/defs_aodv.h"
 #include "aodv-uu/list.h"
 
 /* Verdicts for queued packets: */

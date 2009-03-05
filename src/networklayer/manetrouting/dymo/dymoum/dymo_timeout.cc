@@ -34,7 +34,7 @@
 #include "rtable.h"
 #include "blacklist.h"
 #include "dymo_nb.h"
-#include "debug.h"
+#include "debug_dymo.h"
 
 
 extern int reissue_rreq;
@@ -43,28 +43,28 @@ extern int reissue_rreq;
 void NS_CLASS route_valid_timeout(void *arg)
 {
 	rtable_entry_t *entry = (rtable_entry_t *) arg;
-	
+
 	if (!entry)
 	{
 		dlog(LOG_WARNING, 0, __FUNCTION__,
 			"NULL routing table entry, ignoring timeout");
 		return;
 	}
-	
+
 	rtable_invalidate(entry);
 }
 
 void NS_CLASS route_del_timeout(void *arg)
 {
 	rtable_entry_t *entry = (rtable_entry_t *) arg;
-	
+
 	if (!entry)
 	{
 		dlog(LOG_WARNING, 0, __FUNCTION__,
 			"NULL routing table entry, ignoring timeout");
 		return;
 	}
-	
+
 	//if (entry->rt_state == RT_INVALID) // I think this isn't needed
 		rtable_delete(entry);
 }
@@ -72,21 +72,21 @@ void NS_CLASS route_del_timeout(void *arg)
 void NS_CLASS blacklist_timeout(void *arg)
 {
 	blacklist_t *entry = (blacklist_t *) arg;
-	
+
 	if (!entry)
 	{
 		dlog(LOG_WARNING, 0, __FUNCTION__,
 			"NULL blacklist entry, ignoring timeout");
 		return;
 	}
-	
+
 	blacklist_remove(entry);
 }
 
 void NS_CLASS route_discovery_timeout(void *arg)
 {
 	pending_rreq_t *entry = (pending_rreq_t *) arg;
-	
+
 	if (!entry)
 	{
 		dlog(LOG_WARNING, 0, __FUNCTION__,
@@ -94,13 +94,13 @@ void NS_CLASS route_discovery_timeout(void *arg)
 			" ignoring timeout");
 		return;
 	}
-	
+
 	if (reissue_rreq)
 	{
 		if (entry->tries < RREQ_TRIES)
 		{
 			rtable_entry_t *rte;
-			
+
 			entry->tries++;
 			int seqnum = entry->seqnum;
 			if (entry->tries == RREQ_TRIES)
@@ -111,13 +111,13 @@ void NS_CLASS route_discovery_timeout(void *arg)
 			timer_set_timeout(&entry->timer,
 				RREQ_WAIT_TIME << entry->tries);
 			timer_add(&entry->timer);
-			
+
 			rte = rtable_find(entry->dest_addr);
 			if (rte)
 				re_send_rreq(entry->dest_addr, seqnum,rte->rt_hopcnt);
 			else
 				re_send_rreq(entry->dest_addr, seqnum,0);
-			
+
 			return;
 		}
 	}
@@ -126,21 +126,21 @@ void NS_CLASS route_discovery_timeout(void *arg)
 #else
 	netlink_no_route_found(entry->dest_addr);
 #endif	/* NS_PORT */
-	
+
 	pending_rreq_remove(entry);
 }
 
 void NS_CLASS nb_timeout(void *arg)
 {
 	nb_t *nb = (nb_t *) arg;
-	
+
 	if (!nb)
 	{
 		dlog(LOG_WARNING, 0, __FUNCTION__,
 			"NULL nblist entry, ignoring timeout");
 		return;
 	}
-	
+
 	// A link break has been detected: Expire all routes utilizing the
 	// broken link
 	rtable_expire_timeout_all(nb->nb_addr, nb->ifindex);

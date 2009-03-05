@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordström, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #define NS_PORT
@@ -34,11 +34,11 @@
 #include "list.h"
 #else
 #include "seek_list.h"
-#include "timer_queue.h"
+#include "timer_queue_aodv.h"
 #include "aodv_timeout.h"
-#include "defs.h"
+#include "defs_aodv.h"
 #include "params.h"
-#include "debug.h"
+#include "debug_aodv.h"
 #include "list.h"
 #endif
 

@@ -26,7 +26,7 @@
 #include "../dymo_um_omnet.h"
 #endif
 #else
-#include "debug.h"
+#include "debug_dymo.h"
 #include "icmp_socket.h"
 #include "blacklist.h"
 
@@ -52,30 +52,30 @@ void NS_CLASS icmp_socket_init(void)
 	struct icmp *icmp;
 	int i;
 	int tos = IPTOS_LOWDELAY;
-	
+
 	// Check if there are no interfaces
 	if (this_host.nif == 0)
 	{
 		dlog(LOG_ERR, 0, __FUNCTION__, "No interfaces configured\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	// For each interface...
 	for (i = 0; i < DYMO_MAX_NR_INTERFACES; i++)
 	{
 		if (!DEV_NR(i).enabled)
 			continue;
-		
+
 		// Create a raw socket
 		if ((DEV_NR(i).icmp_sock = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0)
 		{
 			dlog(LOG_ERR, errno, __FUNCTION__, "getSocket() failed");
 			exit(EXIT_FAILURE);
 		}
-		
+
 		// Make the socket only process packets received from an interface
 		strncpy(ifname, DEV_NR(i).ifname, sizeof(ifname));
-		
+
 		if (setsockopt(DEV_NR(i).icmp_sock,
 			SOL_SOCKET,
 			SO_BINDTODEVICE,
@@ -86,7 +86,7 @@ void NS_CLASS icmp_socket_init(void)
 				" failed for %s", DEV_NR(i).ifname);
 			exit(EXIT_FAILURE);
 		}
-		
+
 		// Set priority of IP datagrams
 		if (setsockopt(DEV_NR(i).icmp_sock,
 			SOL_SOCKET,
@@ -98,7 +98,7 @@ void NS_CLASS icmp_socket_init(void)
 				" failed for LOWDELAY");
 			exit(EXIT_FAILURE);
 		}
-		
+
 		// Attach callback function
 		if (attach_callback_func(DEV_NR(i).icmp_sock, icmp_socket_read) < 0)
 		{
@@ -106,7 +106,7 @@ void NS_CLASS icmp_socket_init(void)
 			exit(EXIT_FAILURE);
 		}
 	}
-	
+
 	// Prepare the send buffer
 	memset(icmp_send_buf, '\0', ICMP_SEND_BUF_SIZE);
 	icmp			= (struct icmp *) icmp_send_buf;
@@ -116,14 +116,14 @@ void NS_CLASS icmp_socket_init(void)
 	icmp->icmp_id		= 0;
 	icmp->icmp_seq		= 0;
 
-#endif	/* NS_PORT */	
+#endif	/* NS_PORT */
 }
 
 void NS_CLASS icmp_socket_fini(void)
 {
 #ifndef NS_PORT
 	int i;
-	
+
 	for (i = 0; i < DYMO_MAX_NR_INTERFACES; i++)
 	{
 		if (!DEV_NR(i).enabled)
@@ -139,25 +139,25 @@ u_short NS_CLASS in_cksum(u_short *icmp, int len)
 	u_short *w	= icmp;
 	int sum		= 0;
 	u_short cksum;
-	
+
 	while (nleft > 1)
 	{
 		sum	+= *w++;
 		nleft	-= 2;
 	}
-	
+
 	if (nleft == 1)
 	{
 		u_short u = 0;
-		
+
 		*(u_char *) (&u) = *(u_char *) w;
 		sum += u;
 	}
-	
+
 	sum	= (sum >> 16) + (sum & 0xffff);
 	sum	+= (sum >> 16);
 	cksum	= ~sum;
-	
+
 	return cksum;
 }
 
@@ -167,11 +167,11 @@ void NS_CLASS icmp_reply_send(struct in_addr dest_addr, struct dev_info *dev)
 #ifndef NS_PORT
 	struct sockaddr_in icmp_sockaddr;
 	u_int8_t ttl;
-	
+
 	icmp_sockaddr.sin_family	= AF_INET;
 	icmp_sockaddr.sin_addr		= dest_addr;
 	icmp_sockaddr.sin_port		= 0;
-	
+
 	// Set TTL
 	ttl = 1;
 	if (setsockopt(dev->icmp_sock,
@@ -183,7 +183,7 @@ void NS_CLASS icmp_reply_send(struct in_addr dest_addr, struct dev_info *dev)
 		dlog(LOG_ERR, errno, __FUNCTION__, "setsockopt(IP_TTL) failed");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	if (sendto(dev->icmp_sock, icmp_send_buf, ICMP_ECHOREPLY_SIZE, 0,
 		(struct sockaddr *) &icmp_sockaddr, sizeof(icmp_sockaddr)) < 0)
 	{
@@ -196,12 +196,12 @@ void NS_CLASS icmp_reply_send(struct in_addr dest_addr, struct dev_info *dev)
 	struct hdr_cmn *ch	= HDR_CMN(p);
 	struct hdr_ip *ih	= HDR_IP(p);
 	hdr_dymoum *dh		= HDR_DYMOUM(p);
-	
+
 	memset(dh, '\0', DYMO_MSG_MAX_SIZE);
 	dh->type	= DYMO_ECHOREPLY_TYPE;
 	dh->len		= ICMP_ECHOREPLY_SIZE;
 	dh->ttl		= 1;
-		
+
 	ch->ptype()	= PT_DYMOUM;
 	ch->direction()	= hdr_cmn::DOWN;
 	ch->size()	= IP_HDR_LEN + ICMP_ECHOREPLY_SIZE;
@@ -209,7 +209,7 @@ void NS_CLASS icmp_reply_send(struct in_addr dest_addr, struct dev_info *dev)
 	ch->next_hop_	= (nsaddr_t) dest_addr.s_addr;
 	ch->prev_hop_	= (nsaddr_t) dev->ipaddr.s_addr;
 	ch->addr_type()	= NS_AF_INET;
-	
+
 	ih->saddr()	= (nsaddr_t) dev->ipaddr.s_addr;
 	ih->daddr()	= (nsaddr_t) dest_addr.s_addr;
 	ih->sport()	= RT_PORT;
@@ -219,7 +219,7 @@ void NS_CLASS icmp_reply_send(struct in_addr dest_addr, struct dev_info *dev)
 	Scheduler::getInstance().schedule(target_, p, 0.0);
 
 #endif	/* NS_PORT */
-	
+
 	dlog(LOG_DEBUG, 0, __FUNCTION__, "sending ICMP msg to %s",
 		ip2str(dest_addr.s_addr));
 #endif
@@ -239,7 +239,7 @@ static void icmp_socket_read(int fd)
 	struct dev_info *dev;
 	struct sockaddr_in sender_addr;
 	socklen_t addr_len = sizeof(struct sockaddr_in);
-	
+
 	// Receive message
 	if ((len = recvfrom(fd, icmp_recv_buf, ICMP_RECV_BUF_SIZE, 0,
 		(struct sockaddr *) &sender_addr, &addr_len)) < 0)
@@ -247,20 +247,20 @@ static void icmp_socket_read(int fd)
 		dlog(LOG_WARNING, errno, __FUNCTION__, "could not receive message");
 		return;
 	}
-	
+
 	// Ignore messages generated locally
 	for (i = 0; i < DYMO_MAX_NR_INTERFACES; i++)
 		if (DEV_NR(i).enabled && DEV_NR(i).ipaddr.s_addr ==
 			sender_addr.sin_addr.s_addr)
 			return;
-	
+
 	dev = devfromicmpsock(fd);
 	if (!dev)
 	{
 		dlog(LOG_WARNING, 0, __FUNCTION__, "could not get device info");
 		return;
 	}
-	
+
 	/* If this is an ICMP message, remove it from the blacklist.
 	   NOTE: obviously we can receive ICMP messages which aren't sent from
            a neighbor, but we don't check this because in that case the address
@@ -269,9 +269,9 @@ static void icmp_socket_read(int fd)
 	ip = (struct ip *) icmp_recv_buf;
 	if (ip->ip_p != IPPROTO_ICMP)
 		return;
-	
+
 	blacklist_remove(blacklist_find(sender_addr.sin_addr));
-	
+
 	dlog(LOG_DEBUG, 0, __FUNCTION__, "ICMP msg received in %s from %s",
 		dev->ifname, ip2str(sender_addr.sin_addr.s_addr));
 }

@@ -35,8 +35,8 @@
 #include "aodv_socket.h"
 #include "routing_table.h"
 #include "params.h"
-#include "defs.h"
-#include "debug.h"
+#include "defs_aodv.h"
+#include "debug_aodv.h"
 
 extern int llfeedback;
 #endif				/* NS_PORT */

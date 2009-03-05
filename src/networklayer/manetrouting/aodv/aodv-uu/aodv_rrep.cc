@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordström, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #define NS_PORT
@@ -37,10 +37,10 @@
 #include "aodv_hello.h"
 #include "routing_table.h"
 #include "aodv_timeout.h"
-#include "timer_queue.h"
+#include "timer_queue_aodv.h"
 #include "aodv_socket.h"
-#include "defs.h"
-#include "debug.h"
+#include "defs_aodv.h"
+#include "debug_aodv.h"
 #include "params.h"
 
 extern int unidir_hack, optimized_hellos, llfeedback;
@@ -158,7 +158,7 @@ void NS_CLASS rrep_send(RREP * rrep, rt_table_t * rev_rt,
 	if ((rev_rt->state == VALID && rev_rt->flags & RT_UNIDIR) ||
 	(rev_rt->hcnt == 1 && unidir_hack)) {
 		rt_table_t *neighbor = rt_table_find(rev_rt->next_hop);
-		
+
 		if (neighbor && neighbor->state == VALID && !neighbor->ack_timer.used) {
 		/* If the node we received a RREQ for is a neighbor we are
 		   probably facing a unidirectional link... Better request a
@@ -171,7 +171,7 @@ void NS_CLASS rrep_send(RREP * rrep, rt_table_t * rev_rt,
 		   ignore hellos... */
 			timer_remove(&neighbor->hello_timer);
 			neighbor_link_break(neighbor);
-			
+
 			DEBUG(LOG_DEBUG, 0, "Link to %s is unidirectional!",
 				ip_to_str(neighbor->dest_addr));
 
@@ -293,21 +293,21 @@ void NS_CLASS rrep_process(RREP * rrep, int rreplen, struct in_addr ip_src,
 		return;
 	}
 
-    
+
 
 	/* Ignore messages which aim to a create a route to one self */
 
 #ifndef OMNETPP
 	if (rrep_dest.s_addr == DEV_IFINDEX(ifindex).ipaddr.s_addr)
 		return;
-    
-        if (rrep_orig.s_addr == DEV_IFINDEX(ifindex).ipaddr.s_addr) 
+
+        if (rrep_orig.s_addr == DEV_IFINDEX(ifindex).ipaddr.s_addr)
                 DEBUG(LOG_DEBUG, 0, "rrep for us")
 #else
 	if (isLocalAddress (rrep_dest.s_addr))
 		return;
-    
-        if (isLocalAddress(rrep_orig.s_addr)) 
+
+        if (isLocalAddress(rrep_orig.s_addr))
                 DEBUG(LOG_DEBUG, 0, "rrep for us")
 #endif
 

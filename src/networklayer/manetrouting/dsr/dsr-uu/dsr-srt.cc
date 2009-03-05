@@ -26,7 +26,7 @@
 #include "link-cache.h"
 #include "neigh.h"
 #include "dsr-rrep.h"
-#include "debug.h"
+#include "debug_dsr.h"
 
 struct in_addr dsr_srt_next_hop(struct dsr_srt *srt, int sleft)
 {
@@ -54,7 +54,7 @@ struct in_addr dsr_srt_prev_hop(struct dsr_srt *srt, int sleft)
 	return prev_hop;
 }
 
-static int dsr_srt_find_addr(struct dsr_srt *srt, struct in_addr addr, 
+static int dsr_srt_find_addr(struct dsr_srt *srt, struct in_addr addr,
 			      int sleft)
 {
 	int n = srt->laddrs / sizeof(struct in_addr);
@@ -103,7 +103,7 @@ struct dsr_srt *dsr_srt_new(struct in_addr src, struct in_addr dst,
 	int size_cost=0;
 	int sizeAdd;
 	bool testInverse=false;
-	
+
 	sizeAdd = length / sizeof(struct in_addr);
 
 	if (sizeEtx>0)
@@ -113,7 +113,7 @@ struct dsr_srt *dsr_srt_new(struct in_addr src, struct in_addr dst,
 
 	char *aux = (char *) sr;
 	aux += sizeof(struct dsr_srt);
-	
+
 	sr->cost=(unsigned int*)aux;
 	aux +=size_cost;
 	sr->addrs=(struct in_addr*) aux;
@@ -143,7 +143,7 @@ struct dsr_srt *dsr_srt_new(struct in_addr src, struct in_addr dst,
 		{
 			sr->cost_size=sizeEtx;
 			int size = sizeAdd<sizeEtx?sizeAdd:sizeEtx;
-			for (int i=0;i<size;i++) 
+			for (int i=0;i<size;i++)
 			{
 #ifdef MobilityFramework
 				addrs1 = cost[i].address;
@@ -159,12 +159,12 @@ struct dsr_srt *dsr_srt_new(struct in_addr src, struct in_addr dst,
 			}
 			if (!testInverse)
 			{
-				for (int i=0;i<sizeEtx;i++) 
+				for (int i=0;i<sizeEtx;i++)
 					sr->cost[i]= (unsigned int) cost[i].cost;
 			}
-			else 
+			else
 			{
-				for (int i=0;i<size;i++) 
+				for (int i=0;i<size;i++)
 				{
 #ifdef MobilityFramework
 					if (cost[sizeEtx-1].address==src.s_addr || cost[sizeEtx-1].address==dst.s_addr )
@@ -181,7 +181,7 @@ struct dsr_srt *dsr_srt_new(struct in_addr src, struct in_addr dst,
 					if (addrs2 != addrs1)
 						opp_error("Dsr error, Etx address and dsr are different");
 				}
-				for (int i=0;i<sizeEtx;i++) 
+				for (int i=0;i<sizeEtx;i++)
 					sr->cost[i]= (unsigned int) cost[sizeEtx-1-i].cost;
 			}
 		}
@@ -207,7 +207,7 @@ struct dsr_srt *dsr_srt_new(struct in_addr src, struct in_addr dst,
 			{
 				testInverse=false;
 				int l=0;
-				for (int i=j-1;i>=0;i--) 
+				for (int i=j-1;i>=0;i--)
 				{
 #ifdef MobilityFramework
 					addrs1 = cost[i].address;
@@ -231,9 +231,9 @@ struct dsr_srt *dsr_srt_new(struct in_addr src, struct in_addr dst,
 						l++;
 					}
 				}
-				else 
+				else
 				{
-					for (int i=0;i<sizeAdd;i++) 
+					for (int i=0;i<sizeAdd;i++)
 					{
 #ifdef MobilityFramework
 						addrs1 = cost[j+1+i].address;
@@ -244,7 +244,7 @@ struct dsr_srt *dsr_srt_new(struct in_addr src, struct in_addr dst,
 						if (addrs2 != addrs1)
 							opp_error("Dsr error, Etx address and dsr are different");
 					}
-					for (int i=0;i<sizeAdd+1;i++) 
+					for (int i=0;i<sizeAdd+1;i++)
 						sr->cost[i]= (unsigned int) cost[j+1+i].cost;
 				}
 			}
@@ -295,7 +295,7 @@ void dsr_srt_split_both(struct dsr_srt *srt, struct in_addr addr, struct in_addr
 	}
 	else
 	{
-		for (i = 0; i < n; i++) 
+		for (i = 0; i < n; i++)
 		{
 			if (addr.s_addr == srt->addrs[i].s_addr)
 			{
@@ -362,7 +362,7 @@ void dsr_srt_split_both(struct dsr_srt *srt, struct in_addr addr, struct in_addr
 				srt_to_dest->cost_size=0;
 		}
 
-		for (int k = 0; k < (n-l-1); k++) 
+		for (int k = 0; k < (n-l-1); k++)
 		{
 			if (src.s_addr == srt_to_dest->addrs[k].s_addr) // avoid loop
 			{
@@ -378,7 +378,7 @@ void dsr_srt_split_both(struct dsr_srt *srt, struct in_addr addr, struct in_addr
 				{
 					srt_to_dest->cost_size=n-l-(k+1);
 					srt_to_dest->cost[n-l-(k+1)] = srt_to_dest->cost[n-l];
-				}	
+				}
 				srt_to_dest->laddrs = sizeof(struct in_addr) * (n-l-1-(k+1));
 			}
 		}
@@ -435,8 +435,8 @@ void dsr_srt_split_both(struct dsr_srt *srt, struct in_addr addr, struct in_addr
 		}
 		if (srt->cost_size>0)
 		   srt_to_src->cost[l] = srt->cost[0];
-// Integrity 
-		for (int k = 0; k < l; k++) 
+// Integrity
+		for (int k = 0; k < l; k++)
 		{
 			if (src.s_addr == srt_to_src->addrs[k].s_addr) // avoid loop
 			{
@@ -452,7 +452,7 @@ void dsr_srt_split_both(struct dsr_srt *srt, struct in_addr addr, struct in_addr
 				{
 					srt_to_src->cost_size=l-k;
 					srt_to_src->cost[l-(k+1)] = srt_to_src->cost[l];
-				}	
+				}
 				srt_to_src->laddrs = sizeof(struct in_addr) * (l-(k+1));
 			}
 		}
@@ -480,11 +480,11 @@ struct dsr_srt *dsr_srt_new_rev(struct dsr_srt *srt)
 
 	char *aux = (char *) srt_rev;
 	aux += sizeof(struct dsr_srt);
-	
+
 	srt_rev->cost=(unsigned int*)aux;
 	aux +=size_cost;
 	srt_rev->addrs=(struct in_addr*)aux;
-	
+
 	srt_rev->cost_size=srt->cost_size;
 	if (srt_rev->cost_size<=0)
 		srt_rev->cost=NULL;
@@ -550,7 +550,7 @@ struct dsr_srt *dsr_srt_new_split(struct dsr_srt *srt, struct in_addr addr)
 
 	char *aux = (char *) srt_split;
 	aux += sizeof(struct dsr_srt);
-	
+
 	srt_split->cost=(unsigned int*)aux;
 	aux +=size_cost;
 	srt_split->addrs=(struct in_addr*)(aux);
@@ -643,7 +643,7 @@ struct dsr_srt *dsr_srt_shortcut(struct dsr_srt *srt, struct in_addr a1,
 
 	char *aux = (char *) srt_cut;
 	aux += sizeof(struct dsr_srt);
-	
+
 	srt_cut->cost=(unsigned int*)aux;
 	aux +=size_cost;
 	srt_cut->addrs=(struct in_addr*) aux;
@@ -699,18 +699,18 @@ struct dsr_srt *dsr_srt_concatenate(struct dsr_srt *srt1, struct dsr_srt *srt2)
 {
 	struct dsr_srt *srt_cat;
 	int n, n1, n2;
-	
+
 	if (!srt1 || !srt2)
 		return NULL;
-	
+
 	n1 = srt1->laddrs / sizeof(struct in_addr);
 	n2 = srt2->laddrs / sizeof(struct in_addr);
-	
+
 	/* We assume that the end node of the first srt is the same as the start
 	 * of the second. We therefore only count that node once. */
 	n = n1 + n2 + 1;
-	
-	
+
+
 #ifndef OMNETPP
 	srt_cat = (struct dsr_srt *)MALLOC(sizeof(struct dsr_srt) +
 					   (n * sizeof(struct in_addr)),
@@ -725,7 +725,7 @@ struct dsr_srt *dsr_srt_concatenate(struct dsr_srt *srt1, struct dsr_srt *srt2)
 
 	char *aux = (char *) srt_cat;
 	aux += sizeof(struct dsr_srt);
-	
+
 	srt_cat->cost=(unsigned int*)aux;
 	aux +=size_cost;
 	srt_cat->addrs=(struct in_addr*)aux;
@@ -741,7 +741,7 @@ struct dsr_srt *dsr_srt_concatenate(struct dsr_srt *srt1, struct dsr_srt *srt2)
 
 	if (!srt_cat)
 		return NULL;
-	
+
 	srt_cat->src = srt1->src;
 	srt_cat->dst = srt2->dst;
 	srt_cat->laddrs = n * sizeof(struct in_addr);
@@ -764,28 +764,28 @@ int dsr_srt_check_duplicate(struct dsr_srt *srt)
 {
 	struct in_addr *buf;
 	int n, i, res = 0;
-	
+
 	n = srt->laddrs / sizeof(struct in_addr);
 
-	buf = (struct in_addr *)MALLOC(sizeof(struct in_addr) * (n + 1), 
+	buf = (struct in_addr *)MALLOC(sizeof(struct in_addr) * (n + 1),
 				       GFP_ATOMIC);
-	
-	if (!buf) 
+
+	if (!buf)
 		return -1;
 
 	buf[0] = srt->src;
-		
+
 	for (i = 0; i < n; i++) {
 		int j;
-		
+
 		for (j = 0; j < i + 1; j++)
 			if (buf[j].s_addr == srt->addrs[i].s_addr) {
 				res = 1;
 				goto out;
-			}		
+			}
 		buf[i+1] = srt->addrs[i];
 	}
-	
+
 	for (i = 0; i < n + 1; i++)
 		if (buf[i].s_addr == srt->dst.s_addr) {
 			res = 1;
@@ -796,7 +796,7 @@ int dsr_srt_check_duplicate(struct dsr_srt *srt)
 
 	return res;
 }
-struct dsr_srt_opt *dsr_srt_opt_add(char *buf, int len, int flags, 
+struct dsr_srt_opt *dsr_srt_opt_add(char *buf, int len, int flags,
 				    int salvage, struct dsr_srt *srt)
 {
 	struct dsr_srt_opt *srt_opt;
@@ -899,7 +899,7 @@ int NSCLASS dsr_srt_opt_recv(struct dsr_pkt *dp, struct dsr_srt_opt *srt_opt)
 
 	if (!dp || !srt_opt)
 		return DSR_PKT_ERROR;
-	
+
 	dp->srt_opt = srt_opt;
 
 	/* We should add this source route info to the cache... */
@@ -945,7 +945,7 @@ int NSCLASS dsr_srt_opt_recv(struct dsr_pkt *dp, struct dsr_srt_opt *srt_opt)
 		}
 		else
 			ph_srt_add_node (dp->prv_hop,ConfValToUsecs(RouteCacheTimeout), 0,0);
-		
+
 		struct dsr_srt * from_me_to_dest=NULL;
 		struct dsr_srt * from_me_to_src=NULL;
 		struct in_addr split_add;
@@ -998,7 +998,7 @@ int NSCLASS dsr_srt_opt_recv(struct dsr_pkt *dp, struct dsr_srt_opt *srt_opt)
 #endif
 
 
-	
+
 
 	/* Automatic route shortening - Check if this node is the
 	 * intended next hop. If not, is it part of the remaining
@@ -1075,7 +1075,7 @@ int NSCLASS dsr_srt_opt_recv(struct dsr_pkt *dp, struct dsr_srt_opt *srt_opt)
 		if (etxActive)
 		{
 			j=0;
-		
+
 			for (i=0 ;i< dp->costVectorSize;i++)
 			{
 #ifdef MobilityFramework
@@ -1085,7 +1085,7 @@ int NSCLASS dsr_srt_opt_recv(struct dsr_pkt *dp, struct dsr_srt_opt *srt_opt)
 #endif
 				{
 					if (i==0)
-#ifdef MobilityFramework 
+#ifdef MobilityFramework
 						dp->costVector[i].cost = getCost(dp->src.s_addr);
 #else
 						dp->costVector[i].cost = getCost(IPAddress::IPAddress((uint32_t)dp->src.s_addr));

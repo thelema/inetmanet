@@ -23,7 +23,7 @@
 
 #ifndef NS_NO_GLOBALS
 
-#include "defs.h"
+#include "defs_dymo.h"
 #ifdef OMNETPP
 #include "compatibility.h"
 #else

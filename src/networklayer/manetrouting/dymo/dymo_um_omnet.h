@@ -62,7 +62,7 @@ class DYMOUM;
 
 /* Global definitions and lib functions */
 
-#include "dymoum/defs.h"
+#include "dymoum/defs_dymo.h"
 
 #ifndef IP_BROADCAST
 #define IP_BROADCAST ((u_int32_t) 0xffffffff)
@@ -72,8 +72,8 @@ class DYMOUM;
 #undef NS_NO_GLOBALS
 #define NS_NO_DECLARATIONS
 
-#include "dymoum/defs.h"
-#include "dymoum/debug.h"
+//#include "dymoum/defs.h"
+#include "dymoum/debug_dymo.h"
 #include "dymoum/dlist.h"
 #include "dymoum/dymo_generic.h"
 #include "dymoum/dymo_re.h"
@@ -270,10 +270,10 @@ protected:
 #undef	NS_NO_DECLARATIONS
 
 #undef __DEFS_H__
-#include "dymoum/defs.h"
+#include "dymoum/defs_dymo.h"
 
 #undef __DEBUG_H__
-#include "dymoum/debug.h"
+#include "dymoum/debug_dymo.h"
 
 #undef __DYMO_GENERIC_H__
 #include "dymoum/dymo_generic.h"

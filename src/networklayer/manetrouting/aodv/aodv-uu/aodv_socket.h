@@ -29,7 +29,7 @@
 #include <netinet/ip.h>
 #endif
 
-#include "defs.h"
+#include "defs_aodv.h"
 #include "aodv_rerr.h"
 #include "params.h"
 

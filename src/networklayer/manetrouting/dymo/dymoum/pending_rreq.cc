@@ -28,8 +28,8 @@
 #endif
 #include <errno.h>
 #else
-#include "debug.h"
-#include "defs.h"
+#include "debug_dymo.h"
+#include "defs_dymo.h"
 #include "pending_rreq.h"
 
 #include <stdlib.h>
@@ -41,19 +41,19 @@ static DLIST_HEAD(PENDING_RREQ);
 pending_rreq_t *NS_CLASS pending_rreq_add(struct in_addr dest_addr, u_int32_t seqnum)
 {
 	pending_rreq_t *entry;
-	
+
 	if ((entry = (pending_rreq_t *)malloc(sizeof(pending_rreq_t))) == NULL)
 	{
 		dlog(LOG_ERR, errno, __FUNCTION__, "failed malloc()");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	entry->dest_addr.s_addr	= dest_addr.s_addr;
 	entry->seqnum		= seqnum;
 	entry->tries		= 0;
-	
+
 	dlist_add(&entry->list_head, &PENDING_RREQ);
-	
+
 	return entry;
 }
 
@@ -61,25 +61,25 @@ int NS_CLASS pending_rreq_remove(pending_rreq_t *entry)
 {
 	if (!entry)
 		return 0;
-	
+
 	dlist_del(&entry->list_head);
 	timer_remove(&entry->timer);
-	
+
 	free(entry);
-	
+
 	return 1;
 }
 
 pending_rreq_t *NS_CLASS pending_rreq_find(struct in_addr dest_addr)
 {
 	dlist_head_t *pos;
-	
+
 	dlist_for_each(pos, &PENDING_RREQ)
 	{
 		pending_rreq_t *entry = (pending_rreq_t *) pos;
 		if (entry->dest_addr.s_addr == dest_addr.s_addr)
 			return entry;
 	}
-	
+
 	return NULL;
 }

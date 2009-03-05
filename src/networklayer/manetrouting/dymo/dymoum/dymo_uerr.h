@@ -23,7 +23,7 @@
 
 #ifndef NS_NO_GLOBALS
 
-#include "defs.h"
+#include "defs_dymo.h"
 #include "dymo_generic.h"
 
 #ifndef OMNETPP
@@ -43,11 +43,11 @@ typedef struct {	// FIXME: adjust byte ordering
 	u_int32_t	ttl : 6;
 	u_int32_t	i : 1;
 	u_int32_t	res : 5;
-	
+
 	u_int32_t	target_addr;
 	u_int32_t	uelem_target_addr;
 	u_int32_t	uerr_node_addr;
-	
+
 	u_int8_t	uelem_type;
 } UERR;
 #define UERR_SIZE	sizeof(UERR)

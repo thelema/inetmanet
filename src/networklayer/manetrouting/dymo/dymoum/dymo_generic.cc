@@ -31,8 +31,8 @@
 #include "dymo_uerr.h"
 #include "dymo_rerr.h"
 #include "dymo_hello.h"
-#include "defs.h"
-#include "debug.h"
+#include "defs_dymo.h"
+#include "debug_dymo.h"
 #ifndef OMNETPP
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -45,9 +45,9 @@ void NS_CLASS generic_process_message(DYMO_element *e,struct in_addr src, u_int3
 {
 	// Generic preprocessing
 	generic_preprocess(e);
-	
+
 	switch (e->type)
-	{		
+	{
 		case DYMO_RE_TYPE:
 			if (((RE *) e)->a)
 			{
@@ -63,7 +63,7 @@ void NS_CLASS generic_process_message(DYMO_element *e,struct in_addr src, u_int3
 					ip2str(src.s_addr));
 			re_process((RE *) e, src, ifindex);
 			break;
-		
+
 		case DYMO_RERR_TYPE:
 			dlog(LOG_DEBUG, 0, __FUNCTION__,
 				"RERR received in %s from %s",
@@ -71,7 +71,7 @@ void NS_CLASS generic_process_message(DYMO_element *e,struct in_addr src, u_int3
 				ip2str(src.s_addr));
 			rerr_process((RERR *) e, src, ifindex);
 			break;
-		
+
 		case DYMO_UERR_TYPE:
 			dlog(LOG_DEBUG, 0, __FUNCTION__,
 				"UERR received in %s from %s",
@@ -79,7 +79,7 @@ void NS_CLASS generic_process_message(DYMO_element *e,struct in_addr src, u_int3
 				ip2str(src.s_addr));
 			uerr_process((UERR *) e, src, ifindex);
 			break;
-		
+
 		case DYMO_HELLO_TYPE:
 			dlog(LOG_DEBUG, 0, __FUNCTION__,
 				"HELLO received in %s from %s",
@@ -98,14 +98,14 @@ void NS_CLASS generic_process_message(DYMO_element *e,struct in_addr src, u_int3
 			break;
 #endif
 #endif	/* NS_PORT */
-		
+
 		default:
 			dlog(LOG_DEBUG, 0, __FUNCTION__,
 			"unknown msg type %u received in %s from %s",
 			e->type,
 			DEV_IFINDEX(ifindex).ifname,
 			ip2str(src.s_addr));
-			
+
 			if (e->m)
 				uerr_send(e, ifindex);
 			switch (e->h)
@@ -116,17 +116,17 @@ void NS_CLASS generic_process_message(DYMO_element *e,struct in_addr src, u_int3
 				// but we are only dealing with 1-element
 				// packets. Thus the packet is dropped
 				break;
-				
+
 				case 1: // H = 01
 				// TODO: we should remove this element from the
 				// packet and continue the processing
 				break;
-				
+
 				case 2: // H = 10: set I bit
 				e->i = 1;
 				// TODO: continue processing
 				break;
-				
+
 				case 3: // H = 11: drop the packet
 				break;
 			}

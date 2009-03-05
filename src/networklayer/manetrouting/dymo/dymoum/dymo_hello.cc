@@ -26,7 +26,7 @@
 #include "../dymo_um_omnet.h"
 #endif
 #else
-#include "defs.h"
+#include "defs_dymo.h"
 #include "dymo_hello.h"
 #include "timer_queue.h"
 #include "dymo_socket.h"
@@ -42,7 +42,7 @@ void NS_CLASS hello_init(void)
 {
 	if (hello_timer.used || hello_ival <= 0)
 		return;
-	
+
 	timer_init(&hello_timer, &NS_CLASS hello_send, NULL);
 	hello_send(NULL);
 }
@@ -55,7 +55,7 @@ void NS_CLASS hello_fini(void)
 HELLO *NS_CLASS hello_create(void)
 {
 	HELLO *hello;
-#ifndef OMNETPP	
+#ifndef OMNETPP
 	hello		= (HELLO *) dymo_socket_new_element();
 #else
 	hello = new HELLO();
@@ -67,7 +67,7 @@ HELLO *NS_CLASS hello_create(void)
 	hello->ttl	= 1;
 	hello->i	= 0;
 	hello->res	= 0;
-	
+
 	return hello;
 }
 
@@ -75,20 +75,20 @@ void NS_CLASS hello_send(void *arg)
 {
 	int i;
 	struct in_addr dest_addr;
-	
+
 	dlog(LOG_DEBUG, 0, __FUNCTION__, "sending HELLO");
-	
+
 	HELLO *hello = hello_create();
 	dest_addr.s_addr = DYMO_BROADCAST;
-	
+
 	// Queue the new HELLO
 	hello = (HELLO *) dymo_socket_queue((DYMO_element *) hello);
-	
+
 	// Send HELLO over all enabled interfaces
 	for (i = 0; i < DYMO_MAX_NR_INTERFACES; i++)
 		if (DEV_NR(i).enabled)
 			dymo_socket_send(dest_addr, &DEV_NR(i));
-	
+
 	// Schedule next HELLO
 	timer_set_timeout(&hello_timer, (hello_ival*1000) + hello_jitter());
 	timer_add(&hello_timer);
@@ -97,7 +97,7 @@ void NS_CLASS hello_send(void *arg)
 void NS_CLASS hello_process(HELLO *hello,struct in_addr ip_src, u_int32_t ifindex)
 {
 	nb_t *nb;
-	
+
 	// Insert or update a neighbor entry
 	nb = nb_find(ip_src, ifindex);
 	if (!nb)

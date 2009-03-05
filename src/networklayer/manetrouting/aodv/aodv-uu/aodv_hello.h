@@ -17,14 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordström, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #ifndef _AODV_HELLO_H
 #define _AODV_HELLO_H
 
 #ifndef NS_NO_GLOBALS
-#include "defs.h"
+#include "defs_aodv.h"
 #include "aodv_rrep.h"
 #include "routing_table.h"
 #endif				/* NS_NO_GLOBALS */

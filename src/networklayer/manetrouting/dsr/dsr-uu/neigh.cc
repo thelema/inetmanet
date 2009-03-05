@@ -18,7 +18,7 @@
 #endif
 #include "tbl.h"
 #include "neigh.h"
-#include "debug.h"
+#include "debug_dsr.h"
 #include "timer.h"
 
 #define NEIGH_TBL_MAX_LEN 50
@@ -81,12 +81,12 @@ static inline int crit_addr(void *pos, void *query)
 
 	if (n->addr.s_addr == q->addr->s_addr) {
 		if (q->info) {
-			
+
 			q->info->id = n->id;
 			q->info->last_ack_req = n->last_ack_req;
 			memcpy(&q->info->hw_addr, &n->hw_addr,
 			       sizeof(struct sockaddr));
-			
+
 			/* Return current RTO */
 			q->info->rto = n->t_rxtcur * 1000 / PR_SLOWHZ;
 
@@ -128,35 +128,35 @@ static inline int rto_calc(void *pos, void *query)
 {
 	struct neighbor_query *q = (struct neighbor_query *)query;
 	struct neighbor *n = (struct neighbor *)pos;
-	
+
 	if (n->addr.s_addr == q->addr->s_addr) {
 		struct timeval now;
 		usecs_t rtt = q->info->rtt;
 		int delta;
-		
+
 		gettime(&now);
-	
+
 		if (n->t_srtt != 0) {
 			delta = rtt - 1 - (n->t_srtt >> RTT_SHIFT);
-			
+
 			if ((n->t_srtt += delta) <= 0)
 				n->t_srtt = 1;
-			
+
 			if (delta < 0)
 				delta = -delta;
-			
+
 			delta -= (n->t_rttvar >> RTTVAR_SHIFT);
-			
+
 			if ((n->t_rttvar += delta) <= 0)
 				n->t_rttvar = 1;
 		} else {
 			n->t_srtt = rtt << RTT_SHIFT;
 			n->t_rttvar = rtt << (RTTVAR_SHIFT - 1);
 		}
-		
+
 		DSR_RANGESET(n->t_rxtcur, DSR_REXMTVAL(n->t_srtt),
 			     n->t_rttmin, DSR_REXMTMAX);
-		
+
 		return 1;
 	}
 	return 0;
@@ -191,8 +191,8 @@ static struct neighbor *neigh_tbl_create(struct in_addr addr,
 	neigh->t_srtt = DSR_SRTTBASE;
 	neigh->t_rttvar = DSR_RTTDFLT * PR_SLOWHZ << 2;
 	neigh->t_rttmin = DSR_MIN;
-	DSR_RANGESET(neigh->t_rxtcur, 
-		     ((DSR_SRTTBASE >> 2) + (DSR_SRTTDFLT << 2)) >> 1, 
+	DSR_RANGESET(neigh->t_rxtcur,
+		     ((DSR_SRTTBASE >> 2) + (DSR_SRTTDFLT << 2)) >> 1,
 		     DSR_MIN, DSR_REXMTMAX);
 
 	memset(&neigh->last_ack_req, 0, sizeof(struct timeval));
@@ -262,12 +262,12 @@ int NSCLASS neigh_tbl_set_ack_req_time(struct in_addr neigh_addr)
 	return tbl_find_do(tblptr, &neigh_addr, function);
 }
 
-int NSCLASS 
+int NSCLASS
 neigh_tbl_set_rto(struct in_addr neigh_addr, struct neighbor_info *neigh_info)
 {
 	struct neighbor_query q;
 	struct tbl *tblptr;
-	
+
 	q.addr = &neigh_addr;
 	q.info = neigh_info;
 	tblptr = &neigh_tbl;

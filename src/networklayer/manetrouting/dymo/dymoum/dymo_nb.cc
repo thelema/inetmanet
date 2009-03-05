@@ -29,7 +29,7 @@
 #include <errno.h>
 #else
 #include "dymo_nb.h"
-#include "debug.h"
+#include "debug_dymo.h"
 #include "dymo_timeout.h"
 #include <stdlib.h>
 #include <errno.h>
@@ -41,19 +41,19 @@ extern int hello_ival;
 nb_t *NS_CLASS nb_insert(struct in_addr nb_addr, u_int32_t ifindex)
 {
 	nb_t *nb;
-	
+
 	if ((nb = (nb_t *) malloc(sizeof(nb_t))) == NULL)
 	{
 		dlog(LOG_ERR, errno, __FUNCTION__, "failed malloc()");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	nb->nb_addr.s_addr	= nb_addr.s_addr;
 	nb->ifindex		= ifindex;
 	timer_init(&nb->timer, &NS_CLASS nb_timeout, nb);
 	nb_update(nb);
 	dlist_add(&nb->list_head, &NBLIST);
-	
+
 	return nb;
 }
 
@@ -67,19 +67,19 @@ int NS_CLASS nb_remove(nb_t *nb)
 {
 	if (!nb)
 		return 0;
-	
+
 	dlist_del(&nb->list_head);
 	timer_remove(&nb->timer);
-	
+
 	free(nb);
-	
+
 	return 1;
 }
 
 nb_t *NS_CLASS nb_find(struct in_addr nb_addr, u_int32_t ifindex)
 {
 	dlist_head_t *pos;
-	
+
 	dlist_for_each(pos, &NBLIST)
 	{
 		nb_t *nb = (nb_t *) pos;
@@ -89,7 +89,7 @@ nb_t *NS_CLASS nb_find(struct in_addr nb_addr, u_int32_t ifindex)
 			return nb;
 		}
 	}
-	
+
 	return NULL;
 }
 

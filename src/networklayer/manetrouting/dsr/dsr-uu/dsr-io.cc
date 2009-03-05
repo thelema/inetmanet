@@ -30,7 +30,7 @@
 #include "neigh.h"
 #include "dsr-opt.h"
 #include "link-cache.h"
-#include "debug.h"
+#include "debug_dsr.h"
 #include "send-buf.h"
 
 int NSCLASS dsr_recv(struct dsr_pkt *dp)
@@ -48,7 +48,7 @@ int NSCLASS dsr_recv(struct dsr_pkt *dp)
 		return 0;
 	}
 	for (i = 0; i < DSR_PKT_ACTION_LAST; i++) {
-	
+
 		switch (action & mask) {
 		case DSR_PKT_NONE:
 			break;
@@ -101,10 +101,10 @@ int NSCLASS dsr_recv(struct dsr_pkt *dp)
 			if (dp->rrep_opt) {
 				struct in_addr rrep_srt_dst;
 				int i;
-				
+
 				for (i = 0; i < dp->num_rrep_opts; i++) {
 					rrep_srt_dst.s_addr = dp->rrep_opt[i]->addrs[DSR_RREP_ADDRS_LEN(dp->rrep_opt[i]) / sizeof(struct in_addr)];
-					
+
 					send_buf_set_verdict(SEND_BUF_SEND, rrep_srt_dst);
 				}
 			}

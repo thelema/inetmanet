@@ -23,8 +23,8 @@
 
 #ifndef NS_NO_GLOBALS
 
-#include "defs.h"
-#include "debug.h"
+#include "defs_dymo.h"
+#include "debug_dymo.h"
 #include "rtable.h"
 #include <assert.h>
 #ifndef OMNETPP
@@ -48,7 +48,7 @@ typedef struct {	// FIXME: adjust byte ordering
 	u_int32_t	ttl : 6;
 	u_int32_t	i : 1;
 	u_int32_t	res : 5;
-	
+
 	struct rerr_block rerr_blocks[MAX_RERR_BLOCKS];
 } RERR;
 
@@ -80,7 +80,7 @@ void rerr_process(RERR *rerr,struct in_addr src, u_int32_t ifindex);
 static NS_INLINE int rerr_numblocks(RERR *rerr)
 {
 	assert(rerr);
-	
+
 	if ((rerr->len - RERR_BASIC_SIZE) % RERR_BLOCK_SIZE != 0)
 		return -1;
 	return (rerr->len - RERR_BASIC_SIZE) / RERR_BLOCK_SIZE;

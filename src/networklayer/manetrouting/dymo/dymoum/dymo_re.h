@@ -23,9 +23,9 @@
 
 #ifndef NS_NO_GLOBALS
 
-#include "defs.h"
+#include "defs_dymo.h"
 #include "rtable.h"
-#include "debug.h"
+#include "debug_dymo.h"
 #ifndef OMNETPP
 #include <sys/types.h>
 #include <netinet/in.h>

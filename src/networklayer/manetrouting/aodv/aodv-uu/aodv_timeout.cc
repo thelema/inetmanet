@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordstr�m, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #define NS_PORT
@@ -32,15 +32,15 @@
 #include "../aodv_uu_omnet.h"
 #endif
 #else
-#include "defs.h"
+#include "defs_aodv.h"
 #include "aodv_timeout.h"
 #include "aodv_socket.h"
 #include "aodv_neighbor.h"
 #include "aodv_rreq.h"
 #include "aodv_hello.h"
 #include "aodv_rerr.h"
-#include "timer_queue.h"
-#include "debug.h"
+#include "timer_queue_aodv.h"
+#include "debug_aodv.h"
 #include "params.h"
 #include "routing_table.h"
 #include "seek_list.h"

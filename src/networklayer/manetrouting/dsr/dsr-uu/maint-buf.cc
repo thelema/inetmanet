@@ -17,7 +17,7 @@
   #include "ns-agent.h"
  #else
   #include "dsr.h"
-  #include "debug.h"
+  #include "debug_dsr.h"
   #include "tbl.h"
   #include "neigh.h"
   #include "dsr-ack.h"
@@ -274,7 +274,7 @@ int NSCLASS maint_buf_salvage(struct dsr_pkt *dp)
 		dp->srt=NULL;
 	}
 
-	
+
 
 	if (!alt_srt) {
 		DEBUG("No alt. source route - cannot salvage packet\n");

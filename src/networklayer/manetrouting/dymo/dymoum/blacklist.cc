@@ -29,7 +29,7 @@
 #include <errno.h>
 #else
 #include "blacklist.h"
-#include "debug.h"
+#include "debug_dymo.h"
 
 #include <stdlib.h>
 #include <errno.h>
@@ -40,16 +40,16 @@ static DLIST_HEAD(BLACKLIST);
 blacklist_t *NS_CLASS blacklist_add(struct in_addr addr)
 {
 	blacklist_t *entry;
-	
+
 	if ((entry = (blacklist_t *)malloc(sizeof(blacklist_t))) == NULL)
 	{
 		dlog(LOG_ERR, errno, __FUNCTION__, "failed malloc()");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	entry->addr.s_addr	= addr.s_addr;
 	dlist_add(&entry->list_head, &BLACKLIST);
-	
+
 	return entry;
 }
 
@@ -57,25 +57,25 @@ int NS_CLASS blacklist_remove(blacklist_t *entry)
 {
 	if (!entry)
 		return 0;
-	
+
 	dlist_del(&entry->list_head);
 	timer_remove(&entry->timer);
-	
+
 	free(entry);
-	
+
 	return 1;
 }
 
 blacklist_t *NS_CLASS blacklist_find(struct in_addr addr)
 {
 	dlist_head_t *pos;
-	
+
 	dlist_for_each(pos, &BLACKLIST)
 	{
 		blacklist_t *entry = (blacklist_t *) pos;
 		if (entry->addr.s_addr == addr.s_addr)
 			return entry;
 	}
-	
+
 	return NULL;
 }

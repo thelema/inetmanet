@@ -29,7 +29,7 @@
 
 #include "tbl.h"
 #include "send-buf.h"
-#include "debug.h"
+#include "debug_dsr.h"
 #include "link-cache.h"
 #include "dsr-srt.h"
 #include "timer.h"

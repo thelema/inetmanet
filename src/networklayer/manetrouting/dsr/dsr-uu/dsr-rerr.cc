@@ -22,7 +22,7 @@
 #include "dsr.h"
 #include "dsr-rerr.h"
 #include "dsr-opt.h"
-#include "debug.h"
+#include "debug_dsr.h"
 #include "dsr-srt.h"
 #include "dsr-ack.h"
 #include "link-cache.h"
@@ -103,10 +103,10 @@ int NSCLASS dsr_rerr_send(struct dsr_pkt *dp_trigg, struct in_addr unr_addr)
 		return -1;
 	}
 
-	len = DSR_OPT_HDR_LEN + DSR_SRT_OPT_LEN(dp->srt) + 
-		(DSR_RERR_HDR_LEN + 4) + 
+	len = DSR_OPT_HDR_LEN + DSR_SRT_OPT_LEN(dp->srt) +
+		(DSR_RERR_HDR_LEN + 4) +
 		DSR_ACK_HDR_LEN * dp_trigg->num_ack_opts;
-	
+
 	/* Also count in RERR opts in trigger packet */
 	for (i = 0; i < dp_trigg->num_rerr_opts; i++) {
 		if (dp_trigg->rerr_opt[i]->salv > ConfVal(MAX_SALVAGE_COUNT))
@@ -114,7 +114,7 @@ int NSCLASS dsr_rerr_send(struct dsr_pkt *dp_trigg, struct in_addr unr_addr)
 
 		len += (dp_trigg->rerr_opt[i]->length + 2);
 	}
-	
+
 	DEBUG("opt_len=%d SR: %s\n", len, print_srt(dp->srt));
 	n = dp->srt->laddrs / sizeof(struct in_addr);
 	dp->src = myaddr;
@@ -154,8 +154,8 @@ int NSCLASS dsr_rerr_send(struct dsr_pkt *dp_trigg, struct in_addr unr_addr)
 	buf += DSR_SRT_OPT_LEN(dp->srt);
 	len -= DSR_SRT_OPT_LEN(dp->srt);
 
-	rerr_opt = dsr_rerr_opt_add(buf, len, NODE_UNREACHABLE, dp->src, 
-				    dp->dst, unr_addr, 
+	rerr_opt = dsr_rerr_opt_add(buf, len, NODE_UNREACHABLE, dp->src,
+				    dp->dst, unr_addr,
 				    dp_trigg->srt_opt->salv);
 
 	if (!rerr_opt)
@@ -170,7 +170,7 @@ int NSCLASS dsr_rerr_send(struct dsr_pkt *dp_trigg, struct in_addr unr_addr)
 		if (dp_trigg->rerr_opt[i]->salv > ConfVal(MAX_SALVAGE_COUNT))
 			break;
 
-		memcpy(buf, dp_trigg->rerr_opt[i], 
+		memcpy(buf, dp_trigg->rerr_opt[i],
 		       dp_trigg->rerr_opt[i]->length + 2);
 
 		len -= (dp_trigg->rerr_opt[i]->length + 2);
@@ -182,7 +182,7 @@ int NSCLASS dsr_rerr_send(struct dsr_pkt *dp_trigg, struct in_addr unr_addr)
 
 	/* Add old ACK options */
 	for (i = 0; i < dp_trigg->num_ack_opts; i++) {
-		memcpy(buf, dp_trigg->ack_opt[i], 
+		memcpy(buf, dp_trigg->ack_opt[i],
 		       dp_trigg->ack_opt[i]->length + 2);
 
 		len -= (dp_trigg->ack_opt[i]->length + 2);
@@ -194,7 +194,7 @@ int NSCLASS dsr_rerr_send(struct dsr_pkt *dp_trigg, struct in_addr unr_addr)
 
 	DEBUG("Send RERR err_src %s err_dst %s unr_dst %s\n",
 	      print_ip(err_src),
-	      print_ip(err_dst), 
+	      print_ip(err_dst),
 	      print_ip(*((struct in_addr *)rerr_opt->info)));
 
 	XMIT(dp);
@@ -215,7 +215,7 @@ int NSCLASS dsr_rerr_opt_recv(struct dsr_pkt *dp, struct dsr_rerr_opt *rerr_opt)
 
 	if (!rerr_opt)
 		return -1;
-	
+
 	dp->rerr_opt[dp->num_rerr_opts++] = rerr_opt;
 
 	switch (rerr_opt->err_type) {
@@ -233,7 +233,7 @@ int NSCLASS dsr_rerr_opt_recv(struct dsr_pkt *dp, struct dsr_rerr_opt *rerr_opt)
 		maint_buf_del_all(err_dst);
 
 		/* Remove broken link from cache */
-		
+
 #ifdef OMNETPP
 		if (ConfVal(PathCache))
 			ph_srt_delete_link(err_src, unr_addr);

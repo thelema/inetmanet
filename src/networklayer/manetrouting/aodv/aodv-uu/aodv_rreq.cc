@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Authors: Erik Nordstr�, <erik.nordstrom@it.uu.se>
- *          
+ *
  *
  *****************************************************************************/
 #define NS_PORT
@@ -36,12 +36,12 @@
 #include "aodv_rrep.h"
 #include "routing_table.h"
 #include "aodv_timeout.h"
-#include "timer_queue.h"
+#include "timer_queue_aodv.h"
 #include "aodv_socket.h"
 #include "params.h"
 #include "seek_list.h"
-#include "defs.h"
-#include "debug.h"
+#include "defs_aodv.h"
+#include "debug_aodv.h"
 
 #include "locality.h"
 #endif
@@ -176,7 +176,7 @@ void NS_CLASS rreq_forward(RREQ * rreq, int size, int ttl)
 	rreq->hcnt++;		/* Increase hopcount to account for
 				 * intermediate route */
 	/* Send out on all interfaces */
-	for (i = 0; i < MAX_NR_INTERFACES; i++) 
+	for (i = 0; i < MAX_NR_INTERFACES; i++)
         {
 	    if (!DEV_NR(i).enabled)
 		continue;
@@ -228,7 +228,7 @@ void NS_CLASS rreq_process(RREQ * rreq, int rreqlen, struct in_addr ip_src,
 #ifdef OMNETPP
         totalRreqRec++;
         if (!ev.isDisabled())
-    	        ev.printf("ip_src=%s rreq_orig=%s rreq_dest=%s",ip_to_str(ip_src), 
+    	        ev.printf("ip_src=%s rreq_orig=%s rreq_dest=%s",ip_to_str(ip_src),
                                  ip_to_str(rreq_orig), ip_to_str(rreq_dest));
 #endif
 
@@ -241,7 +241,7 @@ void NS_CLASS rreq_process(RREQ * rreq, int rreqlen, struct in_addr ip_src,
 
 	/* Check if the previous hop of the RREQ is in the blacklist set. If
 	   it is, then ignore the RREQ. */
-	if (rreq_blacklist_find(ip_src)) 
+	if (rreq_blacklist_find(ip_src))
 	{
 		DEBUG(LOG_DEBUG, 0, "prev hop of RREQ blacklisted, ignoring!");
 #ifdef OMNETPP
@@ -298,7 +298,7 @@ void NS_CLASS rreq_process(RREQ * rreq, int rreqlen, struct in_addr ip_src,
 
 		rev_rt = rt_table_insert(rreq_orig, ip_src, rreq_new_hcnt,
 				 rreq_orig_seqno, life, VALID, 0, ifindex);
-	} 
+	}
 	else {
 		if (rev_rt->dest_seqno == 0 ||
 			(int32_t) rreq_orig_seqno > (int32_t) rev_rt->dest_seqno ||
@@ -434,10 +434,10 @@ void NS_CLASS rreq_process(RREQ * rreq, int rreqlen, struct in_addr ip_src,
 
 	    /* Respond only if the sequence number is fresh enough... */
 //	    if (fwd_rt->dest_seqno != 0 &&
-//		(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno && 
+//		(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno &&
 //                (fwd_rt->hcnt>HCNT_LIMIT || (fwd_rt->hcnt==HCNT_LIMIT && uniform(0, 1)>0.8 ))) {
 			if (fwd_rt->dest_seqno != 0 &&
-				(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno && 
+				(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno &&
                 		(fwd_rt->hcnt>HCNT_LIMIT)) {
 //	    if (fwd_rt->dest_seqno != 0 &&
 //		(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno) {
@@ -447,7 +447,7 @@ void NS_CLASS rreq_process(RREQ * rreq, int rreqlen, struct in_addr ip_src,
 					   fwd_rt->dest_seqno, rev_rt->dest_addr,
 				   	lifetime);
 				rrep_send(rrep, rev_rt, fwd_rt, rrep_size);
-	    		} 
+	    		}
 			else {
 				goto forward;
 	    		}

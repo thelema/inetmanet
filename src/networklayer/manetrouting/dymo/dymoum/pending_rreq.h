@@ -23,7 +23,7 @@
 
 #ifndef NS_NO_GLOBALS
 
-#include "defs.h"
+#include "defs_dymo.h"
 #include "dlist.h"
 #include "timer_queue.h"
 #ifndef OMNETPP

@@ -28,8 +28,8 @@
 #endif
 #else
 #include "rtable.h"
-#include "defs.h"
-#include "debug.h"
+#include "defs_dymo.h"
+#include "debug_dymo.h"
 #include "k_route.h"
 #include "pending_rreq.h"
 #include "dymo_timeout.h"
@@ -52,7 +52,7 @@ void NS_CLASS rtable_init()
 void NS_CLASS rtable_destroy()
 {
 	dlist_head_t *pos, *tmp;
-	
+
 	dlist_for_each_safe(pos, tmp, &rtable.l)
 	{
 		rtable_entry_t *e = (rtable_entry_t *) pos;
@@ -63,7 +63,7 @@ void NS_CLASS rtable_destroy()
 rtable_entry_t *NS_CLASS rtable_find(struct in_addr dest_addr)
 {
 	dlist_head_t *pos;
-	
+
 	dlist_for_each(pos, &rtable.l)
 	{
 		rtable_entry_t *e = (rtable_entry_t *) pos;
@@ -83,7 +83,7 @@ rtable_entry_t *NS_CLASS rtable_insert(struct in_addr dest_addr,
 {
 	rtable_entry_t *entry;
 	struct in_addr netmask;
-	
+
 	// Create the new entry
 	if ((entry = (rtable_entry_t *) malloc(sizeof(rtable_entry_t)))
 		== NULL)
@@ -92,7 +92,7 @@ rtable_entry_t *NS_CLASS rtable_insert(struct in_addr dest_addr,
 		exit(EXIT_FAILURE);
 	}
 	memset(entry, 0, sizeof(rtable_entry_t));
-	
+
 	entry->rt_ifindex	= ifindex;
 	entry->rt_seqnum	= seqnum;
 	entry->rt_prefix	= prefix;
@@ -103,15 +103,15 @@ rtable_entry_t *NS_CLASS rtable_insert(struct in_addr dest_addr,
 	netmask.s_addr		= 0;
 	entry->rt_dest_addr.s_addr	= dest_addr.s_addr;
 	entry->rt_nxthop_addr.s_addr	= nxthop_addr.s_addr;
-	
+
 	timer_init(&entry->rt_validtimer, &NS_CLASS route_valid_timeout, entry);
 	timer_set_timeout(&entry->rt_validtimer, ROUTE_TIMEOUT);
 	timer_add(&entry->rt_validtimer);
-	
+
 	timer_init(&entry->rt_deltimer, &NS_CLASS route_del_timeout, entry);
 	/*timer_set_timeout(&entry->rt_deltimer, ROUTE_DELETE_TIMEOUT);
 	timer_add(&entry->rt_deltimer);*/
-	
+
 	// Add the entry to the routing table
 	dlist_add(&entry->l, &rtable.l);
 
@@ -128,7 +128,7 @@ rtable_entry_t *NS_CLASS rtable_insert(struct in_addr dest_addr,
 	omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,DEV_NR(ifindex).ipaddr);
 #endif
 #endif	/* NS_PORT */
-	
+
 	// If there are buffered packets for this destination
 	// now we send them
 	if (pending_rreq_remove(pending_rreq_find(dest_addr)))
@@ -137,7 +137,7 @@ rtable_entry_t *NS_CLASS rtable_insert(struct in_addr dest_addr,
 		packet_queue_set_verdict(dest_addr, PQ_SEND);
 #endif	/* NS_PORT */
 	}
-	
+
 	return entry;
 }
 
@@ -152,9 +152,9 @@ rtable_entry_t *NS_CLASS rtable_update(rtable_entry_t *entry,
 {
 #ifndef NS_PORT
 	struct in_addr netmask;
-	
+
 	netmask.s_addr = 0;
-	
+
 	// If this route was expired but it isn't now,
 	// a new kernel route is added
 	//if (!timer_is_queued(&entry->rt_validtimer))
@@ -186,7 +186,7 @@ rtable_entry_t *NS_CLASS rtable_update(rtable_entry_t *entry,
 
 	timer_remove(&entry->rt_validtimer);
 	timer_remove(&entry->rt_deltimer);
-	
+
 	entry->rt_ifindex	= ifindex;
 	entry->rt_seqnum	= seqnum;
 	entry->rt_prefix	= prefix;
@@ -195,14 +195,14 @@ rtable_entry_t *NS_CLASS rtable_update(rtable_entry_t *entry,
 	entry->rt_state		= RT_VALID;
 	entry->rt_dest_addr.s_addr	= dest_addr.s_addr;
 	entry->rt_nxthop_addr.s_addr	= nxthop_addr.s_addr;
-	
+
 	timer_set_timeout(&entry->rt_validtimer, ROUTE_TIMEOUT);
 	timer_add(&entry->rt_validtimer);
-	
+
 	/*timer_set_timeout(&entry->rt_deltimer, ROUTE_DELETE_TIMEOUT);
 	timer_add(&entry->rt_deltimer);*/
 //	timer_remove(&entry->rt_deltimer);
-	
+
 	// If there are buffered packets for this destination
 	// now we send them
 	if (pending_rreq_remove(pending_rreq_find(dest_addr)))
@@ -211,7 +211,7 @@ rtable_entry_t *NS_CLASS rtable_update(rtable_entry_t *entry,
 		packet_queue_set_verdict(dest_addr, PQ_SEND);
 #endif	/* NS_PORT */
 	}
-	
+
 	return entry;
 }
 
@@ -224,11 +224,11 @@ void NS_CLASS rtable_delete(rtable_entry_t *entry)
 	struct in_addr netmask;
 	/* delete route in the omnet inet routing table ... */
 	omnet_chg_rte(entry->rt_dest_addr,entry->rt_nxthop_addr, netmask,0,true);
-#endif	
+#endif
 	timer_remove(&entry->rt_deltimer);
 	timer_remove(&entry->rt_validtimer);
 	dlist_del(&entry->l);
-	
+
 	free(entry);
 }
 
@@ -236,7 +236,7 @@ void NS_CLASS rtable_invalidate(rtable_entry_t *entry)
 {
 	if (!entry)
 		return;
-	
+
 #ifndef NS_PORT
 	//if (timer_is_queued(&entry->rt_validtimer))
 	if (entry->rt_state == RT_VALID)
@@ -252,9 +252,9 @@ void NS_CLASS rtable_invalidate(rtable_entry_t *entry)
 	struct in_addr netmask;
 	/* delete route in the omnet inet routing table ... */
 	omnet_chg_rte(entry->rt_dest_addr,entry->rt_nxthop_addr, netmask, 0,true);
-#endif	
+#endif
 	entry->rt_state = RT_INVALID;
-	
+
 	timer_set_timeout(&entry->rt_deltimer, ROUTE_DELETE_TIMEOUT);
 	timer_add(&entry->rt_deltimer);
 }
@@ -265,13 +265,13 @@ int NS_CLASS rtable_update_timeout(rtable_entry_t *entry)
 	{
 		timer_set_timeout(&entry->rt_validtimer, ROUTE_TIMEOUT);
 		timer_add(&entry->rt_validtimer);
-		
+
 		/*timer_set_timeout(&entry->rt_deltimer, ROUTE_DELETE_TIMEOUT);
 		timer_add(&entry->rt_deltimer);*/
-		
+
 		// Mark the entry as used
 		entry->rt_is_used = 1;
-		
+
 		return 1;
 	}
 	return 0;
@@ -281,10 +281,10 @@ int NS_CLASS rtable_expire_timeout(rtable_entry_t *entry)
 {
 	if (!entry)
 		return 0;
-	
+
 	timer_set_timeout(&entry->rt_validtimer, 0);
 	timer_add(&entry->rt_validtimer);
-	
+
 	return 1;
 }
 
@@ -292,7 +292,7 @@ int NS_CLASS rtable_expire_timeout_all(struct in_addr nxthop_addr, u_int32_t ifi
 {
 	dlist_head_t *pos;
 	int count = 0;
-	
+
 	dlist_for_each(pos, &rtable.l)
 	{
 		rtable_entry_t *entry = (rtable_entry_t *) pos;
@@ -300,7 +300,7 @@ int NS_CLASS rtable_expire_timeout_all(struct in_addr nxthop_addr, u_int32_t ifi
 			entry->rt_ifindex == ifindex)
 			count += rtable_expire_timeout(entry);
 	}
-	
+
 	return count;
 }
 
