@@ -2083,7 +2083,7 @@ OLSR::~OLSR()
 		delete state_ptr;
 		state_ptr=NULL;
 	}
-
+/*
 	mprset().clear();
 	mprselset().clear();
 	linkset().clear();
@@ -2092,7 +2092,7 @@ OLSR::~OLSR()
 	topologyset().clear();
 	dupset().clear();
 	ifaceassocset().clear();
-
+*/
 
 	if (&hello_timer_!=NULL)
 		cancelAndDelete(&hello_timer_);

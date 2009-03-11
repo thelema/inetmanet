@@ -28,7 +28,7 @@
 
 
 
-#ifndef _MSC_VER
+#if !defined(_WIN32) && !defined(__WIN32__) && !defined(WIN32) && !defined(__CYGWIN__) && !defined(_WIN64)
 #include <netinet/in.h>  // htonl, ntohl, ...
 #endif
 
@@ -324,7 +324,7 @@ TCPDump::~TCPDump()
 
 
 
-char* TCPDumper::intToChunk(int32 type)
+const char* TCPDumper::intToChunk(int32 type)
 {
     switch (type)
     {

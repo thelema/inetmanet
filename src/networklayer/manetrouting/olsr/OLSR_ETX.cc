@@ -71,8 +71,8 @@ Define_Module(OLSR_ETX);
 
 /********** Timers **********/
 
-void OLSR_ETX_LinkQualityTimer::expire() 
-{	
+void OLSR_ETX_LinkQualityTimer::expire()
+{
 	OLSR_ETX *agentaux = check_and_cast<OLSR_ETX *>(agent_);
 	agentaux->OLSR_ETX::link_quality();
 	agentaux->scheduleAt(simTime()+agentaux->hello_ival_,this);
@@ -86,7 +86,7 @@ void
 OLSR_ETX::initialize(int stage) {
 	if (stage==4)
 	{
-	
+
 	//
 	// Do some initializations
 		willingness_=par("Willingness");
@@ -195,14 +195,14 @@ OLSR_ETX::recv_olsr(cMessage* msg) {
 	assert(op->msgArraySize() >= 0 && op->msgArraySize() <= OLSR_MAX_MSGS);
 	for (int i = 0; i < (int) op->msgArraySize(); i++) {
 		OLSR_ETX_msg& msg = op->msg(i);
-		
+
 		// If ttl is less than or equal to zero, or
 		// the receiver is the same as the originator,
 		// the message must be silently dropped
 		// if (msg.ttl() <= 0 || msg.orig_addr() == ra_addr())
 		if (msg.ttl() <= 0 || isLocalAddress (msg.orig_addr()))
 			continue;
-		
+
 		// If the message has been processed it must not be
 		// processed again
 		bool do_forwarding = true;
@@ -235,7 +235,7 @@ OLSR_ETX::recv_olsr(cMessage* msg) {
 				}
 			}
 		}
-			
+
 		if (do_forwarding) {
 			// HELLO messages are never forwarded.
 			// TC and MID messages are forwarded using the default algorithm.
@@ -258,7 +258,7 @@ OLSR_ETX::recv_olsr(cMessage* msg) {
 		if (link_tuple)
 			link_tuple->link_delay_computation(op);
 	}
-	
+
   // After processing all OLSR_ETX messages, we must recompute routing table
 	switch (parameter_.routing_algorithm()) {
 		case OLSR_ETX_DIJKSTRA_ALGORITHM:
@@ -271,7 +271,7 @@ OLSR_ETX::recv_olsr(cMessage* msg) {
 		    	break;
 	}
 	delete op;
-	
+
 }
 
 ///
@@ -516,7 +516,7 @@ OLSR_ETX::olsr_r1_mpr_computation() {
 									max = nb_tuple;
 									max_r = r;
 								}
-							} 
+							}
 							else {
 								switch (parameter_.link_quality()) {
 									case OLSR_ETX_BEHAVIOR_ETX:
@@ -587,9 +587,9 @@ OLSR_ETX::olsr_r2_mpr_computation() {
   // Quality of Service Routing in Ad Hoc Networks Using OLSR
 
 	state_.clear_mprset();
-	
+
 	nbset_t N; nb2hopset_t N2;
-	
+
   // N is the subset of neighbors of the node, which are
   // neighbor "of the interface I"
 	for (nbset_t::iterator it = nbset().begin(); it != nbset().end(); it++)
@@ -649,7 +649,7 @@ OLSR_ETX::olsr_r2_mpr_computation() {
 			rs.insert(r);
 			reachability[r].push_back(nb_tuple);
 		}
-		
+
     // Add to Mi the node in N that has the best link to the current
     // node. In case of tie, select tin N2. Remove the nodes from N2
     // which are now covered by a node in the MPR set.
@@ -669,7 +669,7 @@ OLSR_ETX::olsr_r2_mpr_computation() {
 						OLSR_ETX_link_tuple *nb_link_tuple=NULL, *max_link_tuple=NULL;
 						OLSR_link_tuple *link_tuple_aux;
 						double now = CURRENT_TIME;
-						 
+
 						link_tuple_aux = state_.find_sym_link_tuple (nb_tuple->nb_main_addr(), now);
 						if (link_tuple_aux)
 						{
@@ -896,9 +896,9 @@ OLSR_ETX::qolsr_mpr_computation() {
 								if (!max_link_tuple)
 									opp_error("\n Error conversion link tuple");
 							}
-						
+
 							double current_total_etx, max_total_etx;
-							
+
 							switch (parameter_.link_quality()) {
 								case OLSR_ETX_BEHAVIOR_ETX:
 									current_total_etx = nb_link_tuple->etx() + nb2hop_tuple->etx();
@@ -918,7 +918,7 @@ OLSR_ETX::qolsr_mpr_computation() {
 										}
 									}
 									break;
-								
+
 								case OLSR_ETX_BEHAVIOR_ML:
 									current_total_etx = nb_link_tuple->etx() * nb2hop_tuple->etx();
 									max_total_etx = max_link_tuple->etx() * nb2hop_tuple->etx();
@@ -954,7 +954,7 @@ OLSR_ETX::qolsr_mpr_computation() {
 				}
 			}
 		}
-		
+
 		if (max != NULL) {
 			state_.insert_mpr_addr(max->nb_main_addr());
 			std::set<nsaddr_t> nb2hop_addrs;
@@ -1290,7 +1290,7 @@ OLSR_ETX::process_tc(OLSR_msg& msg, const nsaddr_t &sender_iface) {
 		if (!topology_tuple)
 			opp_error("\n error conversion Topology tuple");
 	}
-	
+
 	if (topology_tuple != NULL)
 		return;
 
@@ -1471,13 +1471,13 @@ OLSR_ETX::send_pkt() {
 				if (j == OLSR_ETX_MAX_MSGS)
 					break;
 				op1->setMsgArraySize(j+1);
-				op1->setMsg(j++,*it);			
-				
+				op1->setMsg(j++,*it);
+
         			if (i != 0)
 						op1->setByteLength(op1->getByteLength()+(*it).size());
         			else /* if (i == 0) */ {
 						op2->setMsgArraySize(j+1);
-						op2->setMsg(j++,*it);			
+						op2->setMsg(j++,*it);
 					}
 
 				it = msgs_.erase(it);
@@ -1486,13 +1486,13 @@ OLSR_ETX::send_pkt() {
 
       // Marking packet timestamp
 			op1->setSend_time(CURRENT_TIME);
-			if (i == 0) 
+			if (i == 0)
 				op2->setSend_time(op1->send_time());
       // Sending packet pair
 			sendToIp (op1, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,0);
-			if (i == 0) 
+			if (i == 0)
 				sendToIp (op2, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,0);
-		} 
+		}
 		else {
 			OLSR_pkt* op	= new OLSR_pkt;
 
@@ -1504,9 +1504,9 @@ OLSR_ETX::send_pkt() {
 					break;
 
 				op->setMsgArraySize(j+1);
-				op->setMsg(j++,*it);			
+				op->setMsg(j++,*it);
 				op->setByteLength(op->getByteLength()+(*it).size());
-			
+
 				it = msgs_.erase(it);
 			}
 			sendToIp (op, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,0);
@@ -1528,13 +1528,13 @@ OLSR_ETX::send_hello() {
 	msg.ttl()		= 1;
 	msg.hop_count()		= 0;
 	msg.msg_seq_num()	= msg_seq();
-	
+
 	msg.hello().reserved()		= 0;
 	msg.hello().htime()		= OLSR::seconds_to_emf(hello_ival());
 	msg.hello().willingness()	= willingness();
 	msg.hello().count		= 0;
-	
-	
+
+
 	std::map<uint8_t, int> linkcodes_count;
 	for (linkset_t::iterator it = linkset().begin(); it != linkset().end(); it++) {
 		OLSR_ETX_link_tuple* link_tuple = dynamic_cast<OLSR_ETX_link_tuple*>(*it);
@@ -1544,7 +1544,7 @@ OLSR_ETX::send_hello() {
 
 		if (link_tuple->local_iface_addr() == ra_addr() && link_tuple->time() >= now) {
 			uint8_t link_type, nb_type, link_code;
-			
+
 			// Establishes link type
 			if (use_mac() && link_tuple->lost_time() >= now)
 				link_type = OLSR_LOST_LINK;
@@ -1599,11 +1599,11 @@ OLSR_ETX::send_hello() {
 			}
 			else
 				count = (*pos).second;
-			
+
 			int i = msg.hello().hello_msg(count).count;
 			assert(count >= 0 && count < OLSR_MAX_HELLOS);
 			assert(i >= 0 && i < OLSR_MAX_ADDRS);
-			
+
 			msg.hello().hello_msg(count).nb_iface_addr(i) =
 				link_tuple->nb_iface_addr();
 
@@ -1632,9 +1632,9 @@ OLSR_ETX::send_hello() {
 
 		}
 	}
-	
+
 	msg.msg_size() = msg.size();
-	
+
 	enque_msg(msg, JITTER);
 }
 
@@ -1789,7 +1789,7 @@ OLSR_ETX::link_sensing
 	if (link_tuple == NULL) {
     // We have to create a new tuple
 		link_tuple = new OLSR_ETX_link_tuple;
-// Omnet 
+// Omnet
 		link_tuple->set_qos_behaviour(parameter_);
 		link_tuple->set_owner(this);
 //
@@ -2041,13 +2041,13 @@ OLSR_ETX::populate_nb2hopset(OLSR_msg& msg) {
 /// \brief Schedule the timer used for sending HELLO messages.
 ///
 // void OLSR::set_hello_timer() { from OLSR
-	
+
 
 ///
 /// \brief Schedule the timer used for sending TC messages.
 ///
 // void OLSR::set_tc_timer() { From OLSR
-	
+
 
 ///
 /// \brief Schedule the timer used for sending MID messages.
@@ -2118,7 +2118,7 @@ OLSR_ETX::nb_loss(OLSR_link_tuple* tuple) {
 /// \param tuple the duplicate tuple to be removed.
 ///
 // void OLSR::rm_dup_tuple(OLSR_dup_tuple* tuple) { From OLSR
-	
+
 
 ///
 /// \brief Adds a link tuple to the Link Set (and an associated neighbor tuple to the Neighbor Set).
@@ -2255,16 +2255,16 @@ OLSR_ETX::~OLSR_ETX()
 		state_ptr=state_etx_ptr = NULL;
 	}
 
-
-	mprset().clear();	
+/*
+	mprset().clear();
 	mprselset().clear();
-	linkset().clear();	
-	nbset().clear();	
+	linkset().clear();
+	nbset().clear();
 	nb2hopset().clear();
 	topologyset().clear();
 	dupset().clear();
 	ifaceassocset().clear();
-
+*/
 
 	if (&hello_timer_!=NULL)
 		cancelAndDelete(&hello_timer_);

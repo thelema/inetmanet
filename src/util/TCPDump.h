@@ -78,7 +78,7 @@ class TCPDumper
         void tcpDump(bool l2r, const char *label, TCPSegment *tcpseg, const std::string& srcAddr, const std::string& destAddr, const char *comment=NULL);
         void dumpIPv6(bool l2r, const char *label, IPv6Datagram_Base *dgram, const char *comment=NULL);//FIXME: Temporary hack
         void udpDump(bool l2r, const char *label, IPDatagram *dgram, const char *comment);
-        char* intToChunk(int32 type);
+        const char* intToChunk(int32 type);
         FILE *dumpfile;
 
 };

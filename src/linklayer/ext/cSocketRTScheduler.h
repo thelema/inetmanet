@@ -26,6 +26,10 @@
 #include "INETDefs.h"
 #include <omnetpp.h>
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__) || defined(_WIN64)
+#include <ws2tcpip.h> 
+#endif
+
 // prevent pcap.h to redefine int8_t,... types on Windows
 #include "bsdint.h"
 #define HAVE_U_INT8_T

@@ -239,7 +239,7 @@ DYMOUM::~ DYMOUM()
 		free(pos);
 	}
 
-	// cancelAndDelete(sendMessageEvent);
+	cancelAndDelete(sendMessageEvent);
     //log_cleanup();
 	if (gateWayAddress)
 		delete gateWayAddress;
@@ -883,7 +883,7 @@ void DYMOUM::processPromiscuous(const cPolymorphic *details)
 			gatewayAddr.s_addr = frame->getTransmitterAddress();
 		}
 
-		
+
 		entry = rtable_find(gatewayAddr);
 
 		if (entry)
@@ -915,11 +915,11 @@ void DYMOUM::processPromiscuous(const cPolymorphic *details)
 			//rtable_update_timeout(entry);
 			}
 		}
-		
+
 		/////////////////
 		//// endif  /////
 		/////////////////
-		
+
 #endif
 
 		// if rrep proccess the packet

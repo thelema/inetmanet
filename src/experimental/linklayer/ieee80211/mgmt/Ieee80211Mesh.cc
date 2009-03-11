@@ -132,18 +132,19 @@ void Ieee80211Mesh::initialize(int stage)
 void Ieee80211Mesh::handleMessage(cMessage *msg)
 {
 
-
     if (msg->isSelfMessage())
     {
         // process timers
         EV << "Timer expired: " << msg << "\n";
         handleTimer(msg);
-	return;
+        return;
     }
     cGate * msggate = msg->getArrivalGate();
-
+    char gateName [40];
+    memset(gateName,0,40);
+    strcpy(gateName,msggate->getBaseName());
     //if (msg->arrivedOn("macIn"))
-	if (!strcmp("macIn",msggate->getName()))
+	if (strstr(gateName,"macIn")!=NULL)
     {
         // process incoming frame
         EV << "Frame arrived from MAC: " << msg << "\n";
@@ -151,7 +152,7 @@ void Ieee80211Mesh::handleMessage(cMessage *msg)
         processFrame(frame);
     }
 	//else if (msg->arrivedOn("agentIn"))
-    else if (!strcmp("agentIn",msggate->getName()))
+    else if (strstr(gateName,"agentIn")!=NULL)
     {
         // process command from agent
         EV << "Command arrived from agent: " << msg << "\n";
@@ -161,7 +162,7 @@ void Ieee80211Mesh::handleMessage(cMessage *msg)
         handleCommand(msgkind, ctrl);
     }
     //else if (msg->arrivedOn("routingIn"))
-    else if (!strcmp("routingIn",msggate->getName()))
+    else if (strstr(gateName,"routingIn")!=NULL)
     {
         handleRoutingMessage(PK(msg));
     }
@@ -1668,6 +1669,6 @@ void Ieee80211Mesh::sendOut(cMessage *msg)
 	InterfaceEntry *ie = ift->getInterfaceById(msg->getKind());
 	msg->setKind(0);
 	//send(msg, macBaseGateId + ie->getNetworkLayerGateIndex());
-	send(msg, "macOut");
+	send(msg, "macOut",0);
 }
 

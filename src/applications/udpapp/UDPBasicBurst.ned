@@ -45,16 +45,16 @@ simple UDPBasicBurst like UDPApp
         int localPort;
         int destPort;
         volatile int messageLength @unit("B"); //  length of messages to generate, in bytes
-        volatile double messageFreq @unit("s"); // should usually be a random value, e.g. exponential(1)
+        volatile double messageFreq @unit("s"); // should usually be a random value, e.g. exponential(1), if -1 the application is a sink
         volatile double message_freq_jitter @unit("s"); // should usually be a random value, e.g. uniform(-0.001,0.001)
-        string destAddresses; // list of \IP addresses, separated by spaces
+        string destAddresses; // list of \IP addresses, separated by spaces, it's admit the macros radom("node type") and random_name("node name")
         volatile double time_off @unit("s");  // time without transmision
         volatile double burstDuration @unit("s");  // burst duration time
-        bool activeBurst;
-        double time_end @unit("s"); // 
+        bool activeBurst; // if false the address is selected in the begining and never change
+        double time_end @unit("s"); // time of the last transmision packet 
         double time_begin @unit("s");// begin transmission time
-        int rand_generator;// begin transmi sion time
-        double limitDelay @unit("s"); 
+        int rand_generator;// ID random generator
+        double limitDelay @unit("s"); // maximun delay for a packet, every packet with bigger delay is delete and lost
         
     gates:
         input udpIn;

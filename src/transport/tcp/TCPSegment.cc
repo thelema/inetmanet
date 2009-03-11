@@ -53,15 +53,6 @@ void TCPSegment::parsimUnpack(cCommBuffer *b)
     doUnpacking(b, payloadList);
 }
 
-TCPSegment::~TCPSegment()
-{
-    while (!payloadList.empty())
-    {
-       cPacket *msg = payloadList.front().msg;
-       payloadList.pop_front();
-       dropAndDelete(msg);
-    }
-}
 
 void TCPSegment::setPayloadArraySize(unsigned int size)
 {

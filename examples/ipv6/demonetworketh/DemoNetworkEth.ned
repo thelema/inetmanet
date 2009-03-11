@@ -45,8 +45,12 @@ network DemoNetworkEth
         linemonitor[n]: TCPDump;
     connections:
         for i=0..n-1 {
-            cli[i].ethg++ <--> ethernetline <--> linemonitor[i].a;
-            linemonitor[i].b <--> ethernetline <--> r1.ethg++;
+            cli[i].ethg$o++ -->ethernetline -->linemonitor[i].ifIn++;
+            cli[i].ethg$i++ <--ethernetline <--linemonitor[i].ifOut++;
+//            cli[i].ethg++ <--> ethernetline <--> linemonitor[i].a;
+//            linemonitor[i].b <--> ethernetline <--> r1.ethg++;
+            linemonitor[i].in2++ <-- ethernetline <-- r1.ethg$o++;
+            linemonitor[i].out2++ --> ethernetline --> r1.ethg$i++;
             //cli[i].ethg++ <--> ethernetline <--> r1.ethg++;
             srv[i].ethg++ <--> ethernetline <--> r2.ethg++;
         }
