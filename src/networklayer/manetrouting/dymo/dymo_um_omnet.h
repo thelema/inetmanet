@@ -132,7 +132,7 @@ private:
 
 	};
 
-
+	cMessage messageEvent;
 
 	typedef std::map<mac_address, unsigned int> MacToIpAddress;
 
@@ -190,7 +190,7 @@ private:
 public:
 	static int  log_file_fd;
 	static bool log_file_fd_init;
-	DYMOUM(){attachPacket=false; is_init =false; log_file_fd_init=false;ipNodeId=NULL;gateWayAddress=NULL;numInterfacesActive=0;timer_elem=0;}
+	DYMOUM(){attachPacket=false; is_init =false; log_file_fd_init=false;ipNodeId=NULL;gateWayAddress=NULL;numInterfacesActive=0;timer_elem=0;sendMessageEvent = &messageEvent;}
 	~DYMOUM();
 	void packetFailed(IPDatagram *);
 	virtual std::string detailedInfo() const;

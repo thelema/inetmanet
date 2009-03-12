@@ -378,7 +378,7 @@ static void aodv_socket_read(int fd)
 void NS_CLASS aodv_socket_send(AODV_msg * aodv_msg, struct in_addr dst,
 				   int len, u_int8_t ttl, struct dev_info *dev)
 {
-	int retval = 0;
+
 	struct timeval now;
 	/* Rate limit stuff: */
 

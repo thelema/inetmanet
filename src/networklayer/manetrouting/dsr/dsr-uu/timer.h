@@ -148,7 +148,7 @@ class DSRUUTimer:public cOwnedObject {
 	void setOwer(cOwnedObject *owner_) {
 		a_ = (DSRUU*) owner_;
 	}
-	DSRUUTimer(DSRUU * a, char *name):cOwnedObject(name) {
+	DSRUUTimer(DSRUU * a, const char *name):cOwnedObject(name) {
 		a_ = a;
 	}
 	void init(simtime_t expires_, fct_t fct_, unsigned long data_) {

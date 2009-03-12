@@ -96,7 +96,7 @@ void NS_CLASS initialize(int stage)
 		debug=0;
 		rreq_gratuitous =0;
 
-		sendMessageEvent = new cMessage();
+		//sendMessageEvent = new cMessage();
 
 		if ((bool)par("log_to_file"))
 			log_to_file = 1;
@@ -252,14 +252,14 @@ NS_CLASS ~ AODVUU()
 		if (pos) free(pos);
 	}
 
-	while (!list_empty(&rreq_blacklist)) 
+	while (!list_empty(&rreq_blacklist))
 	{
 		pos = list_first(&rreq_blacklist);
 		list_detach(pos);
 		if (pos) free(pos);
 	}
 
-	while (!list_empty(&seekhead)) 
+	while (!list_empty(&seekhead))
 	{
 		pos = list_first(&seekhead);
 		list_detach(pos);

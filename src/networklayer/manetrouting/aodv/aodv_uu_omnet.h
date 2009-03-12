@@ -109,11 +109,12 @@ class AODVUU : public ManetRoutingBase {
 
 	char nodeName[50];
 	ICMPAccess icmpAccess;
+	cMessage  messageEvent;
 
  public:
 	static int  log_file_fd;
 	static bool log_file_fd_init;
-	AODVUU(){is_init =false; log_file_fd_init=false;}
+	AODVUU(){is_init =false; log_file_fd_init=false;sendMessageEvent = &messageEvent;}
 	~AODVUU();
 
 	void packetFailed(IPDatagram *p);
@@ -123,6 +124,7 @@ class AODVUU : public ManetRoutingBase {
 	virtual bool getNextHop(const Uint128 &,Uint128 &add,int &iface);
 	virtual bool isProactive();
 	virtual void setRefreshRoute(const Uint128 &,const Uint128 &,const Uint128 &,const Uint128&);
+
 
  protected:
 	bool is_init;
@@ -139,6 +141,7 @@ class AODVUU : public ManetRoutingBase {
 
 	int numInitStages() const  {return 5;}
 	void initialize(int stage);
+
 
 	cMessage * sendMessageEvent;
 

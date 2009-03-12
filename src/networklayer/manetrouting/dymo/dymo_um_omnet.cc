@@ -239,7 +239,7 @@ DYMOUM::~ DYMOUM()
 		free(pos);
 	}
 
-	cancelAndDelete(sendMessageEvent);
+	//cancelAndDelete(sendMessageEvent);
     //log_cleanup();
 	if (gateWayAddress)
 		delete gateWayAddress;
