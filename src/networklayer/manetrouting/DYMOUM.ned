@@ -21,6 +21,7 @@ simple DYMOUM
         bool intermediateRREP= default(false); // experimental
         bool RREQattachPacket= default(false); // experimental
         volatile double broadCastDelay @unit("s") = default (uniform(0s,0.005s));
+        volatile double uniCastDelay @unit("s") = default (0s);
 
     gates:
         input from_ip;

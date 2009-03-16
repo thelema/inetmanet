@@ -78,7 +78,7 @@ void DYMOUM::initialize(int stage)
 	if (stage==4)
 	{
 
-		sendMessageEvent = new cMessage();
+		//sendMessageEvent = new cMessage();
 		PromiscOperation = true;
 
 	/* From main.c */

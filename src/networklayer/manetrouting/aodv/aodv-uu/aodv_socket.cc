@@ -581,12 +581,12 @@ void NS_CLASS aodv_socket_send(AODV_msg * aodv_msg, struct in_addr dst,
 	    if (dst.s_addr == AODV_BROADCAST)
 		{
 			destAdd = IPAddress::ALLONES_ADDRESS;
-			sendToIp(aodv_msg, 654, destAdd, 654,ttl,  par ("broadCastDelay"),dev->ipaddr.s_addr);
+			sendToIp(aodv_msg, 654, destAdd, 654,ttl,par("broadCastDelay"),dev->ipaddr.s_addr);
 		}
 		else
 		{
 			destAdd = dst.s_addr;
-			sendToIp(aodv_msg, 654, destAdd, 654,ttl,dev->ipaddr.s_addr);
+			sendToIp(aodv_msg, 654, destAdd, 654,ttl,par("uniCastDelay"),dev->ipaddr.s_addr);
 		}
 		totalSend++;
 #endif

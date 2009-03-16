@@ -49,14 +49,14 @@ struct iphdr *DSRUU::dsr_build_ip(struct dsr_pkt *dp, struct in_addr src,
 	struct iphdr *iph;
 
 	dp->nh.iph = iph = (struct iphdr *)dp->ip_data;
-	
-	if (dp->payload) 
+
+	if (dp->payload)
 	{
 		iph->ttl = (ttl ? ttl : IPDEFTTL);
 		iph->saddr = src.s_addr;
 		iph->daddr = dst.s_addr;
 	}
-	else 
+	else
 	{
 		iph->version = 4;//IPVERSION;
 		iph->ihl = 5;
@@ -67,7 +67,7 @@ struct iphdr *DSRUU::dsr_build_ip(struct dsr_pkt *dp, struct in_addr src,
 		iph->saddr = src.s_addr;
 		iph->daddr = dst.s_addr;
 	}
-	
+
 	iph->tot_len = htons(tot_len);
 	iph->protocol = protocol;
 	return iph;
@@ -78,10 +78,10 @@ struct iphdr *DSRUU::dsr_build_ip(struct dsr_pkt *dp, struct in_addr src,
 void DSRUU::omnet_xmit(struct dsr_pkt *dp)
 {
 	DSRPkt *p;
-	
+
 	double jitter = 0;
 
- 	if (dp->flags & PKT_REQUEST_ACK)	
+ 	if (dp->flags & PKT_REQUEST_ACK)
  		maint_buf_add(dp);
 	if (dp->ip_pkt)
 	{
@@ -94,14 +94,14 @@ void DSRUU::omnet_xmit(struct dsr_pkt *dp)
 
 	if (!p) {
 		DEBUG("Could not create packet\n");
-		if (dp->payload) 
+		if (dp->payload)
 			drop(dp->payload, ICMP_DESTINATION_UNREACHABLE);
 		dp->payload = NULL;
 		dsr_pkt_free(dp);
 		return;
-	}	
+	}
 
-    
+
 	/* If TTL = 0, drop packet */
 	if (p->getTimeToLive() <= 0) {
 		DEBUG("Dropping packet with TTL = 0.");
@@ -111,7 +111,7 @@ void DSRUU::omnet_xmit(struct dsr_pkt *dp)
 		return;
 	}
 
-	DEBUG("xmitting pkt src=%d dst=%d nxt_hop=%d\n", 
+	DEBUG("xmitting pkt src=%d dst=%d nxt_hop=%d\n",
 	      (uint32_t)dp->src.s_addr, (uint32_t)dp->dst.s_addr, (uint32_t)dp->nxt_hop.s_addr);
 
 	/* Set packet fields depending on packet type */
@@ -119,7 +119,7 @@ void DSRUU::omnet_xmit(struct dsr_pkt *dp)
 		/* Broadcast packet */
 		jitter = uniform(0, ((double) ConfVal(BroadCastJitter))/1000);
 		DEBUG("xmit jitter=%f s\n", jitter);
-	}		
+	}
 
 	if (dp->dst.s_addr != DSR_BROADCAST)
 	{
@@ -146,7 +146,7 @@ void DSRUU::omnet_xmit(struct dsr_pkt *dp)
 	/*
 	if (!ConfVal(UseNetworkLayerAck)) {
 		cmh->xmit_failure_ = xmit_failure;
-		cmh->xmit_failure_data_ = (void *) this;		
+		cmh->xmit_failure_data_ = (void *) this;
 	}
 	*/
 #ifdef MobilityFramework
@@ -159,7 +159,7 @@ void DSRUU::omnet_xmit(struct dsr_pkt *dp)
 		sendDelayed(p,jitter, "toIp");
 	else
 		if (dp->dst.s_addr != DSR_BROADCAST)
-			send(p,"toIp");
+			sendDelayed(p,par("uniCastDelay"),"toIp");
 		else
 			sendDelayed(p,par ("broadCastDelay"), "toIp");
  	dp->payload = NULL;
@@ -200,7 +200,7 @@ void DSRUU::omnet_deliver(struct dsr_pkt *dp)
 	dgram->setHeaderLength(dp->nh.iph->ihl); // Header length
 	dgram->setVersion(dp->nh.iph->version); // Ip version
 	dgram->setDiffServCodePoint(dp->nh.iph->tos); // ToS
-	dgram->setIdentification(dp->nh.iph->id); // Identification 
+	dgram->setIdentification(dp->nh.iph->id); // Identification
 	dgram->setMoreFragments(dp->nh.iph->tos & 0x2000);
 	dgram->setDontFragment (dp->nh.iph->frag_off & 0x4000);
 	dgram->setTimeToLive (dp->nh.iph->ttl); // TTL
@@ -214,7 +214,7 @@ void DSRUU::omnet_deliver(struct dsr_pkt *dp)
 }
 
 
-void  DSRUUTimer::resched(double delay) 
+void  DSRUUTimer::resched(double delay)
 {
 	if (msgtimer.isScheduled())
 		a_->cSimpleModule::cancelEvent(&msgtimer);
@@ -244,7 +244,7 @@ void DSRUU::initialize (int stage)
 		confvals[PromiscOperation] = 0;
 		confvals[UseNetworkLayerAck] = 0;
 		confvals[UseNetworkLayerAck] = 0;
-		
+
 		if (par("PrintDebug"))
 			confvals[PrintDebug]= 1;
 		if (par("FlushLinkCache"))
@@ -293,7 +293,7 @@ void DSRUU::initialize (int stage)
 		aux_var=par("MaxMaintRexmt");
 		if (aux_var!=-1)
 			confvals[MaxMaintRexmt] = par("MaxMaintRexmt");
-		
+
 		if (par("TryPassiveAcks"))
 			confvals[TryPassiveAcks] = 1;
 		else
@@ -312,14 +312,14 @@ void DSRUU::initialize (int stage)
 
 		lifo_token=par("LifoSize");
 		if (par("PathCache"))
-			confvals[PathCache] = 1; 
+			confvals[PathCache] = 1;
 		else
-			confvals[PathCache] = 0; 
+			confvals[PathCache] = 0;
 
 		if (par("RetryPacket"))
-			confvals[RetryPacket] = 1; 
+			confvals[RetryPacket] = 1;
 		else
-			confvals[RetryPacket] = 0; 
+			confvals[RetryPacket] = 0;
 
 		aux_var=par("RREQMaxVisit");
 
@@ -334,7 +334,7 @@ void DSRUU::initialize (int stage)
 			confvals[RREQMulVisit] = 1;
 		else
 			confvals[RREQMulVisit] = 0;
-	
+
 	/* Default values specific to simulation */
 		set_confval(PrintDebug, 1);
 
@@ -419,7 +419,7 @@ void DSRUU::initialize (int stage)
 			etxWindow=0;
 			etxSize=100; // Minimun length
 		}
-#ifndef MobilityFramework		
+#ifndef MobilityFramework
 		myaddr_.s_addr = interface80211ptr->ipv4Data()->getIPAddress().getInt();
 		macaddr_ = interface80211ptr->getMacAddress();
 		nb = NotificationBoardAccess().get();
@@ -511,9 +511,9 @@ void DSRUU::handleTimer(cMessage* msg)
 			return;
 		else if (neigh_tbl_timer.testAndExcute(msg))
 			return;
-		else if (lc_timer.testAndExcute(msg)) 
+		else if (lc_timer.testAndExcute(msg))
 			return;
-		else if (etx_timer.testAndExcute(msg)) 
+		else if (etx_timer.testAndExcute(msg))
 			return;
 		else
 		{
@@ -529,27 +529,27 @@ void DSRUU::defaultProcess (cMessage *ipDgram)
 	int protocol = dp->nh.iph->protocol;
 	switch (protocol) {
 	case IP_PROT_DSR:
-		if (dp->src.s_addr != myaddr_.s_addr) 
+		if (dp->src.s_addr != myaddr_.s_addr)
 		{
 			dsr_recv(dp);
-		} 
-		else 
+		}
+		else
 		{
 			dsr_pkt_free(dp);
 // 			DEBUG("Locally generated DSR packet\n");
 		}
 		break;
 	default:
-		if (dp->src.s_addr == myaddr_.s_addr) 
+		if (dp->src.s_addr == myaddr_.s_addr)
 		{
 			dp->payload_len += IP_HDR_LEN;
 			DEBUG("Local packet without DSR header\n");
 			dsr_start_xmit(dp);
-		} 
-		else 
+		}
+		else
 		{
 			// This shouldn't really happen ?
-			DEBUG("Data packet from %s without DSR header!n", 
+			DEBUG("Data packet from %s without DSR header!n",
 			      print_ip(dp->src));
 			dsr_pkt_free(dp);
 		}
@@ -564,12 +564,12 @@ void DSRUU::handleMessage(cMessage* msg)
 		opp_error ("Dsr has not been initialized ");
 
 	//current_time =simTime();
-	if (msg->isSelfMessage()) 
+	if (msg->isSelfMessage())
 	{// Timer msg
 		handleTimer(msg);
 		return;
 	}
-#ifndef MobilityFramework	
+#ifndef MobilityFramework
 	/* Control Message decapsulate */
 	if (dynamic_cast<ControlManetRouting *>(msg)){
 		ControlManetRouting * control =  check_and_cast <ControlManetRouting *> (msg);
@@ -602,7 +602,7 @@ void DSRUU::handleMessage(cMessage* msg)
 		return;
 	}
 #endif
-// Ext messge 
+// Ext messge
 	if (dynamic_cast<DSRPktExt*>(msg))
 	{
 		EtxMsgProc(msg);
@@ -614,8 +614,8 @@ void DSRUU::handleMessage(cMessage* msg)
 	if (dynamic_cast<IPDatagram *>(msg))
 	{
 	 	ipDgram=dynamic_cast<IPDatagram *>(msg);
-	} 
-	else 
+	}
+	else
 	{
 		opp_error ("DSR has recived not supported packet");
 	}
@@ -624,14 +624,14 @@ void DSRUU::handleMessage(cMessage* msg)
 		ipDgram->setSrcAddress(interface80211ptr->ipv4Data()->getIPAddress());
 #else
 	NetwPkt * ipDgram=NULL;
-	
+
 	if (dynamic_cast<NetwPkt *>(msg))
 	{
 	 	ipDgram=dynamic_cast<NetwPkt *>(msg);
 		int ttl = ipDgram->getTtl()-1;
 // Check Ttl (Dsr is network layer
 		bool forUs = ((unsigned)ipDgram->getDestAddr() == my_addr().s_addr ||  (ipDgram->getDestAddr() ==L3BROADCAST));
-		if (ttl<=0 ) 
+		if (ttl<=0 )
 		{
 			if (!forUs)
 			{
@@ -646,7 +646,7 @@ void DSRUU::handleMessage(cMessage* msg)
 		MacControlInfo* cInfo = static_cast<MacControlInfo*>(ipDgram->removeControlInfo());
 		if (cInfo)
 			delete cInfo;
-	} 
+	}
 	else
 	{
 		// application message
@@ -676,7 +676,7 @@ void DSRUU::handleMessage(cMessage* msg)
 		}
   	}
 // This node is the destination or is broadcast and not the source send up
-	bool forUs  = ((unsigned)ipDgram->getDestAddr()== my_addr().s_addr) || 
+	bool forUs  = ((unsigned)ipDgram->getDestAddr()== my_addr().s_addr) ||
 		((unsigned) ipDgram->getSrcAddr() != my_addr().s_addr && ipDgram->getDestAddr()==L3BROADCAST);
 	if (forUs && ipDgram->getTransportProtocol()!=IP_PROT_DSR)
 	{
@@ -686,7 +686,7 @@ void DSRUU::handleMessage(cMessage* msg)
 		return;
 	}
 #endif
-   // Process a Dsr message 
+   // Process a Dsr message
 	defaultProcess(ipDgram);
 	return;
 }
@@ -702,7 +702,7 @@ void DSRUU::receiveBBItem(int category, const BBItem *details, int scopeModuleId
 			cMessage *msg = static_cast<const MessagePromiscuous *> (details)->getMessage();
 			if (!msg)
 				return;
-			if (dynamic_cast<DSRPkt *>(msg)) 
+			if (dynamic_cast<DSRPkt *>(msg))
 			{
 				DSRPkt *paux = check_and_cast <DSRPkt *> (msg);
 				DSRPkt *p = check_and_cast <DSRPkt *> (paux->dup());
@@ -713,7 +713,7 @@ void DSRUU::receiveBBItem(int category, const BBItem *details, int scopeModuleId
 					ctrl->setDest(frame->getReceiverAddress());
 					p->setControlInfo(ctrl);
 					*/
-				tap(p);			
+				tap(p);
 			}
 		}
     }
@@ -727,11 +727,11 @@ void DSRUU::receiveChangeNotification(int category, const cPolymorphic *details)
 
     if (details==NULL)
         return;
-	
+
     if (category == NF_LINK_BREAK)
     {
 		Enter_Method("Dsr Link Break");
-		if (dynamic_cast<IPDatagram *>(const_cast<cPolymorphic*>(details))) 
+		if (dynamic_cast<IPDatagram *>(const_cast<cPolymorphic*>(details)))
 			dgram = check_and_cast<IPDatagram *>(details);
 		else
 			return;
@@ -739,18 +739,18 @@ void DSRUU::receiveChangeNotification(int category, const cPolymorphic *details)
 		{
 			packetFailed(dgram);
 		}
-    } 
+    }
     else if (category == NF_LINK_PROMISCUOUS)
     {
 		if (get_confval(PromiscOperation))
 		{
 			Enter_Method("Dsr promisc");
 
-			if (dynamic_cast<Ieee80211DataFrame *>(const_cast<cPolymorphic*>(details))) 
+			if (dynamic_cast<Ieee80211DataFrame *>(const_cast<cPolymorphic*>(details)))
 			{
 				Ieee80211DataFrame *frame  = check_and_cast<Ieee80211DataFrame *>(details);
 				if (dynamic_cast<DSRPkt *>(frame->getEncapsulatedMsg())){
-					
+
 					DSRPkt *paux = check_and_cast <DSRPkt *> (frame->getEncapsulatedMsg());
 					DSRPkt *p = check_and_cast <DSRPkt *> (paux->dup());
 					take (p);
@@ -761,7 +761,7 @@ void DSRUU::receiveChangeNotification(int category, const cPolymorphic *details)
 					ctrl->setSrc(frame->getTransmitterAddress());
 					ctrl->setDest(frame->getReceiverAddress());
 					p->setControlInfo(ctrl);
-					tap(p);			
+					tap(p);
 				}
 			}
 		}
@@ -795,7 +795,7 @@ void DSRUU::packetFailed(IPDatagram *ipDgram)
 #endif
 
 	DSRPkt *p =NULL;
-	
+
 	if (dynamic_cast<DSRPkt *>(ipDgram))
 	{
 		p = check_and_cast <DSRPkt *> (ipDgram->dup());
@@ -809,19 +809,19 @@ void DSRUU::packetFailed(IPDatagram *ipDgram)
 		nxt_hop.s_addr = p->nextAddress().getInt();
 #endif
 		DEBUG("Xmit failure for %s nxt_hop=%s\n",print_ip(dst), print_ip(nxt_hop));
-		
+
 		if (ConfVal(PathCache))
 			ph_srt_delete_link(my_addr(), nxt_hop);
 		else
 			lc_link_del(my_addr(), nxt_hop);
 
 		dp = dsr_pkt_alloc(p);
-		if (!dp) 
+		if (!dp)
 		{
 			DEBUG("Could not allocate DSR packet\n");
 			drop(p, ICMP_DESTINATION_UNREACHABLE);
-		} 
-		else 
+		}
+		else
 		{
 			dsr_rerr_send(dp, nxt_hop);
 			dp->nxt_hop = nxt_hop;
@@ -829,19 +829,19 @@ void DSRUU::packetFailed(IPDatagram *ipDgram)
 		}
 	/* Salvage the other packets still in the interface queue with the same
 	 * next hop */
-/* mac access 
+/* mac access
 	while ((qp = ifq_->prq_get_nexthop(cmh->next_hop()))) {
-		
+
 		dp = dsr_pkt_alloc(qp);
-		
+
 		if (!dp) {
 			drop(qp, ICMP_DESTINATION_UNREACHABLE);
 			continue;
 		}
-		
+
 		dp->nxt_hop = nxt_hop;
-		
-		maint_buf_salvage(dp);			
+
+		maint_buf_salvage(dp);
 	}
 */
 		return;
@@ -856,7 +856,7 @@ void DSRUU::linkFailed(IPAddress ipAdd)
 	struct in_addr nxt_hop;
 
 	/* Cast the packet so that we can touch it */
-#ifndef MobilityFramework	
+#ifndef MobilityFramework
 	nxt_hop.s_addr=ipAdd.getInt();
 #else
 	nxt_hop.s_addr=ipAdd;
@@ -878,7 +878,7 @@ void DSRUU::tap(DSRPkt *p)
 	int transportProtocol;
 
 	/* Cast the packet so that we can touch it */
-	
+
 
 	/* Do nothing for my own packets... */
 #ifdef MobilityFramework
@@ -907,7 +907,7 @@ void DSRUU::tap(DSRPkt *p)
 		break;
 	default:
 		// This shouldn't really happen ?
-		DEBUG("Data packet from %s without DSR header!n", 
+		DEBUG("Data packet from %s without DSR header!n",
 		      print_ip(dp->src));
 		dsr_pkt_free(dp);
 	}
@@ -916,19 +916,19 @@ void DSRUU::tap(DSRPkt *p)
 
 
 
-struct dsr_srt *DSRUU:: RouteFind(struct in_addr src, struct in_addr dst) 
+struct dsr_srt *DSRUU:: RouteFind(struct in_addr src, struct in_addr dst)
 {
 	if (ConfVal(PathCache))
-		return ph_srt_find(src,dst,0,ConfValToUsecs(RouteCacheTimeout)); 
+		return ph_srt_find(src,dst,0,ConfValToUsecs(RouteCacheTimeout));
 	else
 		return lc_srt_find(src,dst);
-	
+
 }
 
 int DSRUU::RouteAdd(struct dsr_srt *srt, unsigned long timeout,unsigned short flags)
 {
-	
-	
+
+
 	if (ConfVal(PathCache))
 	{
 		ph_srt_add(srt,timeout,flags);
@@ -970,7 +970,7 @@ void DSRUU::EtxMsgSend(unsigned long data)
 	simtime_t time = simTime();
 	while (iter != iter2)
 	{
-		// remove old data 
+		// remove old data
 		ETXEntry *entry = (*iter).second;
 		if (simTime()-entry->time>(etxWindowSize*1.5))
 		{
@@ -999,7 +999,7 @@ void DSRUU::EtxMsgSend(unsigned long data)
 		int num_win = static_cast<int> (etxWindow/etxWindowSize);
 		double interval;
 		interval = SIMTIME_DBL(time) - (num_win*etxWindowSize);
-		
+
 		if (interval<0)
 			interval =0;
 		double delivery=0;
@@ -1021,7 +1021,7 @@ void DSRUU::EtxMsgSend(unsigned long data)
 		}
 		else
 		{
-			// delete 
+			// delete
 			int aux=0;
 			for (int i=1;i<10;i++)
 			{
@@ -1045,7 +1045,7 @@ void DSRUU::EtxMsgSend(unsigned long data)
 
 	if (msg->getByteLength()<etxSize)
 		msg->setByteLength(etxSize);
-	
+
 	sendDelayed(msg,uniform(0,extJitter), "toIp");
 
 	etxWindow+=etxTime;
@@ -1074,7 +1074,7 @@ void DSRUU::EtxMsgProc(cMessage *m)
 	IPAddress myAddress = myaddr_.s_addr;
 	IPAddress srcAddress = msg->getSrcAddr();
 #endif
-	
+
 	for (int i = 0;i<size;i++)
 	{
 		if (list[i].address==myAddress)
@@ -1162,7 +1162,7 @@ void DSRUU::ExpandCost(struct dsr_pkt *dp)
 {
 	EtxCost  * costVector;
 	struct in_addr myAddr;
-	
+
 	if(!etxActive)
 	{
 		if (dp->costVectorSize>0)
@@ -1178,7 +1178,7 @@ void DSRUU::ExpandCost(struct dsr_pkt *dp)
 #else
 	IPAddress myAddress =myAddr.s_addr;
 #endif
-	
+
 	if (dp->costVectorSize==0 && dp->src.s_addr!=myAddr.s_addr)
 	{
 		dp->costVectorSize++;

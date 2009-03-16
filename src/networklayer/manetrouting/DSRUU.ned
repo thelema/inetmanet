@@ -37,6 +37,7 @@ simple DSRUU
         int ETXRetryBeforeFail= default(-1); // if !=-1 use the etx how hello to detect break links, 
 					     // if don't receive consecutive ETXRetryBeforeFail number detect link break   
 	   volatile double broadCastDelay @unit("s") = default (uniform(0s,0.005s));
+	   volatile double uniCastDelay @unit("s") = default (0s);
 
     gates:
         input fromIp;
