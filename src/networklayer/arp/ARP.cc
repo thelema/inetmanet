@@ -71,7 +71,7 @@ void ARP::initialize(int stage)
        WATCH_PTRMAP(arpCache);
        WATCH_PTRMAP(globalArpCache);
 
-// initialize global cache 
+// initialize global cache
        for (int i=0;i<ift->getNumInterfaces();i++)
        {
            InterfaceEntry *ie = ift->getInterface(i);
@@ -159,7 +159,8 @@ void ARP::processOutboundPacket(cMessage *msg)
     if (!ie->isBroadcast())
     {
         EV << "output interface " << ie->getName() << " is not broadcast, skipping ARP\n";
-        send(msg, nicOutBaseGateId + ie->getNetworkLayerGateIndex());
+        // send(msg, nicOutBaseGateId + ie->getNetworkLayerGateIndex());
+        sendDirect(msg, getParentModule(), "ifOut", ie->getNetworkLayerGateIndex());
         return;
     }
 
@@ -185,7 +186,7 @@ void ARP::processOutboundPacket(cMessage *msg)
     // more than one host group address may map to the same Ethernet multicast
     // address."
     //
-    
+
 
     //    if (nextHopAddr.isMulticast())
     if (nextHopAddr.isMulticast() || nextHopAddr == IPAddress::ALLONES_ADDRESS) // also include all nodes
@@ -292,7 +293,9 @@ void ARP::sendPacketToNIC(cMessage *msg, InterfaceEntry *ie, const MACAddress& m
     msg->setControlInfo(controlInfo);
 
     // send out
-    send(msg, nicOutBaseGateId + ie->getNetworkLayerGateIndex());
+    // send(msg, nicOutBaseGateId + ie->getNetworkLayerGateIndex());
+    sendDirect(msg, getParentModule(), "ifOut",
+                                  ie->getNetworkLayerGateIndex());
 }
 
 void ARP::sendARPRequest(InterfaceEntry *ie, IPAddress ipAddress)

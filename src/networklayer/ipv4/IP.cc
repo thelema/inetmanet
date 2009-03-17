@@ -675,7 +675,13 @@ void IP::sendDatagramToOutput(IPDatagram *datagram, InterfaceEntry *ie, IPAddres
         icmpAccess.get()->sendErrorMessage(datagram, ICMP_TIME_EXCEEDED, 0);
         return;
     }
+    if (!ie->isBroadcast())
+    {
+        EV << "output interface " << ie->getName() << " is not broadcast, skipping ARP\n";
+        sendDirect(datagram, getParentModule(), "ifOut",
+                            ie->getNetworkLayerGateIndex());
 
+    } else {
     // send out datagram to ARP, with control info attached
     IPRoutingDecision *routingDecision = new IPRoutingDecision();
     routingDecision->setInterfaceId(ie->getInterfaceId());
@@ -683,6 +689,8 @@ void IP::sendDatagramToOutput(IPDatagram *datagram, InterfaceEntry *ie, IPAddres
     datagram->setControlInfo(routingDecision);
 
     send(datagram, queueOutGate);
+}
+
 }
 
 void IP::controlMessageToManetRouting(int code,IPDatagram *datagram)

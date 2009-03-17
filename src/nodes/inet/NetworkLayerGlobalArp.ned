@@ -121,7 +121,7 @@ module NetworkLayerGlobalArp
         // L2 interfaces to IP and from ARP
         for i=0..sizeof(ifOut)-1 {
             ifIn[i] --> { @display("m=s"); } --> ip.queueIn[i];
-            ifOut[i] <-- { @display("m=s"); } <-- arp.nicOut[i];
+ //           ifOut[i] <-- { @display("m=s"); } <-- arp.nicOut[i];
         }
 }
 
