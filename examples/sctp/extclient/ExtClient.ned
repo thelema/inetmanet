@@ -35,12 +35,9 @@ network ExtClient {
             parameters:
                 IPForward = false;
                 routingFile = "cli1d.mrt";
-                numExtInterfaces = 1;
                 @display("p=29,90;i=laptop3");
-	}
+            gates:
+                extg[1];
+       }
     connections allowunconnected:
-	
 }
-
-
-
