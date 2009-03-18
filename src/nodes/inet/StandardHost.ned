@@ -45,18 +45,18 @@ module StandardHost
         @node();
         int numTcpApps = default(0);
         int numUdpApps = default(0);
-    int numSctpApps = default(0);   //I.R.
+        int numSctpApps = default(0);   //I.R.
         string tcpAppType = default("n/a");
         string udpAppType = default("n/a");
-    string sctpAppType = default("n/a");    //I.R.
+        string sctpAppType = default("n/a");    //I.R.
         bool IPForward = default(false);
         int namid = default(-1);
         string routingFile = default("");
-        int numExtInterfaces = default(0);
         @display("i=device/pc2");
     gates:
         inout pppg[];
         inout ethg[];
+        inout extg[];
     submodules:
         namTrace: NAMTraceWriter {
             parameters:
@@ -94,11 +94,11 @@ module StandardHost
             parameters:
                 @display("p=272,154");
         }
-    sctpApp[numSctpApps]: <sctpAppType> like SCTPApp {  //I.R.
+        sctpApp[numSctpApps]: <sctpAppType> like SCTPApp {  //I.R.
             parameters:
                 @display("p=385,85");
         }
-    sctp: SCTP {    //I.R.
+        sctp: SCTP {    //I.R.
             @display("p=382,170;i=block/wheelbarrow");
         }
         pingApp: PingApp {
@@ -110,8 +110,8 @@ module StandardHost
                 proxyARP = false;
                 @display("p=248,247;q=queue");
             gates:
-                ifIn[sizeof(pppg)+sizeof(ethg)+numExtInterfaces];   //I.R.
-                ifOut[sizeof(pppg)+sizeof(ethg)+numExtInterfaces];
+                ifIn[sizeof(pppg)+sizeof(ethg)+sizeof(extg)];   //I.R.
+                ifOut[sizeof(pppg)+sizeof(ethg)+sizeof(extg)];
         }
         ppp[sizeof(pppg)]: PPPInterface {
             parameters:
@@ -121,18 +121,18 @@ module StandardHost
             parameters:
                 @display("p=240,350,row,90;q=txQueue");
         }
-    ext[numExtInterfaces]: ExtInterface {   //I.R.
+        ext[sizeof(extg)]: ExtInterface {   //I.R.
             parameters:
                 @display("p=399,390,row,90;q=txQueue;i=block/ifcard");
         }
-    tcpdump: TCPDump {  //I.R.
+        tcpdump: TCPDump {  //I.R.
             parameters:
                 @display("p=254,310;i=abstract/cache_s");
             gates:
-                ifIn[sizeof(pppg)+sizeof(ethg)+numExtInterfaces];
-                in2[sizeof(pppg)+sizeof(ethg)+numExtInterfaces];
-                ifOut[sizeof(pppg)+sizeof(ethg)+numExtInterfaces];
-                out2[sizeof(pppg)+sizeof(ethg)+numExtInterfaces];
+                ifIn[sizeof(pppg)+sizeof(ethg)+sizeof(extg)];
+                in2[sizeof(pppg)+sizeof(ethg)+sizeof(extg)];
+                ifOut[sizeof(pppg)+sizeof(ethg)+sizeof(extg)];
+                out2[sizeof(pppg)+sizeof(ethg)+sizeof(extg)];
         }
     connections allowunconnected:
         for i=0..numTcpApps-1 {
@@ -172,13 +172,13 @@ module StandardHost
 
         for i=0..sizeof(ethg)-1 {
             ethg[i] <--> eth[i].phys;
-            eth[i].netwOut --> tcpdump.ifIn[sizeof(pppg)];  //I.R.
-            tcpdump.out2[sizeof(pppg)] --> networkLayer.ifIn[sizeof(pppg)];
-            eth[i].netwIn <-- tcpdump.ifOut[sizeof(pppg)];
-            tcpdump.in2[sizeof(pppg)] <-- networkLayer.ifOut[sizeof(pppg)];
+            eth[i].netwOut --> tcpdump.ifIn[sizeof(pppg)+i];  //I.R.
+            tcpdump.out2[sizeof(pppg)+i] --> networkLayer.ifIn[sizeof(pppg)+i];
+            eth[i].netwIn <-- tcpdump.ifOut[sizeof(pppg)+i];
+            tcpdump.in2[sizeof(pppg)+i] <-- networkLayer.ifOut[sizeof(pppg)+i];
         }
 
-    for i=0..sizeof(extOut)-1 { //I.R.
+        for i=0..sizeof(extg)-1 { //I.R.
             ext[i].netwOut --> tcpdump.ifIn[sizeof(pppg)+sizeof(ethg)+i];
             tcpdump.out2[sizeof(pppg)+sizeof(ethg)+i] --> networkLayer.ifIn[sizeof(pppg)+sizeof(ethg)+i];
             ext[i].netwIn <-- tcpdump.ifOut[sizeof(pppg)+sizeof(ethg)+i];
