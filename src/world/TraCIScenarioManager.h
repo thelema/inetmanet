@@ -18,21 +18,21 @@
 //
 
 #ifndef TRACISCENARIOMANAGER_H
-#define TRACISCENARIOMANAGER_H 
+#define TRACISCENARIOMANAGER_H
 
 #include <fstream>
 #include <vector>
 #include <map>
 
 #if !defined(_WIN32) && !defined(__WIN32__) && !defined(WIN32) && !defined(__CYGWIN__) && !defined(_WIN64)
-#include <sys/socket.h> 
-#include <netinet/in.h> 
-#include <netinet/tcp.h> 
-#include <arpa/inet.h> 
-#include <netdb.h> 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #endif
 
-#include <errno.h> 
+#include <errno.h>
 #include <omnetpp.h>
 #include "INETDefs.h"
 #include "ChannelControl.h"
@@ -44,7 +44,7 @@
 #endif
 
 /**
- * TraCIScenarioManager connects OMNeT++ to a TraCI server running road traffic simulations. 
+ * TraCIScenarioManager connects OMNeT++ to a TraCI server running road traffic simulations.
  * It sets up and controls simulation experiments, moving nodes with the help
  * of a TraCIMobility module.
  *
@@ -55,132 +55,178 @@
  */
 class INET_API TraCIScenarioManager : public cSimpleModule
 {
-	public:
+  public:
 
-		~TraCIScenarioManager();
-		virtual void initialize();
-		virtual void finish();
-		virtual void handleMessage(cMessage *msg);
-		virtual void handleSelfMsg(cMessage *msg);
-		virtual bool isTraCISimulationEnded();
+    ~TraCIScenarioManager();
+    virtual void initialize();
+    virtual void finish();
+    virtual void handleMessage(cMessage *msg);
+    virtual void handleSelfMsg(cMessage *msg);
+    virtual bool isTraCISimulationEnded();
 
-		void commandSetMaximumSpeed(int32_t nodeId, float maxSpeed);
-		void commandChangeRoute(int32_t nodeId, std::string roadId, double travelTime);
+    void commandSetMaximumSpeed(int32_t nodeId, float maxSpeed);
+    void commandChangeRoute(int32_t nodeId, std::string roadId, double travelTime);
+    float commandDistanceRequest(Coord position1, Coord position2, bool returnDrivingDistance);
+    void commandStopNode(int32_t nodeId, std::string roadId, float pos, uint8_t laneid, float radius, double waittime);
 
-	protected:
-	
-		bool debug; /**< whether to emit debug messages */
-		simtime_t updateInterval; /**< time interval to update the host's position */
-		std::string moduleType; /**< module type to be used in the simulation for each managed vehicle */
-		std::string moduleName; /**< module name to be used in the simulation for each managed vehicle */
-		std::string moduleDisplayString; /**< module displayString to be used in the simulation for each managed vehicle */
-		std::string host;
-		int port;
-		bool autoShutdown; /**< Shutdown module as soon as no more vehicles are in the simulation */
+  protected:
 
-		int socket;
-		long statsSimStart;
-		int currStep;
-	
-		bool traCISimulationEnded;
-		int packetNo; /**< current packet number (for debugging) */
-		std::map<int32_t, cModule*> hosts; /**< vector of all hosts managed by us */
-		std::map<int32_t, simtime_t> lastUpdate; /**< vector of all hosts' last update time */
-		cMessage* executeOneTimestepTrigger; /**< self-message scheduled for when to next call executeOneTimestep */
+    bool debug; /**< whether to emit debug messages */
+    simtime_t updateInterval; /**< time interval to update the host's position */
+    std::string moduleType; /**< module type to be used in the simulation for each managed vehicle */
+    std::string moduleName; /**< module name to be used in the simulation for each managed vehicle */
+    std::string moduleDisplayString; /**< module displayString to be used in the simulation for each managed vehicle */
+    std::string host;
+    int port;
+    bool autoShutdown; /**< Shutdown module as soon as no more vehicles are in the simulation */
+    int margin;
 
-		ChannelControl* cc;
+    int socket;
+    long statsSimStart;
+    int currStep;
 
-		void executeOneTimestep(); /**< read and execute all commands for the next timestep */
+    bool traCISimulationEnded;
+    int packetNo; /**< current packet number (for debugging) */
+    std::map<int32_t, cModule*> hosts; /**< vector of all hosts managed by us */
+    std::map<int32_t, simtime_t> lastUpdate; /**< vector of all hosts' last update time */
+    cMessage* executeOneTimestepTrigger; /**< self-message scheduled for when to next call executeOneTimestep */
 
-		cModule* getManagedModule(int32_t nodeId); /**< returns a pointer to the managed module named moduleName, or 0 if no module can be found */
+    ChannelControl* cc;
 
-		void connect();
-		void addModule(int32_t nodeId, std::string type, std::string name, std::string displayString);
+    void executeOneTimestep(); /**< read and execute all commands for the next timestep */
 
-		uint32_t commandSimStep(simtime_t targetTime, uint8_t positionType);
+    cModule* getManagedModule(int32_t nodeId); /**< returns a pointer to the managed module named moduleName, or 0 if no module can be found */
 
-		bool socketDataAvailable() {
-			int result;
-			fd_set readset;
-			struct timeval timeout;
-			timeout.tv_sec = 1;
-			timeout.tv_usec = 0;
+    void connect();
+    void addModule(int32_t nodeId, std::string type, std::string name, std::string displayString);
 
-			do {
-				FD_ZERO(&readset);
-				FD_SET(socket, &readset);
-				result = select(socket + 1, &readset, NULL, NULL, &timeout);
-			} while (result == -1 && errno == EINTR);
+    /**
+     * Byte-buffer that stores values in TraCI byte-order
+     */
+    class TraCIBuffer {
+      public:
+        TraCIBuffer() : buf() {
+          buf_index = 0;
+        }
 
-			if (result < 0) error("An error occured polling data from the TraCI server: %s", strerror(errno));
+        TraCIBuffer(std::string buf) : buf(buf) {
+          buf_index = 0;
+        }
 
-			return FD_ISSET(socket, &readset);
-		}
+        template<typename T> T read() {
+          T buf_to_return;
+          unsigned char *p_buf_to_return = reinterpret_cast<unsigned char*>(&buf_to_return);
 
-		template<typename T> T readFromSocket() {
-			if(traCISimulationEnded) error("Simulation has ended");
-			if (socket < 0) error("Connection to TraCI server lost");
+          if (isBigEndian()) {
+            for (size_t i=0; i<sizeof(buf_to_return); ++i) {
+              if (eof()) throw std::runtime_error("Attempted to read past end of byte buffer");
+              p_buf_to_return[i] = buf[buf_index++];
+            }
+          } else {
+            for (size_t i=0; i<sizeof(buf_to_return); ++i) {
+              if (eof()) throw std::runtime_error("Attempted to read past end of byte buffer");
+              p_buf_to_return[sizeof(buf_to_return)-1-i] = buf[buf_index++];
+            }
+          }
 
-			T buf;
-			int receivedBytes = ::recv(socket, reinterpret_cast<char*>(&buf), sizeof(buf), MSG_WAITALL);
-			if (receivedBytes != sizeof(buf)) error("Could not read %d bytes from TraCI server, got only %d: %s", sizeof(buf), receivedBytes, strerror(errno));
+          return buf_to_return;
+        }
 
-			T buf_to_return;
-        		short a = 0x0102;
-        		unsigned char *p_a = reinterpret_cast<unsigned char*>(&a);
-        		bool isBigEndian = (p_a[0] == 0x01); 
-			if (isBigEndian) {
-				buf_to_return = buf;
-			} else {
-                		unsigned char *p_buf = reinterpret_cast<unsigned char*>(&buf);
-		                unsigned char *p_buf_to_return = reinterpret_cast<unsigned char*>(&buf_to_return);
+        template<typename T> void write(T inv) {
+          unsigned char *p_buf_to_send = reinterpret_cast<unsigned char*>(&inv);
 
-				for (size_t i=0; i<sizeof(buf); ++i)
-				{
-					p_buf_to_return[i] = p_buf[sizeof(buf)-1-i];
-				}
-			}
+          if (isBigEndian()) {
+            for (size_t i=0; i<sizeof(inv); ++i) {
+              buf += p_buf_to_send[i];
+            }
+          } else {
+            for (size_t i=0; i<sizeof(inv); ++i) {
+              buf += p_buf_to_send[sizeof(inv)-1-i];
+            }
+          }
+        }
 
-			return buf_to_return;
-		}
+        template<typename T> T read(T& out) {
+          out = read<T>();
+          return out;
+        }
 
-		template<typename T> T readFromSocket(T& out) {
-			out = readFromSocket<T>();
-			return out;
-		}
+        template<typename T> TraCIBuffer& operator >>(T& out) {
+          out = read<T>();
+          return *this;
+        }
 
-		template<typename T> void writeToSocket(T buf) {
-			if(traCISimulationEnded) error("Simulation has ended");
-			if (socket < 0) error("Connection to TraCI server lost");
+        template<typename T> TraCIBuffer& operator <<(const T& inv) {
+          write(inv);
+          return *this;
+        }
 
-			T buf_to_send;
-        		short a = 0x0102;
-        		unsigned char *p_a = reinterpret_cast<unsigned char*>(&a);
-        		bool isBigEndian = (p_a[0] == 0x01); 
-			if (isBigEndian) {
-				buf_to_send = buf;
-			} else {
-                		unsigned char *p_buf = reinterpret_cast<unsigned char*>(&buf);
-		                unsigned char *p_buf_to_send = reinterpret_cast<unsigned char*>(&buf_to_send);
+        bool eof() const {
+          return buf_index == buf.length();
+        }
 
-				for (size_t i=0; i<sizeof(buf); ++i)
-				{
-					p_buf_to_send[i] = p_buf[sizeof(buf)-1-i];
-				}
-			}
+        void set(std::string buf) {
+          this->buf = buf;
+          buf_index = 0;
+        }
 
-			int sentBytes = ::send(socket, reinterpret_cast<char*>(&buf_to_send), sizeof(buf), 0);
-			if (sentBytes != sizeof(buf)) error("Could not write %d bytes to TraCI server, sent only %d: %s", sizeof(buf), sentBytes, strerror(errno));
-		}
+        void clear() {
+          set("");
+        }
+
+        std::string str() const {
+          return buf;
+        }
+
+      protected:
+        bool isBigEndian() {
+          short a = 0x0102;
+          unsigned char *p_a = reinterpret_cast<unsigned char*>(&a);
+          return (p_a[0] == 0x01);
+        }
+
+        std::string buf;
+        size_t buf_index;
+    };
+
+    /**
+     * sends a single command via TraCI, checks status response, returns additional responses
+     */
+    TraCIBuffer queryTraCI(uint8_t commandId, const TraCIBuffer& buf = TraCIBuffer());
+
+    /**
+     * returns byte-buffer containing a TraCI command with optional parameters
+     */
+    std::string makeTraCICommand(uint8_t commandId, TraCIBuffer buf = TraCIBuffer());
+
+    /**
+     * sends a message via TraCI (after adding the header)
+     */
+    void sendTraCIMessage(std::string buf);
+
+    /**
+     * receives a message via TraCI (and strips the header)
+     */
+    std::string receiveTraCIMessage();
+
+    /**
+     * convert TraCI coordinates to OMNeT++ coordinates
+     */
+    Coord traci2omnet(Coord coord) const;
+
+    /**
+     * convert OMNeT++ coordinates to TraCI coordinates
+     */
+    Coord omnet2traci(Coord coord) const;
 };
-		
-template<> std::string TraCIScenarioManager::readFromSocket();
-template<> void TraCIScenarioManager::writeToSocket(std::string buf);
+
+template<> void TraCIScenarioManager::TraCIBuffer::write(std::string inv);
+template<> std::string TraCIScenarioManager::TraCIBuffer::read();
 
 class TraCIScenarioManagerAccess : public ModuleAccess<TraCIScenarioManager>
 {
-	public:
-		TraCIScenarioManagerAccess() : ModuleAccess<TraCIScenarioManager>("manager") {};
+  public:
+    TraCIScenarioManagerAccess() : ModuleAccess<TraCIScenarioManager>("manager") {};
 };
 
 #endif
