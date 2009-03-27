@@ -186,6 +186,44 @@ void NS_CLASS re_process(RE *re,struct in_addr ip_src, u_int32_t ifindex)
 	{
 		node_addr.s_addr	= re->re_blocks[i].re_node_addr;
 		entry			= rtable_find(node_addr);
+#if 1
+		if (entry)
+		{
+			struct re_block *block;
+			u_int8_t is_rreq;
+			struct in_addr dest_addr;
+			u_int32_t seqnum;
+			int rb_state;
+
+			block = &re->re_blocks[i];
+			if (!block)
+			{
+				dest_addr.s_addr	= block->re_node_addr;
+				seqnum			= block->re_node_seqnum;
+				if (isInMacLayer())
+				{
+					if (isLocalAddress (block->re_node_addr))
+						rb_state = RB_SELF_GEN;
+					else if (!entry)
+						rb_state = RB_FRESH;
+					else if (seqnum > entry->rt_seqnum)
+						rb_state = RB_FRESH;
+					else if (seqnum == entry->rt_seqnum && block->re_hopcnt < entry->rt_hopcnt)
+						rb_state = RB_FRESH;
+					else if (seqnum ==0)
+						rb_state = RB_FRESH; // Asume Olsr update
+					else
+						rb_state = RB_STALE;
+				}
+				else
+				{
+					rb_state = re_info_type(block, entry, is_rreq);
+				}
+				if (rb_state==RB_FRESH)
+					EV <<"Error <\n";
+			}
+		}
+#endif
 		if (re_process_block(&re->re_blocks[i], re->a, entry, ip_src, ifindex))
 		{
 			// stale information: drop packet if first block,
@@ -224,6 +262,11 @@ void NS_CLASS re_process(RE *re,struct in_addr ip_src, u_int32_t ifindex)
 		totalRrepRec++;
 #endif
 	mustAnswer = re_mustAnswer(re,ifindex);
+
+#ifdef OMNETPP
+	if (!mustAnswer && re->getControlInfo())
+		delete re->removeControlInfo();
+#endif
 	if (mustAnswer){
 		// If A-bit is set, a RE is sent back
 		switch (mustAnswer){
@@ -266,9 +309,12 @@ void NS_CLASS re_process(RE *re,struct in_addr ip_src, u_int32_t ifindex)
 		break;
 		}
 #ifdef OMNETPP
-		cMessage *msg = re->decapsulate();
-		if (msg)
-			send(msg,"to_ip");
+		if (!isInMacLayer())
+		{
+			cMessage *msg = re->decapsulate();
+			if (msg)
+				send(msg,"to_ip");
+		}
 		delete re;
 		re=NULL;
 #endif

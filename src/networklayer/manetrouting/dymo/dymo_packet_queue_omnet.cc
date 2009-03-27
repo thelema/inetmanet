@@ -21,7 +21,7 @@
  *****************************************************************************/
 
 #include "dymo_um_omnet.h"
-
+#include "Ieee802Ctrl_m.h"
 
 //#define GARBAGE_COLLECT
 
@@ -189,6 +189,15 @@ int NS_CLASS packet_queue_set_verdict(struct in_addr dest_addr, int verdict)
 						 * packets are sent with ARP_DELAY seconds between
 						 * sends. */
 						// now Ip layer decremented again
+						if (isInMacLayer())
+						{
+							Ieee802Ctrl *ctrl = new Ieee802Ctrl;
+							Uint128 nextHop;
+							int iface;
+							getNextHop(dest_addr.s_addr,nextHop,iface);
+							ctrl->setDest(nextHop.getMACAddress());
+							qp->p->setControlInfo(ctrl);
+						}
 						sendDelayed(qp->p, delay, "to_ip");
 						delay += ARP_DELAY;
 					}

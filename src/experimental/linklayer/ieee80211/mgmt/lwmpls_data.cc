@@ -3,7 +3,7 @@
 
 
 
-LWmpls_data_structure::LWmpls_data_structure()
+LWMPLSDataStructure::LWMPLSDataStructure()
 {
 /* reserva e inicializa las estructuras de datos usadas por el protocolo mpls ligero */
 
@@ -24,7 +24,7 @@ LWmpls_data_structure::LWmpls_data_structure()
 	broadCastCounter=0;
 }
 
-LWmpls_data_structure::~LWmpls_data_structure()
+LWMPLSDataStructure::~LWMPLSDataStructure()
 {
 
 	while (!interfaceMap->empty())
@@ -39,19 +39,20 @@ LWmpls_data_structure::~LWmpls_data_structure()
 		deleteForwarding(aux);
 	}
 	label_list.clear();
+	forwardingMacKey.clear();
 
 	broadCastList.clear();
 	destList.clear();
 
 	forwardingTableOutput->clear();
-	
+
 	delete forwardingTableOutput;
 	delete interfaceMap;
 }
 
 
 
-LWmpls_Forwarding_Structure * LWmpls_data_structure::lwmpls_forwarding_data(int label_input,int label_output,uint64_t mac_dest)
+LWmpls_Forwarding_Structure * LWMPLSDataStructure::lwmpls_forwarding_data(int label_input,int label_output,uint64_t mac_dest)
 {
 	LWMPLSKey key;
 	LWmpls_Forwarding_Structure * data_f_ptr=NULL;
@@ -73,11 +74,11 @@ LWmpls_Forwarding_Structure * LWmpls_data_structure::lwmpls_forwarding_data(int 
 				if ((actual_time - data_f_ptr->last_use)>data_f_ptr->label_life_limit)
 				{
 					data_f_ptr = lwmpls_interface_delete_label(label_input);
-					//lwmpls_release_label(data_f_ptr->input_label);
-					//lwmpls_release_label(data_f_ptr->return_label_input);
+					//delLWMPLSLabel(data_f_ptr->input_label);
+					//delLWMPLSLabel(data_f_ptr->return_label_input);
 					//forwardingTableOutput->erase (data_f_ptr->key_output);
 					//forwardingTableOutput->erase (data_f_ptr->return_key_output);
-					deleteForwarding(data_f_ptr); 
+					deleteForwarding(data_f_ptr);
 					data_f_ptr=NULL;
 				}
 				else
@@ -112,7 +113,7 @@ LWmpls_Forwarding_Structure * LWmpls_data_structure::lwmpls_forwarding_data(int 
 				return (data_f_ptr);
 			else
 			{
-				deleteForwarding(data_f_ptr); 
+				deleteForwarding(data_f_ptr);
 				forwardingTableOutput->erase(i);
 				data_f_ptr= NULL;
 				printf ("lwmpls_forwarding_data error in forwarding_table_output");
@@ -124,7 +125,7 @@ LWmpls_Forwarding_Structure * LWmpls_data_structure::lwmpls_forwarding_data(int 
 
 
 
-LWmpls_Interface_Structure * LWmpls_data_structure::lwmpls_interface_structure(uint64_t mac_addr)
+LWmpls_Interface_Structure * LWMPLSDataStructure::lwmpls_interface_structure(uint64_t mac_addr)
 {
 /* Extrae la estructura del mac donde figura la lista de todos los label que lo usan */
 	if (mac_addr==(uint64_t)0)
@@ -137,9 +138,9 @@ LWmpls_Interface_Structure * LWmpls_data_structure::lwmpls_interface_structure(u
 	return NULL;
 }
 
-void LWmpls_data_structure::lwmpls_interface_delete_list_mpls(uint64_t mac_addr)
+void LWMPLSDataStructure::lwmpls_interface_delete_list_mpls(uint64_t mac_addr)
 {
-	
+
 	LWmpls_Forwarding_Structure *data_f_ptr=NULL;
 	simtime_t actual_time = simTime();
 
@@ -164,13 +165,13 @@ void LWmpls_data_structure::lwmpls_interface_delete_list_mpls(uint64_t mac_addr)
 			data_f_ptr = label_list[i-1].data_f_ptr;
 			if (data_f_ptr ==NULL)
 			{
-				lwmpls_release_label(i); 
+				delLWMPLSLabel(i);
 				continue;
 			}
 
 			if ((mac_addr!=data_f_ptr->mac_address) && (mac_addr!=data_f_ptr->input_mac_address))
 			{
-				deleteForwarding(data_f_ptr); 
+				deleteForwarding(data_f_ptr);
 				data_f_ptr= NULL;
 			}
 		}
@@ -193,15 +194,15 @@ void LWmpls_data_structure::lwmpls_interface_delete_list_mpls(uint64_t mac_addr)
 	{
 		it= mystack.top();
 		mystack.pop();
-		lwmpls_release_label(it->second->input_label);
-		lwmpls_release_label(it->second->return_label_input);
+		delLWMPLSLabel(it->second->input_label);
+		delLWMPLSLabel(it->second->return_label_input);
 		forwardingTableOutput->erase (it->second->key_output);
 		forwardingTableOutput->erase (it->second->return_key_output);
 		forwardingTableOutput->erase(it);
 	}
 }
 
-int LWmpls_data_structure::lwmpls_get_label()
+int LWMPLSDataStructure::getLWMPLSLabel()
 {
 	simtime_t min_time;
 	int label=-1;
@@ -225,7 +226,7 @@ int LWmpls_data_structure::lwmpls_get_label()
 				if ((actual_time-label_list[i-1].data_f_ptr->last_use)>label_list[i-1].data_f_ptr->label_life_limit)
 				{
 					data_f_ptr = lwmpls_interface_delete_label(i);
-					deleteForwarding(data_f_ptr); 
+					deleteForwarding(data_f_ptr);
 					//label_list[i-1].data_f_ptr=NULL;
 					data_f_ptr=NULL;
 				}
@@ -233,7 +234,7 @@ int LWmpls_data_structure::lwmpls_get_label()
 			else
 			{
 				if (actual_time-label_list[i-1].capture_time>LWMPLS_MAX_TIME_CAPTURE_LABEL)
-					lwmpls_release_label(i);
+					delLWMPLSLabel(i);
 			}
 		}
 	}
@@ -244,7 +245,7 @@ int LWmpls_data_structure::lwmpls_get_label()
 		label_list[label-1].data_f_ptr=NULL;
 		label_list[label-1].capture_time = actual_time;
 	}
-	else 
+	else
 	{
 		if (label_list.size()<LWMPLS_MAX_LABEL-1)
 		{
@@ -268,7 +269,7 @@ int LWmpls_data_structure::lwmpls_get_label()
 		}
 	}
 // purge unnecessary list elements
-        while (label_list[label_list.size()-1].in_use == false && 
+        while (label_list[label_list.size()-1].in_use == false &&
                actual_time-label_list[label_list.size()].time>LWMPLS_MIN_REUSE_TIME )
 	{
 		label_list.pop_back();
@@ -277,7 +278,7 @@ int LWmpls_data_structure::lwmpls_get_label()
 	return label;
  }
 
-bool LWmpls_data_structure::lwmpls_label_in_use(int label)
+bool LWMPLSDataStructure::lwmpls_label_in_use(int label)
 {
 	bool in_use = false;
 	LWmpls_Forwarding_Structure* data_f_ptr=NULL;
@@ -308,7 +309,7 @@ bool LWmpls_data_structure::lwmpls_label_in_use(int label)
 		}
 		else
 		{
-			lwmpls_release_label(label);
+			delLWMPLSLabel(label);
 		}
 	}
 	return in_use;
@@ -316,7 +317,7 @@ bool LWmpls_data_structure::lwmpls_label_in_use(int label)
 
 
 
-void LWmpls_data_structure::lwmpls_release_label(int label)
+void LWMPLSDataStructure::delLWMPLSLabel(int label)
 {
 
 	simtime_t actual_time = simTime();
@@ -336,7 +337,7 @@ void LWmpls_data_structure::lwmpls_release_label(int label)
 		{
 			data_f_ptr=label_list[label-1].data_f_ptr;
 			if ((data_f_ptr->input_label != label) && (data_f_ptr->return_label_input!=label))
-			opp_error ("lwmpls_release_label error in label data");
+			opp_error ("delLWMPLSLabel error in label data");
 
 			LWmplsInterfaceMap::iterator  macIterator;
 			if (data_f_ptr->input_label == label)
@@ -367,12 +368,12 @@ void LWmpls_data_structure::lwmpls_release_label(int label)
 	label_list[label-1].in_use=false;
 }
 
-void LWmpls_data_structure::lwmpls_init_interface(LWmpls_Interface_Structure** interface_str_ptr_ptr,int label_in,uint64_t mac_addr,int type)
+void LWMPLSDataStructure::lwmpls_init_interface(LWmpls_Interface_Structure** interface_str_ptr_ptr,int label_in,uint64_t mac_addr,int type)
 {
 	bool init;
 	LWmpls_Interface_Structure * interface_str_ptr=NULL;
 
-	
+
 	if (mac_addr==(uint64_t)0)
 		return;
 
@@ -425,14 +426,14 @@ void LWmpls_data_structure::lwmpls_init_interface(LWmpls_Interface_Structure** i
 
 
 
-void LWmpls_data_structure::lwmpls_forwarding_input_data_add(int label,LWmpls_Forwarding_Structure *data_f_ptr)
+void LWMPLSDataStructure::lwmpls_forwarding_input_data_add(int label,LWmpls_Forwarding_Structure *data_f_ptr)
 	{
 
 	if (label<=0)
 		opp_error ("lwmpls_forwarding_input_data_add Error in label label <=0 ");
 	if ((unsigned int)label > label_list.size())
 		opp_error ("lwmpls_forwarding_input_data_add Error in label label label > LWMPLS_MAX_LABEL");
-	
+
 
 	if ((data_f_ptr->input_label!=label) && (data_f_ptr->return_label_input!=label))
 		opp_error ("lwmpls_forwarding_input_data_add Error in label database, label exist but struct not correct %d %d %d",label,data_f_ptr->input_label,data_f_ptr->return_label_input);
@@ -455,7 +456,7 @@ void LWmpls_data_structure::lwmpls_forwarding_input_data_add(int label,LWmpls_Fo
 	}
 }
 
-bool LWmpls_data_structure::lwmpls_forwarding_output_data_add(int label,uint64_t mac_addr,LWmpls_Forwarding_Structure *data_f_ptr,bool is_return)
+bool LWMPLSDataStructure::lwmpls_forwarding_output_data_add(int label,uint64_t mac_addr,LWmpls_Forwarding_Structure *data_f_ptr,bool is_return)
 {
 	LWmpls_Forwarding_Structure * old_contents_ptr = NULL;
 	LWMPLSKey key;
@@ -473,51 +474,51 @@ bool LWmpls_data_structure::lwmpls_forwarding_output_data_add(int label,uint64_t
 
 	std::pair<LWmplsFwMap::iterator, bool > pr;
 	pr = forwardingTableOutput->insert(std::pair<LWMPLSKey, LWmpls_Forwarding_Structure*>(key,data_f_ptr));
-	if (pr.second == false ) 
+	if (pr.second == false )
 	{
 		old_contents_ptr = (pr.first)->second;
 		if (old_contents_ptr!=data_f_ptr)
 		{
-			lwmpls_release_label(data_f_ptr->input_label);
-			lwmpls_release_label(data_f_ptr->return_label_input);
+			delLWMPLSLabel(data_f_ptr->input_label);
+			delLWMPLSLabel(data_f_ptr->return_label_input);
 			LWmplsFwMap::iterator it;
 			it = forwardingTableOutput->find(data_f_ptr->key_output);
 			if (it!=forwardingTableOutput->end() && it->second!= data_f_ptr)
-				deleteForwarding(it->second); 
+				deleteForwarding(it->second);
                         if (it!=forwardingTableOutput->end())
 				forwardingTableOutput->erase(it);
 			it = forwardingTableOutput->find(data_f_ptr->return_key_output);
 			if (it!=forwardingTableOutput->end() && it->second!= data_f_ptr)
-				deleteForwarding(it->second); 
+				deleteForwarding(it->second);
 			if (it!=forwardingTableOutput->end())
 				forwardingTableOutput->erase(it);
 			if (old_contents_ptr)
 			{
-				lwmpls_release_label(old_contents_ptr->input_label);
-				lwmpls_release_label(old_contents_ptr->return_label_input);
+				delLWMPLSLabel(old_contents_ptr->input_label);
+				delLWMPLSLabel(old_contents_ptr->return_label_input);
 				it = forwardingTableOutput->find(old_contents_ptr->key_output);
 				if (it!=forwardingTableOutput->end() && it->second!= old_contents_ptr)
-					deleteForwarding(it->second); 
+					deleteForwarding(it->second);
         	                if (it!=forwardingTableOutput->end())
 					forwardingTableOutput->erase(it);
 				it = forwardingTableOutput->find(old_contents_ptr->return_key_output);
 				if (it!=forwardingTableOutput->end() && it->second!= old_contents_ptr)
-					deleteForwarding(it->second); 
+					deleteForwarding(it->second);
 				if (it!=forwardingTableOutput->end())
 					forwardingTableOutput->erase(it);
 			}
 			return false;
 		}
-			
+
 	}
 	return true;
 }
 
-LWmpls_Forwarding_Structure * LWmpls_data_structure::lwmpls_interface_delete_label(int label)
+LWmpls_Forwarding_Structure * LWMPLSDataStructure::lwmpls_interface_delete_label(int label)
 {
 	LWmpls_Forwarding_Structure *data_f_ptr = NULL;
 	LWmpls_Interface_Structure *data_interface_ptr= NULL;
-	
+
 	if (label<=0)
 		return NULL;
 	if ((unsigned int)label > label_list.size())
@@ -534,13 +535,13 @@ LWmpls_Forwarding_Structure * LWmpls_data_structure::lwmpls_interface_delete_lab
 
 	if (data_f_ptr!=NULL)
 	{
-		/* clean mac struct data  */	
+		/* clean mac struct data  */
 		if ((data_f_ptr->input_label != label) && (data_f_ptr->return_label_input!=label))
 			opp_error ("lwmpls_interface_delete_label error in label data");
 
-                lwmpls_release_label(label);
-                lwmpls_release_label(data_f_ptr->return_label_input);
-                lwmpls_release_label(data_f_ptr->input_label);
+                delLWMPLSLabel(label);
+                delLWMPLSLabel(data_f_ptr->return_label_input);
+                delLWMPLSLabel(data_f_ptr->input_label);
 
 		LWmplsFwMap::iterator it2;
 		it2 = forwardingTableOutput->find(data_f_ptr->key_output);
@@ -552,7 +553,7 @@ LWmpls_Forwarding_Structure * LWmpls_data_structure::lwmpls_interface_delete_lab
 			if (data_aux_ptr!=data_f_ptr)
 				opp_error ("lwmpls_interface_delete_label error in label data 2");
 		}
-	
+
 		it2 = forwardingTableOutput->find(data_f_ptr->return_key_output);
 		if (it2!=forwardingTableOutput->end())
 		{
@@ -604,14 +605,14 @@ LWmpls_Forwarding_Structure * LWmpls_data_structure::lwmpls_interface_delete_lab
 
 	}
 	else
-		lwmpls_release_label(label);
+		delLWMPLSLabel(label);
 	/* */
     return 	data_f_ptr;
 }
 
 
 
-void LWmpls_data_structure::lwmpls_interface_delete_old_path()
+void LWMPLSDataStructure::lwmpls_interface_delete_old_path()
 {
 	LWmpls_Interface_Structure *mac_struct_ptr=NULL;
 	LWmpls_Forwarding_Structure *data_f_ptr=NULL;
@@ -622,7 +623,7 @@ void LWmpls_data_structure::lwmpls_interface_delete_old_path()
 	if (num_label_in_use==0)
 		return;
 
-		
+
 	for (unsigned int i=1;i<=label_list.size();i++)
 	{
 		if (!label_list[i-1].in_use)
@@ -633,16 +634,16 @@ void LWmpls_data_structure::lwmpls_interface_delete_old_path()
 		data_f_ptr = label_list[i-1].data_f_ptr;
 		if (data_f_ptr==NULL)
                 {
-			lwmpls_release_label(i);
+			delLWMPLSLabel(i);
 			continue;
                 }
 
 		if (data_f_ptr->input_label!=(int) i && data_f_ptr->return_label_input!=(int) i)
 		{
-			lwmpls_release_label(i);
+			delLWMPLSLabel(i);
 			continue;
-		}              
-		
+		}
+
 		if (time-data_f_ptr->last_use > data_f_ptr->label_life_limit)
 		{
 			if (data_f_ptr->mac_address!=0)
@@ -659,7 +660,7 @@ void LWmpls_data_structure::lwmpls_interface_delete_old_path()
 						delete mac_struct_ptr;
 						mac_struct_ptr=NULL;
 					}
-						
+
 				}
 			}
 
@@ -668,7 +669,7 @@ void LWmpls_data_structure::lwmpls_interface_delete_old_path()
 				LWmplsInterfaceMap::iterator it = interfaceMap->find(data_f_ptr->input_mac_address);
 				if (it!=interfaceMap->end())
 				{
-		
+
 					mac_struct_ptr = it->second;
 					if (mac_struct_ptr->numLabels() > 0)
 						mac_struct_ptr->numLabels() --;
@@ -681,7 +682,7 @@ void LWmpls_data_structure::lwmpls_interface_delete_old_path()
 
 				}
 			}
-			deleteForwarding(data_f_ptr); 
+			deleteForwarding(data_f_ptr);
 			label_list[i-1].data_f_ptr=NULL;
 			label_list[i-1].in_use=false;
 		}
@@ -690,9 +691,9 @@ void LWmpls_data_structure::lwmpls_interface_delete_old_path()
 
 
 
-bool LWmpls_data_structure::lwmpls_mac_last_access (simtime_t &time,uint64_t addr)
+bool LWMPLSDataStructure::lwmpls_mac_last_access (simtime_t &time,uint64_t addr)
 {
-	
+
 /* Extrae la estructura del mac donde figura la lista de todos los label que lo usan */
    	time=-1;
 	LWmplsInterfaceMap::iterator it = interfaceMap->find(addr);
@@ -705,7 +706,7 @@ bool LWmpls_data_structure::lwmpls_mac_last_access (simtime_t &time,uint64_t add
 }
 
 
-void  LWmpls_data_structure::lwmpls_refresh_mac (uint64_t mac,simtime_t time)
+void  LWMPLSDataStructure::lwmpls_refresh_mac (uint64_t mac,simtime_t time)
 {
 	LWmplsInterfaceMap::iterator it = interfaceMap->find(mac);
 	if (it!=interfaceMap->end())
@@ -716,13 +717,13 @@ void  LWmpls_data_structure::lwmpls_refresh_mac (uint64_t mac,simtime_t time)
 }
 
 
-int LWmpls_data_structure::lwmpls_nun_labels_in_use () 
+int LWMPLSDataStructure::lwmpls_nun_labels_in_use ()
 {
 	return num_label_in_use;
 }
 
 
-double LWmpls_data_structure::lwmpls_label_last_use (int label) 
+double LWMPLSDataStructure::lwmpls_label_last_use (int label)
 {
 	if (lwmpls_label_in_use(label)==true)
 	{
@@ -732,7 +733,7 @@ double LWmpls_data_structure::lwmpls_label_last_use (int label)
 }
 
 
-int LWmpls_data_structure::lwmpls_label_status (int label)
+int LWMPLSDataStructure::lwmpls_label_status (int label)
 	{
 	int in_use = LWMPLS_STATUS_NOT_USE;
 	LWmpls_Forwarding_Structure* data_f_ptr=NULL;
@@ -747,7 +748,7 @@ int LWmpls_data_structure::lwmpls_label_status (int label)
 		{
 			if (label_list[label-1].data_f_ptr->input_label!=label && label_list[label-1].data_f_ptr->return_label_input!=label)
 			{
-				lwmpls_release_label(label);
+				delLWMPLSLabel(label);
 				return in_use;
 			}
 
@@ -755,7 +756,7 @@ int LWmpls_data_structure::lwmpls_label_status (int label)
 			{
 				data_f_ptr = lwmpls_interface_delete_label(label);
 				label_list[label-1].data_f_ptr=NULL;
-				deleteForwarding(data_f_ptr); 
+				deleteForwarding(data_f_ptr);
 			}
 			else
 			{
@@ -770,7 +771,7 @@ int LWmpls_data_structure::lwmpls_label_status (int label)
 		}
 		else
 		{
-			lwmpls_release_label(label);
+			delLWMPLSLabel(label);
 
 		}
 	}
@@ -779,7 +780,7 @@ int LWmpls_data_structure::lwmpls_label_status (int label)
 
 
 
-void LWmpls_data_structure::lwmpls_check_label (int label,const char * message)
+void LWMPLSDataStructure::lwmpls_check_label (int label,const char * message)
 {
 	LWmpls_Forwarding_Structure* data_f_ptr=NULL;
 
@@ -800,20 +801,20 @@ void LWmpls_data_structure::lwmpls_check_label (int label,const char * message)
 
 
 
-void LWmpls_data_structure::deleteRegisterRoute(uint64_t destination)
+void LWMPLSDataStructure::deleteRegisterRoute(uint64_t destination)
 {
 	DestinationList::iterator it = destList.find(destination);
 	if (it!=destList.end())
 		destList.erase(it);
 }
 
-void LWmpls_data_structure::registerRoute(uint64_t destination,int label)
+void LWMPLSDataStructure::registerRoute(uint64_t destination,int label)
 {
 	deleteRegisterRoute(destination);
 	destList.insert(std::pair<uint64_t,int>(destination,label));
 }
 
-int LWmpls_data_structure::getRegisterRoute(uint64_t destination)
+int LWMPLSDataStructure::getRegisterRoute(uint64_t destination)
 {
 	DestinationList::iterator it = destList.find(destination);
 	int label = -1;
@@ -828,7 +829,7 @@ int LWmpls_data_structure::getRegisterRoute(uint64_t destination)
 }
 
 
-bool LWmpls_data_structure::getBroadCastCounter(uint64_t destination,uint32_t &counter)
+bool LWMPLSDataStructure::getBroadCastCounter(uint64_t destination,uint32_t &counter)
 {
 	bool find = false;
 	BroadcastList::iterator it = broadCastList.find(destination);
@@ -840,23 +841,23 @@ bool LWmpls_data_structure::getBroadCastCounter(uint64_t destination,uint32_t &c
 	return find;
 }
 
-void LWmpls_data_structure::setBroadCastCounter(uint64_t destination,uint32_t counter)
+void LWMPLSDataStructure::setBroadCastCounter(uint64_t destination,uint32_t counter)
 {
 	BroadcastList::iterator it = broadCastList.find(destination);
 	if (it!=broadCastList.end())
 		(*it).second = counter;
 	else
 		broadCastList.insert(std::pair<uint64_t,uint64_t>(destination,counter));
-	
+
 }
 
-void LWmpls_data_structure::deleteForwarding(LWmpls_Forwarding_Structure* data_f_ptr)
+void LWMPLSDataStructure::deleteForwarding(LWmpls_Forwarding_Structure* data_f_ptr)
 {
 
 	LWmpls_Forwarding_Structure* data_aux;
 
-	lwmpls_release_label(data_f_ptr->input_label);
-	lwmpls_release_label(data_f_ptr->return_label_input);
+	delLWMPLSLabel(data_f_ptr->input_label);
+	delLWMPLSLabel(data_f_ptr->return_label_input);
 
 	LWmplsFwMap::iterator it = forwardingTableOutput->find(data_f_ptr->key_output);
 	if (it!=forwardingTableOutput->end())
@@ -879,3 +880,59 @@ void LWmpls_data_structure::deleteForwarding(LWmpls_Forwarding_Structure* data_f
 	data_f_ptr = NULL;
 }
 
+
+void LWMPLSDataStructure::setForwardingMacKey(uint64_t srcMacAddrs,uint64_t dstMacAddrs,uint64_t prevMacAddr,uint64_t nextMacAddr,int32_t label)
+{
+	LWMPSMACAddressKey key;
+	key.srcAddr = srcMacAddrs;
+	key.destAddr = dstMacAddrs;
+	key.prevAddr = prevMacAddr;
+	key.label=label;
+	LWmplsFwMacKey::iterator it = forwardingMacKey.find(key);
+	if (it!=forwardingMacKey.end())
+	{
+		if (nextMacAddr!=0)
+			it->second = nextMacAddr;
+		else
+			forwardingMacKey.erase(it);
+	}
+	else if (nextMacAddr!=0)
+	{
+		forwardingMacKey.insert(std::pair<LWMPSMACAddressKey,uint64_t>(key,nextMacAddr));
+	}
+
+}
+
+uint64_t LWMPLSDataStructure::getForwardingMacKey(uint64_t srcMacAddrs,uint64_t dstMacAddrs,uint64_t prevMacAddr,int32_t label)
+{
+	LWMPSMACAddressKey key;
+
+	key.srcAddr = srcMacAddrs;
+	key.destAddr = dstMacAddrs;
+	key.prevAddr = prevMacAddr;
+	key.label=label;
+	LWmplsFwMacKey::iterator it = forwardingMacKey.find(key);
+	if (it!=forwardingMacKey.end())
+	{
+		return it->second;
+	}
+	else
+		return (uint64_t) 0;
+}
+
+bool LWMPLSDataStructure::delForwardingMacKey(uint64_t srcMacAddrs,uint64_t dstMacAddrs,uint64_t prevMacAddr,int32_t label)
+{
+	LWMPSMACAddressKey key;
+
+	key.srcAddr = srcMacAddrs;
+	key.destAddr = dstMacAddrs;
+	key.prevAddr = prevMacAddr;
+	key.label=label;
+	LWmplsFwMacKey::iterator it = forwardingMacKey.find(key);
+	if (it!=forwardingMacKey.end())
+	{
+		forwardingMacKey.erase(it);
+		return true;
+	}
+	return false;
+}

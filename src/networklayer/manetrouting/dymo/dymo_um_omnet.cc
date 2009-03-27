@@ -115,7 +115,10 @@ void DYMOUM::initialize(int stage)
 			DEV_NR(i).ifindex = i;
 			dev_indices[getWlanInterfaceIndex(i)] = i;
 			strcpy(DEV_NR(i).ifname, getInterfaceEntry(i)->getName());
-			DEV_NR(i).ipaddr.s_addr = getInterfaceEntry(i)->ipv4Data()->getIPAddress().getInt();
+			if (isInMacLayer())
+				DEV_NR(i).ipaddr.s_addr = getInterfaceEntry(i)->getMacAddress();
+			else
+				DEV_NR(i).ipaddr.s_addr = getInterfaceEntry(i)->ipv4Data()->getIPAddress().getInt();
 		}
 /* Set network interface parameters */
 		for (int i=0;i < getNumWlanInterfaces();i++)
@@ -174,6 +177,8 @@ void DYMOUM::initialize(int stage)
 		}
 
 		attachPacket = (bool) par("RREQattachPacket");
+		if (isInMacLayer())
+			attachPacket = false;
 
 		norouteBehaviour = par("noRouteBehaviour");
 		strcpy(nodeName,getParentModule()->getParentModule()->getFullName());
@@ -289,7 +294,7 @@ void DYMOUM::handleMessage (cMessage *msg)
 				cMessage* msgAux = control->decapsulate();
 
 				if (msgAux)
-					processMacPacket(PK(msgAux),control->getSrcAddress(),control->getDestAddress(),NS_IFINDEX);
+					processMacPacket(PK(msgAux),control->getDestAddress(),control->getSrcAddress(),NS_IFINDEX);
 				else
 					delete control;
 			}
@@ -776,6 +781,13 @@ void DYMOUM::processMacPacket(cPacket * p,const Uint128 &dest,const Uint128 &src
 		/* DEBUG(LOG_DEBUG, 0, "Sending pkt uid=%d", ch->uid()); */
 		if (p->getControlInfo())
 			delete p->removeControlInfo();
+		if (isInMacLayer())
+		{
+			Ieee802Ctrl *ctrl = new Ieee802Ctrl;
+			ctrl->setDest(entry->rt_nxthop_addr.s_addr.getMACAddress());
+			p->setControlInfo(ctrl);
+		}
+
 		send(p,"to_ip");
 		/* When forwarding data, make sure we are sending HELLO messages */
 		//gettimeofday(&this_host.fwd_time, NULL);
@@ -1226,7 +1238,9 @@ bool  DYMOUM::getNextHop(const Uint128 &dest,Uint128 &add, int &iface)
 	struct in_addr destAddr;
 	destAddr.s_addr = dest;
 	rtable_entry_t * fwd_rt = rtable_find(destAddr);
-	if (!fwd_rt)
+	if (!fwd_rt )
+		return false;
+	if (fwd_rt->rt_state != RT_VALID)
 		return false;
 	add = fwd_rt->rt_nxthop_addr.s_addr;
 	InterfaceEntry * ie = getInterfaceEntry (fwd_rt->rt_ifindex);
@@ -1288,7 +1302,7 @@ void DYMOUM::setRefreshRoute(const Uint128 &src,const Uint128 &dest,const Uint12
 
 bool DYMOUM::isOurType(cPacket * msg)
 {
-	RE *re = dynamic_cast <RE *>(msg);
+	DYMO_element *re = dynamic_cast <DYMO_element *>(msg);
 	if (re)
 		return true;
 	return false;

@@ -30,6 +30,7 @@ module Ieee80211gNicMesh
 {
     parameters:
         @display("i=block/ifcard");
+        bool useProactive=default(true);
     gates:
         input uppergateIn; // to upper layers
         output uppergateOut; // from upper layers
@@ -37,6 +38,7 @@ module Ieee80211gNicMesh
     submodules:
         mgmt: Ieee80211Mesh {
             parameters:
+                useProactive = useProactive;
                 @display("p=96,69;q=wlanDataQueue");
             gates:
                 macIn[1];

@@ -39,7 +39,7 @@
 
 
 
-typedef struct LWMPLSKey 
+typedef struct LWMPLSKey
 {
 		int label;
 		uint64_t mac_addr;
@@ -68,6 +68,7 @@ typedef struct LWMPLSKey
 		}
 } LWMPLSKey;
 
+
 typedef std::vector<uint64_t> RouteVector;
 
 typedef struct   LWmpls_Forwarding_Structure : public cOwnedObject
@@ -95,7 +96,7 @@ typedef struct   LWmpls_Forwarding_Structure : public cOwnedObject
 			order=-1;
 			output_label=0;
 			input_label=0;
-			return_label_input=0; // Acumular 
+			return_label_input=0; // Acumular
 			return_label_output=0;
 			key_output.label=-1;
 			key_output.mac_addr=0;
@@ -107,11 +108,11 @@ typedef struct   LWmpls_Forwarding_Structure : public cOwnedObject
 		~LWmpls_Forwarding_Structure()
 		{
 			path.clear();
-			
+
 		}
 }LWmpls_Forwarding_Structure;
 
-class LWmpls_data_structure;
+class LWMPLSDataStructure;
 
 class LWmpls_Interface_Structure : public cOwnedObject
 {
@@ -120,7 +121,7 @@ class LWmpls_Interface_Structure : public cOwnedObject
 		simtime_t   last_use;
 		int      num_rtr;
 		unsigned int      num_labels;
-		friend   class LWmpls_data_structure;
+		friend   class LWMPLSDataStructure;
 	 public:
                 LWmpls_Interface_Structure()
 		{
@@ -160,22 +161,60 @@ typedef std::map<uint64_t,uint32_t> BroadcastList;
 typedef std::vector<LWmpls_label_list> LWmplslabelArray;
 
 
+
 class Ieee80211Mesh;
 
-class   LWmpls_data_structure : public cOwnedObject
+class   LWMPLSDataStructure : public cOwnedObject
 {
 	private:
+		// This structure use the for mac address like label key
+		// Exist the possibility to use the for mac address frame like a label
+		typedef struct LWMPSMACAddressKey
+		{
+			uint64_t srcAddr;
+			uint64_t destAddr;
+			uint64_t prevAddr;
+			int32_t  label;
+			inline bool operator<(const LWMPSMACAddressKey& b) const
+			{
+				if (srcAddr!=b.srcAddr)
+					return srcAddr<b.srcAddr;
+				else if (destAddr !=b.destAddr)
+					return destAddr<b.destAddr;
+				else if (prevAddr !=b.prevAddr)
+					return prevAddr<b.prevAddr;
+				else
+					return label<b.label;
+			}
+			inline LWMPSMACAddressKey & operator = (const LWMPSMACAddressKey& b)
+			{
+				srcAddr=b.srcAddr;
+				destAddr=b.destAddr;
+				prevAddr=b.prevAddr;
+				label = b.label;
+				return *this;
+			}
+			inline bool operator==(const LWMPSMACAddressKey& b) const
+			{
+				if ((srcAddr==b.srcAddr) && (destAddr==b.destAddr) &&(prevAddr==b.prevAddr) && (label==b.label))
+					return true;
+				else
+					return false;
+			}
+		} LWMPSMACAddressKey;
+		typedef std::map<LWMPSMACAddressKey, uint64_t> LWmplsFwMacKey;
+		LWmplsFwMacKey forwardingMacKey;
 
 
-	simtime_t	LWMPLS_MAX_TIME;
-	simtime_t 	LWMPLS_MAX_TIME_MAC;
+	private:
+		simtime_t	LWMPLS_MAX_TIME;
+		simtime_t 	LWMPLS_MAX_TIME_MAC;
 /* timer limit of initialize forwarding struc after capture label */
-	simtime_t 	LWMPLS_MAX_TIME_CAPTURE_LABEL;
-/* Limits for break path */
-/* Number of reintent before break */
-	int	LWMPLS_MAX_RTR;
+		simtime_t 	LWMPLS_MAX_TIME_CAPTURE_LABEL;
+		/* Limits for break path */
+		/* Number of reintent before break */
+		int	LWMPLS_MAX_RTR;
 /* Timer after last message */
-
 		LWmplsFwMap * forwardingTableOutput;
 		LWmplsInterfaceMap* interfaceMap;
 		LWmplslabelArray label_list;
@@ -193,8 +232,8 @@ class   LWmpls_data_structure : public cOwnedObject
 		void deleteForwarding(LWmpls_Forwarding_Structure* data_f_ptr);
 
 	public:
-		LWmpls_data_structure();
-		~LWmpls_data_structure();
+		LWMPLSDataStructure();
+		~LWMPLSDataStructure();
 		simtime_t & mplsMaxTime() {return LWMPLS_MAX_TIME;}
 		simtime_t & mplsMacLimit() {return LWMPLS_MAX_TIME_MAC;}
 /* timer limit of initialize forwarding struc after capture label */
@@ -202,14 +241,14 @@ class   LWmpls_data_structure : public cOwnedObject
 /* Limits for break path */
 /* Number of reintent before break */
 		int &	mplsMaxMacRetry () {return LWMPLS_MAX_RTR;}
-		
+
 		LWmpls_Forwarding_Structure * lwmpls_forwarding_data(int,int,uint64_t );
 		LWmpls_Interface_Structure * lwmpls_interface_structure(uint64_t);
-		
+
 
 		void   lwmpls_interface_delete_list_mpls(uint64_t);
-		int    lwmpls_get_label();
-		void   lwmpls_release_label(int);
+		int    getLWMPLSLabel();
+		void   delLWMPLSLabel(int);
 
 		void   lwmpls_init_interface(LWmpls_Interface_Structure** ,int,uint64_t, int );
 		void   lwmpls_forwarding_input_data_add(int,LWmpls_Forwarding_Structure *);
@@ -234,7 +273,10 @@ class   LWmpls_data_structure : public cOwnedObject
 		void   setBroadCastCounter(uint64_t dest,uint32_t counter);
 		bool   getBroadCastCounter(uint32_t &counter) {counter = broadCastCounter; return true;}
 		void   setBroadCastCounter(uint32_t counter) {broadCastCounter = counter;}
-
+// Use the mac address like a label access methods
+		void setForwardingMacKey(uint64_t,uint64_t,uint64_t,uint64_t,int32_t=-1);
+		uint64_t getForwardingMacKey(uint64_t,uint64_t,uint64_t,int32_t=-1);
+		bool delForwardingMacKey(uint64_t,uint64_t,uint64_t,int32_t=-1);
 };
 
 

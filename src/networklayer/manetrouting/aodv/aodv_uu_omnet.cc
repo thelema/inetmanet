@@ -183,10 +183,19 @@ void NS_CLASS initialize(int stage)
 			DEV_NR(i).ifindex = i;
 			dev_indices[i] = i;
 			strcpy(DEV_NR(i).ifname, getInterfaceEntry(i)->getName());
-			DEV_NR(i).netmask.s_addr =
-				getInterfaceEntry(i)->ipv4Data()->getIPAddress().getNetworkMask().getInt();
-			DEV_NR(i).ipaddr.s_addr =
-				getInterfaceEntry(i)->ipv4Data()->getIPAddress().getInt();
+			if (!isInMacLayer())
+			{
+				DEV_NR(i).netmask.s_addr =
+					getInterfaceEntry(i)->ipv4Data()->getIPAddress().getNetworkMask().getInt();
+				DEV_NR(i).ipaddr.s_addr =
+					getInterfaceEntry(i)->ipv4Data()->getIPAddress().getInt();
+			}
+			else
+			{
+				DEV_NR(i).netmask.s_addr = MACAddress::BROADCAST_ADDRESS;
+				DEV_NR(i).ipaddr.s_addr =getInterfaceEntry(i)->getMacAddress();
+
+			}
 		}
 	/* Set network interface parameters */
 		for (int i=0;i < getNumWlanInterfaces();i++)
@@ -916,6 +925,8 @@ bool  NS_CLASS getNextHop(const Uint128 &dest,Uint128 &add, int &iface)
 	destAddr.s_addr = dest;
 	rt_table_t * fwd_rt = rt_table_find(destAddr);
 	if (!fwd_rt)
+		return false;
+	if (!fwd_rt->state != VALID)
 		return false;
 	add = fwd_rt->next_hop.s_addr;
 	InterfaceEntry * ie = getInterfaceEntry (fwd_rt->ifindex);

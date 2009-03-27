@@ -49,7 +49,7 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 
 	IInterfaceTable *ift;
 
-	LWmpls_data_structure * mplsData;
+	LWMPLSDataStructure * mplsData;
 
 	double multipler_active_break;
 	simtime_t timer_active_refresh;
@@ -71,6 +71,8 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 	void mplsCheckRouteTime ();
 	void mplsInitializeCheckMac();
 	void mplsPurge (LWmpls_Forwarding_Structure *forwarding_ptr,bool purge_break);
+	bool forwardMessage (Ieee80211DataFrame *);
+	bool macLabelBasedSend (Ieee80211DataFrame *);
 
   public:
 		Ieee80211Mesh();

@@ -38,6 +38,9 @@ enum LwmplsType
   WMPLS_BEGIN_W_ROUTE = 8;
   WMPLS_SEND = 9;
   WMPLS_BROADCAST=10;
+  // Use the mac addess like labels
+  WMPLS_MACBASEDLABEL_BEGIN=11;
+  WMPLS_MACBASEDLABEL_BEGIN_W_ROUTE=12;
 };
 
 //
