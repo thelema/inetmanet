@@ -1,4 +1,4 @@
-/
+//
 // Copyright (C) 2006,2007 Christoph Sommer <christoph.sommer@informatik.uni-erlangen.de>
 //
 // This program is free software; you can redistribute it and/or modify
