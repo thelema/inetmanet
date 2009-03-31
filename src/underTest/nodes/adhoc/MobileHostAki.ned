@@ -31,7 +31,7 @@ import inet.networklayer.ipv4.RoutingTable;
 import inet.nodes.inet.NetworkLayer;
 import inet.transport.tcp.TCP;
 import inet.transport.udp.UDP;
-import inet.transport.aki.Aki;
+import inet.underTest.transport.aki.Aki;
 
 
 //

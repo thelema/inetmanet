@@ -37,7 +37,7 @@ import inet.transport.udp.UDP;
 import inet.networklayer.manetrouting.ManetRouting;
 
 
-import inet.transport.aki.Aki;
+import inet.underTest.transport.aki.Aki;
 import inet.mobility.ANSimMobility;
 import inet.underTest.linklayer.Ieee80216.Ieee80216NicBS;
 import inet.underTest.linklayer.Ieee80216.Ieee80216NicMS;

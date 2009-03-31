@@ -93,6 +93,8 @@ INCLUDE_PATH = \
     -Itransport/tcp/queues \
     -Itransport/udp \
     -IunderTest \
+    -IunderTest/applications \
+    -IunderTest/applications/TrafficGenerator_Erlangen \
     -IunderTest/linklayer \
     -IunderTest/linklayer/Ieee80216 \
     -IunderTest/linklayer/Ieee80216/ControlPlane \
@@ -108,6 +110,8 @@ INCLUDE_PATH = \
     -IunderTest/nodes \
     -IunderTest/nodes/adhoc \
     -IunderTest/nodes/WiMAX \
+    -IunderTest/transport \
+    -IunderTest/transport/aki \
     -Iutil \
     -Iutil/headerserializers \
     -Iutil/headerserializers/headers \
@@ -429,6 +433,8 @@ OBJS = \
     $O/transport/tcp/queues/TCPVirtualDataRcvQueue.o \
     $O/transport/tcp/queues/TCPVirtualDataSendQueue.o \
     $O/transport/udp/UDP.o \
+    $O/underTest/applications/TrafficGenerator_Erlangen/TrafGen.o \
+    $O/underTest/applications/TrafficGenerator_Erlangen/WiMAXQoSTrafficGenerator.o \
     $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.o \
     $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBase.o \
     $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBaseAP.o \
@@ -463,6 +469,7 @@ OBJS = \
     $O/underTest/linklayer/radio/Ieee80216Radio.o \
     $O/underTest/linklayer/radio/Ieee80216RadioModel.o \
     $O/underTest/linklayer/radio/WiMAXPathLossReceptionModel.o \
+    $O/underTest/transport/aki/aki.o \
     $O/util/common.o \
     $O/util/NAMTraceWriter.o \
     $O/util/opp_utils.o \
@@ -546,7 +553,10 @@ OBJS = \
     $O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.o \
     $O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.o \
     $O/underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.o \
-    $O/underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.o
+    $O/underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.o \
+    $O/underTest/transport/aki/AkiControlInfo_m.o \
+    $O/underTest/transport/aki/akiMsg_m.o \
+    $O/underTest/transport/aki/AkiPacket_m.o
 
 # Message files
 MSGFILES = \
@@ -616,7 +626,10 @@ MSGFILES = \
     underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages.msg \
     underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives.msg \
     underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader.msg \
-    underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl.msg
+    underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl.msg \
+    underTest/transport/aki/AkiControlInfo.msg \
+    underTest/transport/aki/akiMsg.msg \
+    underTest/transport/aki/AkiPacket.msg
 
 #------------------------------------------------------------------------------
 
@@ -760,6 +773,8 @@ clean:
 	-rm -f transport/tcp/queues/*_m.cc transport/tcp/queues/*_m.h
 	-rm -f transport/udp/*_m.cc transport/udp/*_m.h
 	-rm -f underTest/*_m.cc underTest/*_m.h
+	-rm -f underTest/applications/*_m.cc underTest/applications/*_m.h
+	-rm -f underTest/applications/TrafficGenerator_Erlangen/*_m.cc underTest/applications/TrafficGenerator_Erlangen/*_m.h
 	-rm -f underTest/linklayer/*_m.cc underTest/linklayer/*_m.h
 	-rm -f underTest/linklayer/Ieee80216/*_m.cc underTest/linklayer/Ieee80216/*_m.h
 	-rm -f underTest/linklayer/Ieee80216/ControlPlane/*_m.cc underTest/linklayer/Ieee80216/ControlPlane/*_m.h
@@ -775,6 +790,8 @@ clean:
 	-rm -f underTest/nodes/*_m.cc underTest/nodes/*_m.h
 	-rm -f underTest/nodes/adhoc/*_m.cc underTest/nodes/adhoc/*_m.h
 	-rm -f underTest/nodes/WiMAX/*_m.cc underTest/nodes/WiMAX/*_m.h
+	-rm -f underTest/transport/*_m.cc underTest/transport/*_m.h
+	-rm -f underTest/transport/aki/*_m.cc underTest/transport/aki/*_m.h
 	-rm -f util/*_m.cc util/*_m.h
 	-rm -f util/headerserializers/*_m.cc util/headerserializers/*_m.h
 	-rm -f util/headerserializers/headers/*_m.cc util/headerserializers/headers/*_m.h
@@ -784,7 +801,7 @@ cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc applications/*.cc applications/ethernet/*.cc applications/generic/*.cc applications/pingapp/*.cc applications/rtpapp/*.cc applications/sctpapp/*.cc applications/tcpapp/*.cc applications/udpapp/*.cc base/*.cc experimental/*.cc experimental/linklayer/*.cc experimental/linklayer/contract/*.cc experimental/linklayer/ieee80211/*.cc experimental/linklayer/ieee80211/mgmt/*.cc experimental/nodes/*.cc experimental/nodes/adhoc/*.cc linklayer/*.cc linklayer/contract/*.cc linklayer/ethernet/*.cc linklayer/etherswitch/*.cc linklayer/ext/*.cc linklayer/ieee80211/*.cc linklayer/ieee80211/mac/*.cc linklayer/ieee80211/mgmt/*.cc linklayer/mf80211/*.cc linklayer/mf80211/macLayer/*.cc linklayer/mf80211/phyLayer/*.cc linklayer/mf80211/phyLayer/decider/*.cc linklayer/mf80211/phyLayer/snrEval/*.cc linklayer/mfcore/*.cc linklayer/ppp/*.cc linklayer/radio/*.cc mobility/*.cc networklayer/*.cc networklayer/arp/*.cc networklayer/autorouting/*.cc networklayer/common/*.cc networklayer/contract/*.cc networklayer/extras/*.cc networklayer/icmpv6/*.cc networklayer/ipv4/*.cc networklayer/ipv6/*.cc networklayer/ldp/*.cc networklayer/manetrouting/*.cc networklayer/manetrouting/aodv/*.cc networklayer/manetrouting/aodv/aodv-uu/*.cc networklayer/manetrouting/base/*.cc networklayer/manetrouting/dsdv/*.cc networklayer/manetrouting/dsr/*.cc networklayer/manetrouting/dsr/dsr-uu/*.cc networklayer/manetrouting/dymo/*.cc networklayer/manetrouting/dymo/dymoum/*.cc networklayer/manetrouting/dymo_fau/*.cc networklayer/manetrouting/manager/*.cc networklayer/manetrouting/olsr/*.cc networklayer/mpls/*.cc networklayer/ospfv2/*.cc networklayer/ospfv2/interface/*.cc networklayer/ospfv2/messagehandler/*.cc networklayer/ospfv2/neighbor/*.cc networklayer/ospfv2/router/*.cc networklayer/queue/*.cc networklayer/rsvp_te/*.cc networklayer/ted/*.cc nodes/*.cc nodes/adhoc/*.cc nodes/ethernet/*.cc nodes/inet/*.cc nodes/ipv6/*.cc nodes/mpls/*.cc nodes/wireless/*.cc transport/*.cc transport/contract/*.cc transport/rtp/*.cc transport/rtp/profiles/*.cc transport/rtp/profiles/avprofile/*.cc transport/sctp/*.cc transport/tcp/*.cc transport/tcp/flavours/*.cc transport/tcp/queues/*.cc transport/udp/*.cc underTest/*.cc underTest/linklayer/*.cc underTest/linklayer/Ieee80216/*.cc underTest/linklayer/Ieee80216/ControlPlane/*.cc underTest/linklayer/Ieee80216/Mac/*.cc underTest/linklayer/Ieee80216/MACSublayer/*.cc underTest/linklayer/Ieee80216/MACSublayer/QoS/*.cc underTest/linklayer/Ieee80216/MACSublayer/Receiver/*.cc underTest/linklayer/Ieee80216/MACSublayer/Transceiver/*.cc underTest/linklayer/Ieee80216/phyLayer/*.cc underTest/linklayer/Ieee80216/phyLayer/decider/*.cc underTest/linklayer/Ieee80216/phyLayer/snrEval/*.cc underTest/linklayer/radio/*.cc underTest/nodes/*.cc underTest/nodes/adhoc/*.cc underTest/nodes/WiMAX/*.cc util/*.cc util/headerserializers/*.cc util/headerserializers/headers/*.cc world/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc applications/*.cc applications/ethernet/*.cc applications/generic/*.cc applications/pingapp/*.cc applications/rtpapp/*.cc applications/sctpapp/*.cc applications/tcpapp/*.cc applications/udpapp/*.cc base/*.cc experimental/*.cc experimental/linklayer/*.cc experimental/linklayer/contract/*.cc experimental/linklayer/ieee80211/*.cc experimental/linklayer/ieee80211/mgmt/*.cc experimental/nodes/*.cc experimental/nodes/adhoc/*.cc linklayer/*.cc linklayer/contract/*.cc linklayer/ethernet/*.cc linklayer/etherswitch/*.cc linklayer/ext/*.cc linklayer/ieee80211/*.cc linklayer/ieee80211/mac/*.cc linklayer/ieee80211/mgmt/*.cc linklayer/mf80211/*.cc linklayer/mf80211/macLayer/*.cc linklayer/mf80211/phyLayer/*.cc linklayer/mf80211/phyLayer/decider/*.cc linklayer/mf80211/phyLayer/snrEval/*.cc linklayer/mfcore/*.cc linklayer/ppp/*.cc linklayer/radio/*.cc mobility/*.cc networklayer/*.cc networklayer/arp/*.cc networklayer/autorouting/*.cc networklayer/common/*.cc networklayer/contract/*.cc networklayer/extras/*.cc networklayer/icmpv6/*.cc networklayer/ipv4/*.cc networklayer/ipv6/*.cc networklayer/ldp/*.cc networklayer/manetrouting/*.cc networklayer/manetrouting/aodv/*.cc networklayer/manetrouting/aodv/aodv-uu/*.cc networklayer/manetrouting/base/*.cc networklayer/manetrouting/dsdv/*.cc networklayer/manetrouting/dsr/*.cc networklayer/manetrouting/dsr/dsr-uu/*.cc networklayer/manetrouting/dymo/*.cc networklayer/manetrouting/dymo/dymoum/*.cc networklayer/manetrouting/dymo_fau/*.cc networklayer/manetrouting/manager/*.cc networklayer/manetrouting/olsr/*.cc networklayer/mpls/*.cc networklayer/ospfv2/*.cc networklayer/ospfv2/interface/*.cc networklayer/ospfv2/messagehandler/*.cc networklayer/ospfv2/neighbor/*.cc networklayer/ospfv2/router/*.cc networklayer/queue/*.cc networklayer/rsvp_te/*.cc networklayer/ted/*.cc nodes/*.cc nodes/adhoc/*.cc nodes/ethernet/*.cc nodes/inet/*.cc nodes/ipv6/*.cc nodes/mpls/*.cc nodes/wireless/*.cc transport/*.cc transport/contract/*.cc transport/rtp/*.cc transport/rtp/profiles/*.cc transport/rtp/profiles/avprofile/*.cc transport/sctp/*.cc transport/tcp/*.cc transport/tcp/flavours/*.cc transport/tcp/queues/*.cc transport/udp/*.cc underTest/*.cc underTest/applications/*.cc underTest/applications/TrafficGenerator_Erlangen/*.cc underTest/linklayer/*.cc underTest/linklayer/Ieee80216/*.cc underTest/linklayer/Ieee80216/ControlPlane/*.cc underTest/linklayer/Ieee80216/Mac/*.cc underTest/linklayer/Ieee80216/MACSublayer/*.cc underTest/linklayer/Ieee80216/MACSublayer/QoS/*.cc underTest/linklayer/Ieee80216/MACSublayer/Receiver/*.cc underTest/linklayer/Ieee80216/MACSublayer/Transceiver/*.cc underTest/linklayer/Ieee80216/phyLayer/*.cc underTest/linklayer/Ieee80216/phyLayer/decider/*.cc underTest/linklayer/Ieee80216/phyLayer/snrEval/*.cc underTest/linklayer/radio/*.cc underTest/nodes/*.cc underTest/nodes/adhoc/*.cc underTest/nodes/WiMAX/*.cc underTest/transport/*.cc underTest/transport/aki/*.cc util/*.cc util/headerserializers/*.cc util/headerserializers/headers/*.cc world/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/applications/ethernet/EtherAppCli.o: applications/ethernet/EtherAppCli.cc \
@@ -7866,6 +7883,28 @@ $O/transport/udp/UDP.o: transport/udp/UDP.cc \
 $O/transport/udp/UDPPacket_m.o: transport/udp/UDPPacket_m.cc \
   transport/udp/UDPPacket_m.h \
   base/INETDefs.h
+$O/underTest/applications/TrafficGenerator_Erlangen/TrafGen.o: underTest/applications/TrafficGenerator_Erlangen/TrafGen.cc \
+  underTest/applications/TrafficGenerator_Erlangen/TrafGen.h
+$O/underTest/applications/TrafficGenerator_Erlangen/WiMAXQoSTrafficGenerator.o: underTest/applications/TrafficGenerator_Erlangen/WiMAXQoSTrafficGenerator.cc \
+  networklayer/contract/IPProtocolId_m.h \
+  networklayer/ipv4/IPDatagram_m.h \
+  underTest/applications/TrafficGenerator_Erlangen/TrafGen.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  networklayer/common/IInterfaceTable.h \
+  base/INETDefs.h \
+  networklayer/ipv4/IPDatagram.h \
+  linklayer/contract/Ieee802Ctrl_m.h \
+  underTest/applications/TrafficGenerator_Erlangen/WiMAXQoSTrafficGenerator.h \
+  networklayer/common/InterfaceEntry.h \
+  base/ModuleAccess.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  base/NotifierConsts.h \
+  networklayer/common/InterfaceToken.h \
+  networklayer/contract/IPAddress.h \
+  networklayer/common/InterfaceTableAccess.h \
+  linklayer/mfcore/SnrList.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h
 $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.cc \
   underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.h \
   underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
@@ -8320,6 +8359,26 @@ $O/underTest/linklayer/radio/WiMAXPathLossReceptionModel.o: underTest/linklayer/
   base/INETDefs.h \
   linklayer/radio/IReceptionModel.h \
   underTest/linklayer/radio/WiMAXPathLossReceptionModel.h
+$O/underTest/transport/aki/aki.o: underTest/transport/aki/aki.cc \
+  underTest/transport/aki/akiMsg_m.h \
+  applications/udpapp/UDPBasicApp.h \
+  underTest/transport/aki/AkiPacket_m.h \
+  base/BasicModule.h \
+  base/INETDefs.h \
+  base/NotificationBoard.h \
+  applications/udpapp/UDPAppBase.h \
+  transport/contract/UDPSocket.h \
+  networklayer/contract/IPv6Address.h \
+  networklayer/contract/IPAddressResolver.h \
+  transport/contract/UDPControlInfo_m.h \
+  underTest/transport/aki/AkiControlInfo_m.h \
+  applications/udpapp/UDPEchoApp.h \
+  base/ModuleAccess.h \
+  base/NotifierConsts.h \
+  base/INotifiable.h \
+  networklayer/contract/IPAddress.h \
+  networklayer/contract/IPvXAddress.h \
+  underTest/transport/aki/aki.h
 $O/util/NAMTraceWriter.o: util/NAMTraceWriter.cc \
   linklayer/contract/TxNotifDetails.h \
   world/NAMTrace.h \

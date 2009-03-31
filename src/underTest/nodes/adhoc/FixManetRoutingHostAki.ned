@@ -35,7 +35,7 @@ import inet.transport.udp.UDP;
 import inet.networklayer.manetrouting.ManetRouting;
 
 
-import inet.transport.aki.Aki;
+import inet.underTest.transport.aki.Aki;
 //
 // Models a mobile host with a wireless (802.11b) card. This module is
 // a WirelessHost less the \PPP and Ethernet interfaces, plus mobility
