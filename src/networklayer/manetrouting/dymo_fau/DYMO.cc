@@ -163,6 +163,28 @@ void DYMO::finish() {
 	// ipLayer->unregisterHook(0, this);
 }
 
+DYMO::~DYMO()
+{
+
+	if (dymo_routingTable)
+	delete dymo_routingTable;
+
+	outstandingRREQList.delAll();
+
+	if (ownSeqNumLossTimeout)
+	delete ownSeqNumLossTimeout;
+	if (ownSeqNumLossTimeoutMax)
+	delete ownSeqNumLossTimeoutMax;
+	
+
+	if (rateLimiterRREQ)
+	delete rateLimiterRREQ;
+
+	// IP* ipLayer = queuedDataPackets->getIpLayer();
+	if (queuedDataPackets)
+	delete queuedDataPackets;
+}
+
 void DYMO::handleMessage(cMessage* apMsg)
 {
 

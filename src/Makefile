@@ -64,7 +64,6 @@ INCLUDE_PATH = \
     -Inetworklayer/manetrouting/dymo \
     -Inetworklayer/manetrouting/dymo/dymoum \
     -Inetworklayer/manetrouting/dymo_fau \
-    -Inetworklayer/manetrouting/dymo_fau/__history \
     -Inetworklayer/manetrouting/manager \
     -Inetworklayer/manetrouting/olsr \
     -Inetworklayer/mpls \
@@ -93,6 +92,22 @@ INCLUDE_PATH = \
     -Itransport/tcp/flavours \
     -Itransport/tcp/queues \
     -Itransport/udp \
+    -IunderTest \
+    -IunderTest/linklayer \
+    -IunderTest/linklayer/Ieee80216 \
+    -IunderTest/linklayer/Ieee80216/ControlPlane \
+    -IunderTest/linklayer/Ieee80216/Mac \
+    -IunderTest/linklayer/Ieee80216/MACSublayer \
+    -IunderTest/linklayer/Ieee80216/MACSublayer/QoS \
+    -IunderTest/linklayer/Ieee80216/MACSublayer/Receiver \
+    -IunderTest/linklayer/Ieee80216/MACSublayer/Transceiver \
+    -IunderTest/linklayer/Ieee80216/phyLayer \
+    -IunderTest/linklayer/Ieee80216/phyLayer/decider \
+    -IunderTest/linklayer/Ieee80216/phyLayer/snrEval \
+    -IunderTest/linklayer/radio \
+    -IunderTest/nodes \
+    -IunderTest/nodes/adhoc \
+    -IunderTest/nodes/WiMAX \
     -Iutil \
     -Iutil/headerserializers \
     -Iutil/headerserializers/headers \
@@ -222,6 +237,7 @@ OBJS = \
     $O/networklayer/arp/ARP.o \
     $O/networklayer/autorouting/FlatNetworkConfigurator.o \
     $O/networklayer/autorouting/FlatNetworkConfigurator6.o \
+    $O/networklayer/autorouting/HostAutoConfigurator.o \
     $O/networklayer/autorouting/NetworkConfigurator.o \
     $O/networklayer/common/InterfaceEntry.o \
     $O/networklayer/common/InterfaceTable.o \
@@ -413,6 +429,40 @@ OBJS = \
     $O/transport/tcp/queues/TCPVirtualDataRcvQueue.o \
     $O/transport/tcp/queues/TCPVirtualDataSendQueue.o \
     $O/transport/udp/UDP.o \
+    $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.o \
+    $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBase.o \
+    $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBaseAP.o \
+    $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBaseMS.o \
+    $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBasestation.o \
+    $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMobilestation.o \
+    $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMS.o \
+    $O/underTest/linklayer/Ieee80216/Mac/CommonPartSublayerDown.o \
+    $O/underTest/linklayer/Ieee80216/Mac/CommonPartSublayerUp.o \
+    $O/underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerDown.o \
+    $O/underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerUp.o \
+    $O/underTest/linklayer/Ieee80216/Mac/SecuritySublayerDown.o \
+    $O/underTest/linklayer/Ieee80216/Mac/SecuritySublayerUp.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerAuthorizationModule.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerControlModule.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerFragmentation.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerQoSAP.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerScheduling.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_BS.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_MS.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerControlModule.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerHeaderCompression.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerTrafficClassification.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/Receiver/CommonPartSublayerReceiver.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/Receiver/ConvergenceSublayerReceiver.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/Receiver/SecuritySublayerReceiver.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/Transceiver/CommonPartSublayerTransceiver.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/Transceiver/ConvergenceSublayerTransceiver.o \
+    $O/underTest/linklayer/Ieee80216/MACSublayer/Transceiver/SecuritySublayerTransceiver.o \
+    $O/underTest/linklayer/Ieee80216/phyLayer/decider/Decider80216.o \
+    $O/underTest/linklayer/radio/Ieee80216Radio.o \
+    $O/underTest/linklayer/radio/Ieee80216RadioModel.o \
+    $O/underTest/linklayer/radio/WiMAXPathLossReceptionModel.o \
     $O/util/common.o \
     $O/util/NAMTraceWriter.o \
     $O/util/opp_utils.o \
@@ -492,7 +542,11 @@ OBJS = \
     $O/transport/rtp/profiles/avprofile/RTPMpegPacket_m.o \
     $O/transport/sctp/SCTPMessage_m.o \
     $O/transport/tcp/TCPSegment_m.o \
-    $O/transport/udp/UDPPacket_m.o
+    $O/transport/udp/UDPPacket_m.o \
+    $O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.o \
+    $O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.o \
+    $O/underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.o \
+    $O/underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.o
 
 # Message files
 MSGFILES = \
@@ -558,7 +612,11 @@ MSGFILES = \
     transport/rtp/profiles/avprofile/RTPMpegPacket.msg \
     transport/sctp/SCTPMessage.msg \
     transport/tcp/TCPSegment.msg \
-    transport/udp/UDPPacket.msg
+    transport/udp/UDPPacket.msg \
+    underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages.msg \
+    underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives.msg \
+    underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader.msg \
+    underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl.msg
 
 #------------------------------------------------------------------------------
 
@@ -673,7 +731,6 @@ clean:
 	-rm -f networklayer/manetrouting/dymo/*_m.cc networklayer/manetrouting/dymo/*_m.h
 	-rm -f networklayer/manetrouting/dymo/dymoum/*_m.cc networklayer/manetrouting/dymo/dymoum/*_m.h
 	-rm -f networklayer/manetrouting/dymo_fau/*_m.cc networklayer/manetrouting/dymo_fau/*_m.h
-	-rm -f networklayer/manetrouting/dymo_fau/__history/*_m.cc networklayer/manetrouting/dymo_fau/__history/*_m.h
 	-rm -f networklayer/manetrouting/manager/*_m.cc networklayer/manetrouting/manager/*_m.h
 	-rm -f networklayer/manetrouting/olsr/*_m.cc networklayer/manetrouting/olsr/*_m.h
 	-rm -f networklayer/mpls/*_m.cc networklayer/mpls/*_m.h
@@ -702,6 +759,22 @@ clean:
 	-rm -f transport/tcp/flavours/*_m.cc transport/tcp/flavours/*_m.h
 	-rm -f transport/tcp/queues/*_m.cc transport/tcp/queues/*_m.h
 	-rm -f transport/udp/*_m.cc transport/udp/*_m.h
+	-rm -f underTest/*_m.cc underTest/*_m.h
+	-rm -f underTest/linklayer/*_m.cc underTest/linklayer/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/*_m.cc underTest/linklayer/Ieee80216/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/ControlPlane/*_m.cc underTest/linklayer/Ieee80216/ControlPlane/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/Mac/*_m.cc underTest/linklayer/Ieee80216/Mac/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/MACSublayer/*_m.cc underTest/linklayer/Ieee80216/MACSublayer/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/MACSublayer/QoS/*_m.cc underTest/linklayer/Ieee80216/MACSublayer/QoS/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/MACSublayer/Receiver/*_m.cc underTest/linklayer/Ieee80216/MACSublayer/Receiver/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/MACSublayer/Transceiver/*_m.cc underTest/linklayer/Ieee80216/MACSublayer/Transceiver/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/phyLayer/*_m.cc underTest/linklayer/Ieee80216/phyLayer/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/phyLayer/decider/*_m.cc underTest/linklayer/Ieee80216/phyLayer/decider/*_m.h
+	-rm -f underTest/linklayer/Ieee80216/phyLayer/snrEval/*_m.cc underTest/linklayer/Ieee80216/phyLayer/snrEval/*_m.h
+	-rm -f underTest/linklayer/radio/*_m.cc underTest/linklayer/radio/*_m.h
+	-rm -f underTest/nodes/*_m.cc underTest/nodes/*_m.h
+	-rm -f underTest/nodes/adhoc/*_m.cc underTest/nodes/adhoc/*_m.h
+	-rm -f underTest/nodes/WiMAX/*_m.cc underTest/nodes/WiMAX/*_m.h
 	-rm -f util/*_m.cc util/*_m.h
 	-rm -f util/headerserializers/*_m.cc util/headerserializers/*_m.h
 	-rm -f util/headerserializers/headers/*_m.cc util/headerserializers/headers/*_m.h
@@ -711,7 +784,7 @@ cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc applications/*.cc applications/ethernet/*.cc applications/generic/*.cc applications/pingapp/*.cc applications/rtpapp/*.cc applications/sctpapp/*.cc applications/tcpapp/*.cc applications/udpapp/*.cc base/*.cc experimental/*.cc experimental/linklayer/*.cc experimental/linklayer/contract/*.cc experimental/linklayer/ieee80211/*.cc experimental/linklayer/ieee80211/mgmt/*.cc experimental/nodes/*.cc experimental/nodes/adhoc/*.cc linklayer/*.cc linklayer/contract/*.cc linklayer/ethernet/*.cc linklayer/etherswitch/*.cc linklayer/ext/*.cc linklayer/ieee80211/*.cc linklayer/ieee80211/mac/*.cc linklayer/ieee80211/mgmt/*.cc linklayer/mf80211/*.cc linklayer/mf80211/macLayer/*.cc linklayer/mf80211/phyLayer/*.cc linklayer/mf80211/phyLayer/decider/*.cc linklayer/mf80211/phyLayer/snrEval/*.cc linklayer/mfcore/*.cc linklayer/ppp/*.cc linklayer/radio/*.cc mobility/*.cc networklayer/*.cc networklayer/arp/*.cc networklayer/autorouting/*.cc networklayer/common/*.cc networklayer/contract/*.cc networklayer/extras/*.cc networklayer/icmpv6/*.cc networklayer/ipv4/*.cc networklayer/ipv6/*.cc networklayer/ldp/*.cc networklayer/manetrouting/*.cc networklayer/manetrouting/aodv/*.cc networklayer/manetrouting/aodv/aodv-uu/*.cc networklayer/manetrouting/base/*.cc networklayer/manetrouting/dsdv/*.cc networklayer/manetrouting/dsr/*.cc networklayer/manetrouting/dsr/dsr-uu/*.cc networklayer/manetrouting/dymo/*.cc networklayer/manetrouting/dymo/dymoum/*.cc networklayer/manetrouting/dymo_fau/*.cc networklayer/manetrouting/dymo_fau/__history/*.cc networklayer/manetrouting/manager/*.cc networklayer/manetrouting/olsr/*.cc networklayer/mpls/*.cc networklayer/ospfv2/*.cc networklayer/ospfv2/interface/*.cc networklayer/ospfv2/messagehandler/*.cc networklayer/ospfv2/neighbor/*.cc networklayer/ospfv2/router/*.cc networklayer/queue/*.cc networklayer/rsvp_te/*.cc networklayer/ted/*.cc nodes/*.cc nodes/adhoc/*.cc nodes/ethernet/*.cc nodes/inet/*.cc nodes/ipv6/*.cc nodes/mpls/*.cc nodes/wireless/*.cc transport/*.cc transport/contract/*.cc transport/rtp/*.cc transport/rtp/profiles/*.cc transport/rtp/profiles/avprofile/*.cc transport/sctp/*.cc transport/tcp/*.cc transport/tcp/flavours/*.cc transport/tcp/queues/*.cc transport/udp/*.cc util/*.cc util/headerserializers/*.cc util/headerserializers/headers/*.cc world/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc applications/*.cc applications/ethernet/*.cc applications/generic/*.cc applications/pingapp/*.cc applications/rtpapp/*.cc applications/sctpapp/*.cc applications/tcpapp/*.cc applications/udpapp/*.cc base/*.cc experimental/*.cc experimental/linklayer/*.cc experimental/linklayer/contract/*.cc experimental/linklayer/ieee80211/*.cc experimental/linklayer/ieee80211/mgmt/*.cc experimental/nodes/*.cc experimental/nodes/adhoc/*.cc linklayer/*.cc linklayer/contract/*.cc linklayer/ethernet/*.cc linklayer/etherswitch/*.cc linklayer/ext/*.cc linklayer/ieee80211/*.cc linklayer/ieee80211/mac/*.cc linklayer/ieee80211/mgmt/*.cc linklayer/mf80211/*.cc linklayer/mf80211/macLayer/*.cc linklayer/mf80211/phyLayer/*.cc linklayer/mf80211/phyLayer/decider/*.cc linklayer/mf80211/phyLayer/snrEval/*.cc linklayer/mfcore/*.cc linklayer/ppp/*.cc linklayer/radio/*.cc mobility/*.cc networklayer/*.cc networklayer/arp/*.cc networklayer/autorouting/*.cc networklayer/common/*.cc networklayer/contract/*.cc networklayer/extras/*.cc networklayer/icmpv6/*.cc networklayer/ipv4/*.cc networklayer/ipv6/*.cc networklayer/ldp/*.cc networklayer/manetrouting/*.cc networklayer/manetrouting/aodv/*.cc networklayer/manetrouting/aodv/aodv-uu/*.cc networklayer/manetrouting/base/*.cc networklayer/manetrouting/dsdv/*.cc networklayer/manetrouting/dsr/*.cc networklayer/manetrouting/dsr/dsr-uu/*.cc networklayer/manetrouting/dymo/*.cc networklayer/manetrouting/dymo/dymoum/*.cc networklayer/manetrouting/dymo_fau/*.cc networklayer/manetrouting/manager/*.cc networklayer/manetrouting/olsr/*.cc networklayer/mpls/*.cc networklayer/ospfv2/*.cc networklayer/ospfv2/interface/*.cc networklayer/ospfv2/messagehandler/*.cc networklayer/ospfv2/neighbor/*.cc networklayer/ospfv2/router/*.cc networklayer/queue/*.cc networklayer/rsvp_te/*.cc networklayer/ted/*.cc nodes/*.cc nodes/adhoc/*.cc nodes/ethernet/*.cc nodes/inet/*.cc nodes/ipv6/*.cc nodes/mpls/*.cc nodes/wireless/*.cc transport/*.cc transport/contract/*.cc transport/rtp/*.cc transport/rtp/profiles/*.cc transport/rtp/profiles/avprofile/*.cc transport/sctp/*.cc transport/tcp/*.cc transport/tcp/flavours/*.cc transport/tcp/queues/*.cc transport/udp/*.cc underTest/*.cc underTest/linklayer/*.cc underTest/linklayer/Ieee80216/*.cc underTest/linklayer/Ieee80216/ControlPlane/*.cc underTest/linklayer/Ieee80216/Mac/*.cc underTest/linklayer/Ieee80216/MACSublayer/*.cc underTest/linklayer/Ieee80216/MACSublayer/QoS/*.cc underTest/linklayer/Ieee80216/MACSublayer/Receiver/*.cc underTest/linklayer/Ieee80216/MACSublayer/Transceiver/*.cc underTest/linklayer/Ieee80216/phyLayer/*.cc underTest/linklayer/Ieee80216/phyLayer/decider/*.cc underTest/linklayer/Ieee80216/phyLayer/snrEval/*.cc underTest/linklayer/radio/*.cc underTest/nodes/*.cc underTest/nodes/adhoc/*.cc underTest/nodes/WiMAX/*.cc util/*.cc util/headerserializers/*.cc util/headerserializers/headers/*.cc world/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/applications/ethernet/EtherAppCli.o: applications/ethernet/EtherAppCli.cc \
@@ -2144,6 +2217,21 @@ $O/networklayer/autorouting/FlatNetworkConfigurator6.o: networklayer/autorouting
   base/INotifiable.h \
   networklayer/ipv6/RoutingTable6.h \
   networklayer/ipv6/IPv6InterfaceData.h \
+  networklayer/contract/IPAddress.h \
+  networklayer/contract/IPvXAddress.h
+$O/networklayer/autorouting/HostAutoConfigurator.o: networklayer/autorouting/HostAutoConfigurator.cc \
+  networklayer/autorouting/HostAutoConfigurator.h \
+  networklayer/ipv4/IRoutingTable.h \
+  networklayer/ipv4/IPRoute.h \
+  linklayer/contract/MACAddress.h \
+  networklayer/common/IInterfaceTable.h \
+  base/INETDefs.h \
+  networklayer/contract/IPv6Address.h \
+  networklayer/contract/IPAddressResolver.h \
+  networklayer/common/InterfaceEntry.h \
+  networklayer/ipv4/IPv4InterfaceData.h \
+  base/NotifierConsts.h \
+  networklayer/common/InterfaceToken.h \
   networklayer/contract/IPAddress.h \
   networklayer/contract/IPvXAddress.h
 $O/networklayer/autorouting/NetworkConfigurator.o: networklayer/autorouting/NetworkConfigurator.cc \
@@ -7778,6 +7866,460 @@ $O/transport/udp/UDP.o: transport/udp/UDP.cc \
 $O/transport/udp/UDPPacket_m.o: transport/udp/UDPPacket_m.cc \
   transport/udp/UDPPacket_m.h \
   base/INETDefs.h
+$O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.cc \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  linklayer/mfcore/SnrList.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h
+$O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBase.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBase.cc \
+  world/ChannelAccess.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/BasicModule.h \
+  util/FWMath.h \
+  underTest/linklayer/radio/Ieee80216Radio.h \
+  linklayer/contract/RadioState.h \
+  base/INETDefs.h \
+  base/NotificationBoard.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBase.h \
+  base/ModuleAccess.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  base/NotifierConsts.h \
+  linklayer/radio/AbstractRadio.h \
+  underTest/linklayer/radio/Ieee80216Consts.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  base/INotifiable.h \
+  underTest/linklayer/Ieee80216/ControlPlane/SnrList.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  linklayer/mfcore/AirFrame_m.h \
+  world/ChannelControl.h \
+  base/Coord.h \
+  linklayer/radio/IRadioModel.h \
+  linklayer/radio/IReceptionModel.h \
+  underTest/linklayer/radio/WiMAXPathLossReceptionModel.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBaseAP.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBaseAP.cc \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBaseAP.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  linklayer/mfcore/SnrList.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h
+$O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBaseMS.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBaseMS.cc
+$O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBasestation.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBasestation.cc \
+  world/ChannelAccess.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  util/FWMath.h \
+  base/BasicModule.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerScheduling.h \
+  underTest/linklayer/radio/Ieee80216Radio.h \
+  linklayer/contract/RadioState.h \
+  networklayer/common/IInterfaceTable.h \
+  underTest/linklayer/Ieee80216/MACSublayer/Receiver/CommonPartSublayerReceiver.h \
+  base/INETDefs.h \
+  base/NotificationBoard.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_BS.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBase.h \
+  networklayer/common/InterfaceEntry.h \
+  base/ModuleAccess.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  base/NotifierConsts.h \
+  linklayer/radio/AbstractRadio.h \
+  underTest/linklayer/radio/Ieee80216Consts.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  networklayer/common/InterfaceToken.h \
+  base/INotifiable.h \
+  base/FSMA.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBasestation.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/SnrList.h \
+  base/Coord.h \
+  world/ChannelControl.h \
+  linklayer/mfcore/AirFrame_m.h \
+  linklayer/radio/IRadioModel.h \
+  networklayer/common/InterfaceTableAccess.h \
+  underTest/linklayer/radio/WiMAXPathLossReceptionModel.h \
+  linklayer/radio/IReceptionModel.h \
+  linklayer/mfcore/SnrList.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ModulationsConsts.h
+$O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMS.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMS.cc \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMS.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  linklayer/mfcore/SnrList.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h
+$O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMobilestation.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMobilestation.cc \
+  underTest/linklayer/Ieee80216/ControlPlane/SnrList.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ModulationsConsts.h
+$O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.o: underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.cc \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.o: underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.cc \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/Mac/CommonPartSublayerDown.o: underTest/linklayer/Ieee80216/Mac/CommonPartSublayerDown.cc \
+  underTest/linklayer/Ieee80216/Mac/CommonPartSublayerDown.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.h
+$O/underTest/linklayer/Ieee80216/Mac/CommonPartSublayerUp.o: underTest/linklayer/Ieee80216/Mac/CommonPartSublayerUp.cc \
+  underTest/linklayer/Ieee80216/Mac/CommonPartSublayerUp.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.h
+$O/underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerDown.o: underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerDown.cc \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerDown.h \
+  linklayer/contract/PhyControlInfo_m.h
+$O/underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerUp.o: underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerUp.cc \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerUp.h
+$O/underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.o: underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.cc \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h
+$O/underTest/linklayer/Ieee80216/Mac/SecuritySublayerDown.o: underTest/linklayer/Ieee80216/Mac/SecuritySublayerDown.cc \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/Mac/SecuritySublayerDown.h
+$O/underTest/linklayer/Ieee80216/Mac/SecuritySublayerUp.o: underTest/linklayer/Ieee80216/Mac/SecuritySublayerUp.cc \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/Mac/SecuritySublayerUp.h
+$O/underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.o: underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.cc \
+  underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerAuthorizationModule.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerAuthorizationModule.cc \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerAuthorizationModule.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerControlModule.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerControlModule.cc \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerControlModule.h \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerFragmentation.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerFragmentation.cc \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerFragmentation.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerQoSAP.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerQoSAP.cc \
+  linklayer/contract/MACAddress.h \
+  networklayer/common/IInterfaceTable.h \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  networklayer/common/InterfaceEntry.h \
+  base/ModuleAccess.h \
+  base/NotifierConsts.h \
+  networklayer/common/InterfaceToken.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerQoSAP.h \
+  networklayer/common/InterfaceTableAccess.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerScheduling.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerScheduling.cc \
+  networklayer/contract/IPProtocolId_m.h \
+  networklayer/ipv4/IPDatagram_m.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerScheduling.h \
+  base/INETDefs.h \
+  networklayer/ipv4/IPDatagram.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  networklayer/contract/IPAddress.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows.cc \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_BS.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_BS.cc \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_BS.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_MS.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_MS.cc \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_MS.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerControlModule.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerControlModule.cc \
+  networklayer/ipv4/ICMPAccess.h \
+  networklayer/ipv4/ICMPMessage_m.h \
+  networklayer/ipv4/IRoutingTable.h \
+  networklayer/contract/IPProtocolId_m.h \
+  networklayer/ipv4/IPRoute.h \
+  networklayer/ipv4/IPDatagram_m.h \
+  networklayer/contract/IPControlInfo_m.h \
+  base/QueueBase.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  base/ProtocolMap.h \
+  networklayer/ipv4/ControlManetRouting_m.h \
+  linklayer/contract/MACAddress.h \
+  networklayer/ipv4/IP.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerControlModule.h \
+  networklayer/manetrouting/base/uint128.h \
+  networklayer/common/IInterfaceTable.h \
+  base/INETDefs.h \
+  networklayer/ipv4/IPDatagram.h \
+  networklayer/ipv4/ICMP.h \
+  base/AbstractQueue.h \
+  networklayer/contract/IPv6Address.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  networklayer/common/InterfaceEntry.h \
+  networklayer/ipv4/RoutingTableAccess.h \
+  base/ReassemblyBuffer.h \
+  base/ModuleAccess.h \
+  base/NotifierConsts.h \
+  networklayer/contract/IPControlInfo.h \
+  networklayer/ipv4/ICMPMessage.h \
+  networklayer/common/InterfaceToken.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  networklayer/contract/IPAddress.h \
+  networklayer/ipv4/IPFragBuf.h \
+  networklayer/common/InterfaceTableAccess.h \
+  linklayer/mfcore/SnrList.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerHeaderCompression.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerHeaderCompression.cc \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerHeaderCompression.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerTrafficClassification.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerTrafficClassification.cc \
+  networklayer/ipv4/ICMPAccess.h \
+  networklayer/ipv4/ICMPMessage_m.h \
+  networklayer/ipv4/IRoutingTable.h \
+  networklayer/contract/IPProtocolId_m.h \
+  world/ChannelAccess.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_MS.h \
+  networklayer/ipv4/IPDatagram_m.h \
+  networklayer/ipv4/IPRoute.h \
+  networklayer/contract/IPControlInfo_m.h \
+  base/QueueBase.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  base/ProtocolMap.h \
+  linklayer/contract/MACAddress.h \
+  networklayer/ipv4/ControlManetRouting_m.h \
+  networklayer/ipv4/IP.h \
+  util/FWMath.h \
+  base/BasicModule.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/ConvergenceSublayerTrafficClassification.h \
+  underTest/linklayer/radio/Ieee80216Radio.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerScheduling.h \
+  linklayer/contract/RadioState.h \
+  networklayer/manetrouting/base/uint128.h \
+  networklayer/common/IInterfaceTable.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/MACSublayer/Receiver/CommonPartSublayerReceiver.h \
+  networklayer/ipv4/IPDatagram.h \
+  base/NotificationBoard.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_BS.h \
+  networklayer/ipv4/ICMP.h \
+  base/AbstractQueue.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  networklayer/contract/IPv6Address.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBase.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMobilestation.h \
+  networklayer/common/InterfaceEntry.h \
+  networklayer/ipv4/RoutingTableAccess.h \
+  base/ReassemblyBuffer.h \
+  base/ModuleAccess.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  base/NotifierConsts.h \
+  linklayer/radio/AbstractRadio.h \
+  underTest/linklayer/radio/Ieee80216Consts.h \
+  networklayer/ipv4/ICMPMessage.h \
+  networklayer/common/InterfaceToken.h \
+  networklayer/contract/IPControlInfo.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  base/INotifiable.h \
+  base/FSMA.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBasestation.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  networklayer/contract/IPAddress.h \
+  underTest/linklayer/Ieee80216/ControlPlane/SnrList.h \
+  base/Coord.h \
+  world/ChannelControl.h \
+  linklayer/mfcore/AirFrame_m.h \
+  networklayer/ipv4/IPFragBuf.h \
+  linklayer/radio/IRadioModel.h \
+  networklayer/common/InterfaceTableAccess.h \
+  underTest/linklayer/radio/WiMAXPathLossReceptionModel.h \
+  linklayer/radio/IReceptionModel.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/Receiver/CommonPartSublayerReceiver.o: underTest/linklayer/Ieee80216/MACSublayer/Receiver/CommonPartSublayerReceiver.cc \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/MACSublayer/Receiver/CommonPartSublayerReceiver.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/Receiver/ConvergenceSublayerReceiver.o: underTest/linklayer/Ieee80216/MACSublayer/Receiver/ConvergenceSublayerReceiver.cc \
+  underTest/linklayer/Ieee80216/MACSublayer/Receiver/ConvergenceSublayerReceiver.h \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/Receiver/SecuritySublayerReceiver.o: underTest/linklayer/Ieee80216/MACSublayer/Receiver/SecuritySublayerReceiver.cc \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/Receiver/SecuritySublayerReceiver.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/Transceiver/CommonPartSublayerTransceiver.o: underTest/linklayer/Ieee80216/MACSublayer/Transceiver/CommonPartSublayerTransceiver.cc \
+  world/ChannelAccess.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_MS.h \
+  underTest/linklayer/Ieee80216/MACSublayer/Transceiver/CommonPartSublayerTransceiver.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  base/IPassiveQueue.h \
+  util/FWMath.h \
+  base/BasicModule.h \
+  underTest/linklayer/radio/Ieee80216Radio.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerScheduling.h \
+  linklayer/contract/RadioState.h \
+  networklayer/common/IInterfaceTable.h \
+  base/INETDefs.h \
+  underTest/linklayer/Ieee80216/MACSublayer/Receiver/CommonPartSublayerReceiver.h \
+  base/NotificationBoard.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerServiceFlows_BS.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBase.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMobilestation.h \
+  networklayer/common/InterfaceEntry.h \
+  base/ModuleAccess.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
+  base/NotifierConsts.h \
+  linklayer/radio/AbstractRadio.h \
+  underTest/linklayer/radio/Ieee80216Consts.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
+  networklayer/common/InterfaceToken.h \
+  base/INotifiable.h \
+  base/FSMA.h \
+  underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBasestation.h \
+  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
+  underTest/linklayer/Ieee80216/ControlPlane/SnrList.h \
+  base/Coord.h \
+  world/ChannelControl.h \
+  linklayer/mfcore/AirFrame_m.h \
+  linklayer/radio/IRadioModel.h \
+  underTest/linklayer/radio/WiMAXPathLossReceptionModel.h \
+  linklayer/radio/IReceptionModel.h \
+  networklayer/common/InterfaceTableAccess.h \
+  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/Transceiver/ConvergenceSublayerTransceiver.o: underTest/linklayer/Ieee80216/MACSublayer/Transceiver/ConvergenceSublayerTransceiver.cc \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h \
+  underTest/linklayer/Ieee80216/MACSublayer/Transceiver/ConvergenceSublayerTransceiver.h
+$O/underTest/linklayer/Ieee80216/MACSublayer/Transceiver/SecuritySublayerTransceiver.o: underTest/linklayer/Ieee80216/MACSublayer/Transceiver/SecuritySublayerTransceiver.cc \
+  underTest/linklayer/Ieee80216/MACSublayer/Transceiver/SecuritySublayerTransceiver.h \
+  base/INETDefs.h \
+  linklayer/contract/PhyControlInfo_m.h
+$O/underTest/linklayer/Ieee80216/phyLayer/decider/Decider80216.o: underTest/linklayer/Ieee80216/phyLayer/decider/Decider80216.cc \
+  world/ChannelAccess.h \
+  underTest/linklayer/Ieee80216/phyLayer/decider/Decider80216.h \
+  linklayer/mfcore/BasicDecider.h \
+  util/FWMath.h \
+  base/BasicModule.h \
+  base/INETDefs.h \
+  base/NotificationBoard.h \
+  linklayer/mfcore/SnrControlInfo_m.h \
+  base/ModuleAccess.h \
+  base/NotifierConsts.h \
+  base/INotifiable.h \
+  base/Coord.h \
+  linklayer/mfcore/AirFrame_m.h \
+  world/ChannelControl.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/radio/Ieee80216Radio.o: underTest/linklayer/radio/Ieee80216Radio.cc \
+  world/ChannelAccess.h \
+  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h \
+  linklayer/contract/MACAddress.h \
+  util/FWMath.h \
+  base/BasicModule.h \
+  underTest/linklayer/radio/Ieee80216Radio.h \
+  linklayer/contract/RadioState.h \
+  base/INETDefs.h \
+  base/NotificationBoard.h \
+  base/ModuleAccess.h \
+  base/NotifierConsts.h \
+  linklayer/radio/AbstractRadio.h \
+  underTest/linklayer/radio/Ieee80216Consts.h \
+  base/INotifiable.h \
+  base/Coord.h \
+  world/ChannelControl.h \
+  linklayer/mfcore/AirFrame_m.h \
+  linklayer/radio/IRadioModel.h \
+  underTest/linklayer/radio/WiMAXPathLossReceptionModel.h \
+  linklayer/radio/IReceptionModel.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/radio/Ieee80216RadioModel.o: underTest/linklayer/radio/Ieee80216RadioModel.cc \
+  underTest/linklayer/radio/Ieee80216RadioModel.h \
+  linklayer/ieee80211/mac/Ieee80211Consts.h \
+  util/FWMath.h \
+  base/INETDefs.h \
+  base/Coord.h \
+  linklayer/mfcore/AirFrame_m.h \
+  linklayer/radio/IRadioModel.h \
+  linklayer/mfcore/SnrList.h
+$O/underTest/linklayer/radio/WiMAXPathLossReceptionModel.o: underTest/linklayer/radio/WiMAXPathLossReceptionModel.cc \
+  util/FWMath.h \
+  base/INETDefs.h \
+  linklayer/radio/IReceptionModel.h \
+  underTest/linklayer/radio/WiMAXPathLossReceptionModel.h
 $O/util/NAMTraceWriter.o: util/NAMTraceWriter.cc \
   linklayer/contract/TxNotifDetails.h \
   world/NAMTrace.h \
