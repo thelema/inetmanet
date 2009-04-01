@@ -19,8 +19,8 @@ package inet.examples.wireless.WiMAXHandover;
 
 
 import inet.examples.wireless.WiMAXHandover.Bild;
-import inet.nodes.WiMAX.WiMAXMS;
-import inet.nodes.WiMAX.WiMAXAP;
+import inet.underTest.nodes.WiMAX.WiMAXMS;
+import inet.underTest.nodes.WiMAX.WiMAXAP;
 import inet.world.ChannelControl;
 import inet.networklayer.autorouting.FlatNetworkConfigurator;
 
@@ -74,8 +74,8 @@ module HandoverNetwork
         }
         configurator: FlatNetworkConfigurator {
             parameters:
-                moduleTypes = "WiMAXMS WiMAXAP";
-                nonIPModuleTypes = "";
+ //               moduleTypes = "WiMAXMS WiMAXAP";
+ //               nonIPModuleTypes = "";
                 networkAddress = "145.236.0.0";
                 netmask = "255.255.0.0";
                 @display("p=140,50;i=block/cogwheel_s");

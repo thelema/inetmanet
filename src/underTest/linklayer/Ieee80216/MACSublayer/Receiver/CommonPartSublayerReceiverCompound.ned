@@ -3,9 +3,9 @@ package inet.underTest.linklayer.Ieee80216.MACSublayer.Receiver;
 // @author Michael Kr"ucken
 //
 
-import inet.linklayer.Ieee80216.MACSublayer.Receiver.CommonPartSublayerReceiver;
-import inet.linklayer.Ieee80216.MACSublayer.QoS.CommonPartSublayerScheduling;
-import inet.linklayer.Ieee80216.MACSublayer.QoS.CommonPartSublayerFragmentation;
+import inet.underTest.linklayer.Ieee80216.MACSublayer.Receiver.CommonPartSublayerReceiver;
+import inet.underTest.linklayer.Ieee80216.MACSublayer.QoS.CommonPartSublayerScheduling;
+import inet.underTest.linklayer.Ieee80216.MACSublayer.QoS.CommonPartSublayerFragmentation;
 
 module CommonPartSublayerReceiverCompound
 {

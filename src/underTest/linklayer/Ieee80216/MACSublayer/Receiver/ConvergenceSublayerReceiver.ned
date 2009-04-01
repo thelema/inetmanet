@@ -4,8 +4,8 @@ package inet.underTest.linklayer.Ieee80216.MACSublayer.Receiver;
 //
 
 //	"ConvergenceSublayerControlModule",
-import inet.linklayer.Ieee80216.MACSublayer.QoS.ConvergenceSublayerTrafficClassification;
-import inet.linklayer.Ieee80216.MACSublayer.QoS.ConvergenceSublayerHeaderCompression;
+import inet.underTest.linklayer.Ieee80216.MACSublayer.QoS.ConvergenceSublayerTrafficClassification;
+import inet.underTest.linklayer.Ieee80216.MACSublayer.QoS.ConvergenceSublayerHeaderCompression;
 
 
 module ConvergenceSublayerReceiver
