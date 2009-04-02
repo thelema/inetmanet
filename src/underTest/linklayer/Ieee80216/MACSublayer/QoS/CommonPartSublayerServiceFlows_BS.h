@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <omnetpp.h>
-#include <vector.h>
+#include <vector>
 
 #include <CommonPartSublayerServiceFlows.h>
 //#include <CommonPartSublayerAuthorizationModule.h>
@@ -9,7 +9,7 @@
 
 #include <global_enums.h>
 
-#include <map.h>
+#include <map>
 using namespace std;
 
 class CommonPartSublayerServiceFlows_BS: public CommonPartSublayerServiceFlows {

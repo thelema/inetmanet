@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <omnetpp.h>
-#include <vector.h>
+#include <vector>
 
 #include <CommonPartSublayerServiceFlows.h>
 #include <Ieee80216ManagementMessages_m.h>
 
 #include <global_enums.h>
 
-#include <map.h>
+#include <map>
 using namespace std;
 
 class CommonPartSublayerServiceFlows_MS: public CommonPartSublayerServiceFlows {

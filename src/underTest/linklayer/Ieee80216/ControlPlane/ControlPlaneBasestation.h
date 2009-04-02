@@ -19,7 +19,7 @@
 #include "InterfaceTableAccess.h"
 #include "InterfaceEntry.h"
 
-#include <map.h>
+#include <map>
 using namespace std;
 
 #include "CommonPartSublayerServiceFlows_BS.h"

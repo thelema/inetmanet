@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <omnetpp.h>
-#include <vector.h>
+#include <vector>
 
 #include "IPDatagram.h"
 #include "PhyControlInfo_m.h"
