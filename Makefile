@@ -11,6 +11,9 @@ cleanall: checkmakefiles
 
 makefiles:
 	cd src && opp_makemake -f --deep --make-so -o inet -O out
+	
+makefiles_exe:
+	cd src && opp_makemake -f --deep -o inet -O out
 
 checkmakefiles:
 	@if [ ! -f src/Makefile ]; then \

@@ -1,3 +1,0 @@
-#!/bin/sh
-cd ./src
-opp_makemake -f --deep -lpcap --make-so -o inet -O out
