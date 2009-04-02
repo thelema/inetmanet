@@ -1,6 +1,6 @@
 #include "ConvergenceSublayerHeaderCompression.h"
 #include "PhyControlInfo_m.h"
-#include "stdio.h"
+#include <stdio.h>
 #include <omnetpp.h>
 
 Define_Module(ConvergenceSublayerHeaderCompression);
