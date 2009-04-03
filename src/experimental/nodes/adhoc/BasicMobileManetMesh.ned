@@ -22,6 +22,7 @@ package inet.experimental.nodes.adhoc;
 
 import inet.base.NotificationBoard;
 import inet.mobility.BasicMobility;
+import inet.mobility.NullMobility;
 import inet.experimental.linklayer.ieee80211.Ieee80211NicMesh;
 import inet.experimental.linklayer.ieee80211.Ieee80211aNicMesh;
 import inet.experimental.linklayer.ieee80211.Ieee80211gNicMesh;
@@ -99,4 +100,51 @@ module BasicMobileManetMesh
         wlan.uppergateIn <-- sink.ifOut[0];
 }
 
+module BasicFixManetMesh
+{
+    parameters:
+        @node();
+        string mobilityType = default("NullMobility");
+        @display("i=device/pocketpc_s");
+
+    gates:
+        input radioIn @directIn;
+
+    submodules:
+        routingTable: RoutingTable {
+            parameters:
+                IPForward = true;
+                routerId = "";
+                routingFile = "";
+                @display("p=47,146");
+        }
+
+        notificationBoard: NotificationBoard {
+            parameters:
+                @display("p=146,148");
+        }
+        interfaceTable: InterfaceTable {
+            parameters:
+                @display("p=142,77");
+        }
+        sink: BasicNetLayer {
+            @display("p=101,205;i=block/sink");
+        }
+        // the name of radio interface must have "wlan", valid examples wlan, wlan802, localwlan ....
+        wlan: Ieee80211gNicMesh {
+            parameters:
+                @display("p=101,275;q=queue");
+        }
+        mobility:  NullMobility {
+            parameters:
+                @display("p=38,73");
+        }
+
+    connections allowunconnected:
+
+        // connections to network outside
+        radioIn --> wlan.radioIn;
+        wlan.uppergateOut --> sink.ifIn[0];
+        wlan.uppergateIn <-- sink.ifOut[0];
+}
 
