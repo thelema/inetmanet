@@ -14,7 +14,7 @@ cplusplus {{
 #include "MACAddress.h"
 #include "Ieee80216MacHeader_m.h"
 #include "global_enums.h"
-#include "vector.h"
+#include <vector>
 #include "Struct.h"//Type/Length/Value TLV coding
 }}
 
