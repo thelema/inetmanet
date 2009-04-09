@@ -10,9 +10,15 @@ cleanall: checkmakefiles
 	rm -f src/Makefile
 
 makefiles:
-	cd src && opp_makemake -f --deep --make-so -o inet -O out
+	cd src && opp_makemake -f --deep -X underTest/applications/Ieee802154TestApp -X underTest/linklayer/ieee802154 -X underTest/wpan --make-so -o inet -O out 
 	
 makefiles_exe:
+	cd src && opp_makemake -f --deep -X underTest/applications/Ieee802154TestApp -X underTest/linklayer/ieee802154 -X underTest/wpan -o inet -O out
+
+makeall:
+	cd src && opp_makemake -f --deep --make-so -o inet -O out 
+	
+makeall_exe:
 	cd src && opp_makemake -f --deep -o inet -O out
 
 checkmakefiles:
