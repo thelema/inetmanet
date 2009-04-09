@@ -3,7 +3,9 @@
 // Department of Computer Science 7, University of Erlangen, Germany
 //
 // Author: Isabel Dietrich
+//
 // 2009 Alfonso Ariza.
+// Use the par() (omnet 4.0)
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -46,22 +48,6 @@ The traffic generator understands the following parameters:
 * inter departure time used during off-traffic periods: can be a constant number or a distribution. This parameter is not mandatory. If it is left out, no traffic will be generated during off periods
 * identical traffic destinations during on intervals: if this parameter is set to true, all packets generated during an on interval will be sent to the same destination host. At the beginning of the next on interval, the destination is evaluated again. This parameter is not mandatory. If it is left out, a value of false is assumed.
 
-The parameters are gathered in an xml file that looks like this:
- <?xml version="1.0" ?>
- <configurations>
- 	<config
- 		id="0"
- 		packetSize="uniform(20,40)"
- 		interDepartureTime="1"
- 		firstPacketTime="5"
- 		trafDest="host[5]"
- 		onLength="exponential(50)"
- 		offLength="120"
- 		offInterDepartureTime="truncnormal(50, 20)"
- 		onIdenticalTrafDest="true"
- 	/>
- </configurations>
-
 Multiple traffic patterns can be defined in one xml file by varying the id parameter. The pattern to be used in a specific application can be specified in omnetpp.ini using the parameter defaultTrafConfigId. The traffic pattern can also be changed during the simulation by calling setParams().
 
 Nodes sending no traffic can be achieved by two methods:
@@ -82,7 +68,7 @@ Nodes sending no traffic can be achieved by two methods:
 #include <omnetpp.h>
 #include <string>
 
-class TrafGen : public cSimpleModule
+class TrafGenPar : public cSimpleModule
 {
 
 public:
@@ -98,7 +84,10 @@ public:
     double  FirstPacketTime();
     double  InterDepartureTime();
     long    PacketSize();
+    double OnIntv();
 
+    double OffIntv();
+    double OffInterDepartureTime();
 
 	enum TrafficStateType
     {
@@ -113,30 +102,20 @@ protected:
 	virtual void handleLowerMsg(cMessage*);
 
 	virtual void SendTraf(cPacket*, const char*) = 0;
-    virtual void setParams(int);
-	std::string calculateDestination();
+  	std::string calculateDestination();
 
 private:
 
 	// MEMBER VARIABLES
-	cMsgPar        mPacketSize;
-	cMsgPar        mInterDepartureTime;
-	cMsgPar        mFirstPacketTime;
-	cMsgPar        mDestination;
-	cMsgPar        mOnIntv;
-	cMsgPar        mOffIntv;
-	cMsgPar		mOffInterDepartureTime;
-
 	bool		mOffTraffic;
 	bool		mOnIdenticalDest;
 	bool        mOnOff;
+	cMsgPar     mDestination;
 
 	std::string	mCurrentOnDest;
 
 	cMessage*   mpSendMessage;
 	cMessage*   mpOnOffSwitch;
-
-	int         mDefaultTrafConfigId;
 
 };
 

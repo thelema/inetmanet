@@ -24,7 +24,7 @@
 #include "WiMAXQoSTrafficGenerator.h"
 #include "IPDatagram.h"
 
-//Define_Module(WiMAXQoSTrafficGenerator);
+Define_Module(WiMAXQoSTrafficGenerator);
 
 /* 802.11 spezifisch für die sendTraffic methode
 #include "IInterfaceTable.h"

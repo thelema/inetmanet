@@ -32,11 +32,12 @@
 /**
  * Initialization routine
  */
+
 void TrafGen::initialize(int aStage)
 {
 	cSimpleModule::initialize(aStage);
 
-	if(0 == aStage){
+	if(1 == aStage){
 		ev << "initializing TrafGen..." << endl;
 
 		mpSendMessage           = new cMessage("SendMessage");
@@ -56,17 +57,17 @@ void TrafGen::initialize(int aStage)
 		// read all the parameters from the xml file
 		cXMLElement* rootelement = par("trafConfig").xmlValue();
 
-		if (!mPacketSize.setStringValue(
+		if (!mPacketSize.parse(
             rootelement->getElementById(id)->getAttribute("packetSize")))//,'?'))
         {
 			error("wrong value in xml file, attribute packetSize");
         }
-		if (!mInterDepartureTime.setStringValue(
-            rootelement->getElementById(id)->getAttribute("interDepartureTime")))//,'?'))
+		if (!mInterDepartureTime.parse(
+            rootelement->getElementById(id)->getAttribute("interDepartureTime")))
         {
 			error("wrong value in xml file, attribute interDepartureTime");
 		}
-        if (!mFirstPacketTime.setStringValue(
+        if (!mFirstPacketTime.parse(
             rootelement->getElementById(id)->getAttribute("firstPacketTime")))//,   '?'))
 		{
             error("wrong value in xml file, attribute firstPacketTime");
@@ -81,12 +82,12 @@ void TrafGen::initialize(int aStage)
         // only if the parameters for onOff-traffic are present
 		if (rootelement->getElementById(id)->getAttribute("onLength") != NULL)
         {
-			if (!mOnIntv.setStringValue(
+			if (!mOnIntv.parse(
                 rootelement->getElementById(id)->getAttribute("onLength")))//,               '?'))
             {
 				error("wrong value in xml file, attribute onLength");
 			}
-            if (!mOffIntv.setStringValue(
+            if (!mOffIntv.parse(
                 rootelement->getElementById(id)->getAttribute("offLength")))//,               '?'))
             {
 				error("wrong value in xml file, attribute offLength");
@@ -104,7 +105,7 @@ void TrafGen::initialize(int aStage)
 		if (mOnOff == TRAFFIC_ON && rootelement->getElementById(id)->getAttribute("offInterDepartureTime") != NULL)
 		{
 			mOffTraffic = true;
-			if (!mOffInterDepartureTime.setStringValue(
+			if (!mOffInterDepartureTime.parse(
 				rootelement->getElementById(id)->getAttribute("offInterDepartureTime")))//,			'?'))
 			{
 				error("wrong value in xml file, attribute offInterDepartureTime");
@@ -120,7 +121,7 @@ void TrafGen::initialize(int aStage)
 		if (mOnOff == TRAFFIC_ON && rootelement->getElementById(id)->getAttribute("onIdenticalTrafDest") != NULL)
 		{
 			cMsgPar temp;
-			if (!temp.setStringValue(rootelement->getElementById(id)->getAttribute("onIdenticalTrafDest")))//, '?'))
+			if (!temp.parse(rootelement->getElementById(id)->getAttribute("onIdenticalTrafDest")))//, '?'))
 			{
 				error("wrong value in xml file, attribute onIdenticalTrafDest");
 			}
@@ -266,7 +267,7 @@ void TrafGen::handleSelfMsg(cMessage* apMsg)
     // handle the sending of a new message
     else if (apMsg == mpSendMessage)
     {
-		cMessage* p_traffic_msg = new cMessage("TrafGen Message");
+		cPacket* p_traffic_msg = new cPacket("TrafGen Message");
 
 		// calculate the destination and send the message:
 
@@ -336,29 +337,29 @@ void TrafGen::setParams(int aNewTrafficPattern)
 	cXMLElement *rootelement = par("trafConfig").xmlValue();
 	char buf[4];
 	sprintf(buf, "%d", aNewTrafficPattern);
-	if (!mPacketSize.setStringValue(
+	if (!mPacketSize.parse(
         rootelement->getElementById(buf)->getAttribute("packetSize")))//,        '?'))
     {
 		error("wrong value in xml file, attribute packetSize");
 	}
-    if (!mInterDepartureTime.setStringValue(
+    if (!mInterDepartureTime.parse(
         rootelement->getElementById(buf)->getAttribute("interDepartureTime")))//,       '?'))
     {
 		error("wrong value in xml file, attribute interDepartureTime");
 	}
-    if (!mFirstPacketTime.setStringValue(
+    if (!mFirstPacketTime.parse(
         rootelement->getElementById(buf)->getAttribute("firstPacketTime")))//,       '?'))
     {
 		error("wrong value in xml file, attribute firstPacketTime");
 	}
     if (rootelement->getElementById(buf)->getAttribute("onLength") != NULL)
     {
-		if (!mOnIntv.setStringValue(
+		if (!mOnIntv.parse(
             rootelement->getElementById(buf)->getAttribute("onLength")))//,           '?'))
         {
 			error("wrong value in xml file, attribute onLength");
 		}
-        if (!mOnIntv.setStringValue(
+        if (!mOnIntv.parse(
             rootelement->getElementById(buf)->getAttribute("offLength")))//,          '?'))
         {
 			error("wrong value in xml file, attribute offLength");
@@ -376,7 +377,7 @@ void TrafGen::setParams(int aNewTrafficPattern)
 	if (mOnOff == TRAFFIC_ON && rootelement->getElementById(buf)->getAttribute("offInterDepartureTime") != NULL)
 	{
 		mOffTraffic = true;
-		if (!mOffInterDepartureTime.setStringValue(
+		if (!mOffInterDepartureTime.parse(
 			rootelement->getElementById(buf)->getAttribute("offInterDepartureTime")))//,		'?'))
 		{
 			error("wrong value in xml file, attribute offInterDepartureTime");
@@ -392,7 +393,7 @@ void TrafGen::setParams(int aNewTrafficPattern)
 	if (mOnOff == TRAFFIC_ON && rootelement->getElementById(buf)->getAttribute("onIdenticalTrafDest") != NULL)
 	{
 		cMsgPar temp;
-		if (!temp.setStringValue(rootelement->getElementById(buf)->getAttribute("onIdenticalTrafDest")))//, '?'))
+		if (!temp.parse(rootelement->getElementById(buf)->getAttribute("onIdenticalTrafDest")))//, '?'))
 		{
 			error("wrong value in xml file, attribute onIdenticalTrafDest");
 		}
