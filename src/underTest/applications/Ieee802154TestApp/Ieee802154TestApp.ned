@@ -1,6 +1,6 @@
 
 package inet.underTest.applications.Ieee802154TestApp;
-import inet.underTest.applications.TrafficGenerator_Erlangen.TrafGenPar;
+import  inet.applications.trafgen.TrafGenPar;
 
 simple Ieee802154TestApp extends TrafGenPar
 {

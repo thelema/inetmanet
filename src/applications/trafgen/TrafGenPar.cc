@@ -37,7 +37,7 @@ void TrafGenPar::initialize(int aStage)
 {
 	cSimpleModule::initialize(aStage);
 
-	if(1 == aStage){
+	if(0 == aStage){
 		ev << "initializing TrafGen..." << endl;
 
 		mpSendMessage           = new cMessage("SendMessage");
@@ -85,10 +85,9 @@ void TrafGenPar::initialize(int aStage)
 			mOnIdenticalDest = false;
 		}
 
-		mDestination.setStringValue(par("trafDest").stringValue());
-		if (mDestination.stringValue() == "-1")
-        {
-			mDestination.setStringValue("BROADCAST"); // Broadcast
+		mDestination = par("trafDest").stringValue();
+		if (mDestination == std::string("-1")){
+			mDestination = "BROADCAST"; // Broadcast
 		}
 
 		if (mOnIdenticalDest)
@@ -264,16 +263,16 @@ void TrafGenPar::handleSelfMsg(cMessage* apMsg)
  */
 std::string TrafGenPar::calculateDestination()
 {
-	if (strchr(mDestination.stringValue(), '*') == NULL)
+	if (mDestination.find_first_of('*') == std::string::npos)
 	{
 		// no asterisk in the destination, no calculation needed
-		return mDestination.stringValue();
+		return mDestination;
 	}
 	else
 	{
 		// asterisk present, find out how many hosts with the specified name
 		// there are and randomly (uniform) pick one
-		std::string s(mDestination.stringValue());
+		std::string s=mDestination;
 		int index = s.find_first_of('*');
 		s.replace(index, 1, "0");
 		int size = simulation.getModuleByPath(s.c_str())->size();

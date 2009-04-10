@@ -77,7 +77,6 @@ public:
 	//Module_Class_Members(TrafGen, cSimpleModule, 0);
 	virtual void initialize(int);
 	virtual void finish();
-	virtual int numInitStages () const {return 2;}
 
     // OPERATIONS
 	virtual void handleMessage(cMessage*);
@@ -110,7 +109,7 @@ private:
 	bool		mOffTraffic;
 	bool		mOnIdenticalDest;
 	bool        mOnOff;
-	cMsgPar     mDestination;
+	std::string      mDestination;
 
 	std::string	mCurrentOnDest;
 

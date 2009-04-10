@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for libinet
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -X underTest/applications/Ieee802154TestApp -X underTest/linklayer/ieee802154 -X underTest/wpan --make-so -o inet -O out
+#  opp_makemake -f --deep --make-so -o inet -O out
 #
 
 # Name of target to be created (-o option)
@@ -18,6 +18,7 @@ INCLUDE_PATH = \
     -Iapplications/rtpapp \
     -Iapplications/sctpapp \
     -Iapplications/tcpapp \
+    -Iapplications/trafgen \
     -Iapplications/udpapp \
     -Ibase \
     -Iexperimental \
@@ -94,8 +95,13 @@ INCLUDE_PATH = \
     -Itransport/udp \
     -IunderTest \
     -IunderTest/applications \
+    -IunderTest/applications/Ieee802154TestApp \
     -IunderTest/applications/TrafficGenerator_Erlangen \
     -IunderTest/linklayer \
+    -IunderTest/linklayer/ieee802154 \
+    -IunderTest/linklayer/ieee802154/contract \
+    -IunderTest/linklayer/ieee802154/mac \
+    -IunderTest/linklayer/ieee802154/phyLayer \
     -IunderTest/linklayer/Ieee80216 \
     -IunderTest/linklayer/Ieee80216/ControlPlane \
     -IunderTest/linklayer/Ieee80216/Mac \
@@ -113,6 +119,14 @@ INCLUDE_PATH = \
     -IunderTest/nodes/wpan \
     -IunderTest/transport \
     -IunderTest/transport/aki \
+    -IunderTest/wpan \
+    -IunderTest/wpan/battery \
+    -IunderTest/wpan/Isabel \
+    -IunderTest/wpan/Isabel/Analysis \
+    -IunderTest/wpan/Isabel/Base \
+    -IunderTest/wpan/networklayer \
+    -IunderTest/wpan/networklayer/contract \
+    -IunderTest/wpan/networklayer/Ieee802154StarRouting \
     -Iutil \
     -Iutil/headerserializers \
     -Iutil/headerserializers/headers \
@@ -149,6 +163,8 @@ OBJS = \
     $O/applications/tcpapp/TCPSpoof.o \
     $O/applications/tcpapp/TCPSrvHostApp.o \
     $O/applications/tcpapp/TelnetApp.o \
+    $O/applications/trafgen/TrafGen.o \
+    $O/applications/trafgen/TrafGenPar.o \
     $O/applications/udpapp/UDPAppBase.o \
     $O/applications/udpapp/UDPBasicApp.o \
     $O/applications/udpapp/UDPBasicBurst.o \
@@ -238,7 +254,7 @@ OBJS = \
     $O/mobility/RandomWPMobility.o \
     $O/mobility/RandomWPMobilityTrace.o \
     $O/mobility/RectangleMobility.o \
-    $O/mobility/StaticPlaceMobility.o \
+    $O/mobility/StaticGridMobility.o \
     $O/mobility/TraCIMobility.o \
     $O/mobility/TurtleMobility.o \
     $O/networklayer/arp/ARP.o \
@@ -436,9 +452,12 @@ OBJS = \
     $O/transport/tcp/queues/TCPVirtualDataRcvQueue.o \
     $O/transport/tcp/queues/TCPVirtualDataSendQueue.o \
     $O/transport/udp/UDP.o \
-    $O/underTest/applications/TrafficGenerator_Erlangen/TrafGen.o \
-    $O/underTest/applications/TrafficGenerator_Erlangen/TrafGenPar.o \
+    $O/underTest/applications/Ieee802154TestApp/Ieee802154TestApp.o \
     $O/underTest/applications/TrafficGenerator_Erlangen/WiMAXQoSTrafficGenerator.o \
+    $O/underTest/linklayer/ieee802154/mac/Ieee802154Link.o \
+    $O/underTest/linklayer/ieee802154/mac/Ieee802154Mac.o \
+    $O/underTest/linklayer/ieee802154/phyLayer/Ieee802154Phy.o \
+    $O/underTest/linklayer/ieee802154/phyLayer/Ieee802154RadioModel.o \
     $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.o \
     $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBase.o \
     $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneBaseAP.o \
@@ -474,6 +493,11 @@ OBJS = \
     $O/underTest/linklayer/radio/Ieee80216RadioModel.o \
     $O/underTest/linklayer/radio/WiMAXPathLossReceptionModel.o \
     $O/underTest/transport/aki/aki.o \
+    $O/underTest/wpan/battery/BasicBattery.o \
+    $O/underTest/wpan/battery/Ieee802154Battery.o \
+    $O/underTest/wpan/Isabel/Analysis/AnalysisEnergy.o \
+    $O/underTest/wpan/Isabel/Base/Display.o \
+    $O/underTest/wpan/networklayer/Ieee802154StarRouting/Ieee802154StarRouting.o \
     $O/util/common.o \
     $O/util/NAMTraceWriter.o \
     $O/util/opp_utils.o \
@@ -491,6 +515,7 @@ OBJS = \
     $O/world/NAMTrace.o \
     $O/world/ScenarioManager.o \
     $O/world/TraCIScenarioManager.o \
+    $O/world/TraCIScenarioManagerLaunchd.o \
     $O/applications/ethernet/EtherApp_m.o \
     $O/applications/pingapp/PingPayload_m.o \
     $O/applications/tcpapp/GenericAppMsg_m.o \
@@ -554,13 +579,17 @@ OBJS = \
     $O/transport/sctp/SCTPMessage_m.o \
     $O/transport/tcp/TCPSegment_m.o \
     $O/transport/udp/UDPPacket_m.o \
+    $O/underTest/applications/Ieee802154TestApp/Ieee802154AppPkt_m.o \
+    $O/underTest/linklayer/ieee802154/contract/Ieee802154MacPhyPrimitives_m.o \
+    $O/underTest/linklayer/ieee802154/mac/Ieee802154Frame_m.o \
     $O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.o \
     $O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.o \
     $O/underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.o \
     $O/underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.o \
     $O/underTest/transport/aki/AkiControlInfo_m.o \
     $O/underTest/transport/aki/akiMsg_m.o \
-    $O/underTest/transport/aki/AkiPacket_m.o
+    $O/underTest/transport/aki/AkiPacket_m.o \
+    $O/underTest/wpan/networklayer/contract/Ieee802154NetworkCtrlInfo_m.o
 
 # Message files
 MSGFILES = \
@@ -627,13 +656,17 @@ MSGFILES = \
     transport/sctp/SCTPMessage.msg \
     transport/tcp/TCPSegment.msg \
     transport/udp/UDPPacket.msg \
+    underTest/applications/Ieee802154TestApp/Ieee802154AppPkt.msg \
+    underTest/linklayer/ieee802154/contract/Ieee802154MacPhyPrimitives.msg \
+    underTest/linklayer/ieee802154/mac/Ieee802154Frame.msg \
     underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages.msg \
     underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives.msg \
     underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader.msg \
     underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl.msg \
     underTest/transport/aki/AkiControlInfo.msg \
     underTest/transport/aki/akiMsg.msg \
-    underTest/transport/aki/AkiPacket.msg
+    underTest/transport/aki/AkiPacket.msg \
+    underTest/wpan/networklayer/contract/Ieee802154NetworkCtrlInfo.msg
 
 #------------------------------------------------------------------------------
 
@@ -705,6 +738,7 @@ clean:
 	-rm -f applications/rtpapp/*_m.cc applications/rtpapp/*_m.h
 	-rm -f applications/sctpapp/*_m.cc applications/sctpapp/*_m.h
 	-rm -f applications/tcpapp/*_m.cc applications/tcpapp/*_m.h
+	-rm -f applications/trafgen/*_m.cc applications/trafgen/*_m.h
 	-rm -f applications/udpapp/*_m.cc applications/udpapp/*_m.h
 	-rm -f base/*_m.cc base/*_m.h
 	-rm -f experimental/*_m.cc experimental/*_m.h
@@ -781,8 +815,13 @@ clean:
 	-rm -f transport/udp/*_m.cc transport/udp/*_m.h
 	-rm -f underTest/*_m.cc underTest/*_m.h
 	-rm -f underTest/applications/*_m.cc underTest/applications/*_m.h
+	-rm -f underTest/applications/Ieee802154TestApp/*_m.cc underTest/applications/Ieee802154TestApp/*_m.h
 	-rm -f underTest/applications/TrafficGenerator_Erlangen/*_m.cc underTest/applications/TrafficGenerator_Erlangen/*_m.h
 	-rm -f underTest/linklayer/*_m.cc underTest/linklayer/*_m.h
+	-rm -f underTest/linklayer/ieee802154/*_m.cc underTest/linklayer/ieee802154/*_m.h
+	-rm -f underTest/linklayer/ieee802154/contract/*_m.cc underTest/linklayer/ieee802154/contract/*_m.h
+	-rm -f underTest/linklayer/ieee802154/mac/*_m.cc underTest/linklayer/ieee802154/mac/*_m.h
+	-rm -f underTest/linklayer/ieee802154/phyLayer/*_m.cc underTest/linklayer/ieee802154/phyLayer/*_m.h
 	-rm -f underTest/linklayer/Ieee80216/*_m.cc underTest/linklayer/Ieee80216/*_m.h
 	-rm -f underTest/linklayer/Ieee80216/ControlPlane/*_m.cc underTest/linklayer/Ieee80216/ControlPlane/*_m.h
 	-rm -f underTest/linklayer/Ieee80216/Mac/*_m.cc underTest/linklayer/Ieee80216/Mac/*_m.h
@@ -800,6 +839,14 @@ clean:
 	-rm -f underTest/nodes/wpan/*_m.cc underTest/nodes/wpan/*_m.h
 	-rm -f underTest/transport/*_m.cc underTest/transport/*_m.h
 	-rm -f underTest/transport/aki/*_m.cc underTest/transport/aki/*_m.h
+	-rm -f underTest/wpan/*_m.cc underTest/wpan/*_m.h
+	-rm -f underTest/wpan/battery/*_m.cc underTest/wpan/battery/*_m.h
+	-rm -f underTest/wpan/Isabel/*_m.cc underTest/wpan/Isabel/*_m.h
+	-rm -f underTest/wpan/Isabel/Analysis/*_m.cc underTest/wpan/Isabel/Analysis/*_m.h
+	-rm -f underTest/wpan/Isabel/Base/*_m.cc underTest/wpan/Isabel/Base/*_m.h
+	-rm -f underTest/wpan/networklayer/*_m.cc underTest/wpan/networklayer/*_m.h
+	-rm -f underTest/wpan/networklayer/contract/*_m.cc underTest/wpan/networklayer/contract/*_m.h
+	-rm -f underTest/wpan/networklayer/Ieee802154StarRouting/*_m.cc underTest/wpan/networklayer/Ieee802154StarRouting/*_m.h
 	-rm -f util/*_m.cc util/*_m.h
 	-rm -f util/headerserializers/*_m.cc util/headerserializers/*_m.h
 	-rm -f util/headerserializers/headers/*_m.cc util/headerserializers/headers/*_m.h
@@ -809,7 +856,7 @@ cleanall: clean
 	-rm -rf $(PROJECT_OUTPUT_DIR)
 
 depend:
-	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc applications/*.cc applications/ethernet/*.cc applications/generic/*.cc applications/pingapp/*.cc applications/rtpapp/*.cc applications/sctpapp/*.cc applications/tcpapp/*.cc applications/udpapp/*.cc base/*.cc experimental/*.cc experimental/linklayer/*.cc experimental/linklayer/contract/*.cc experimental/linklayer/ieee80211/*.cc experimental/linklayer/ieee80211/mgmt/*.cc experimental/nodes/*.cc experimental/nodes/adhoc/*.cc linklayer/*.cc linklayer/contract/*.cc linklayer/ethernet/*.cc linklayer/etherswitch/*.cc linklayer/ext/*.cc linklayer/ieee80211/*.cc linklayer/ieee80211/mac/*.cc linklayer/ieee80211/mgmt/*.cc linklayer/mf80211/*.cc linklayer/mf80211/macLayer/*.cc linklayer/mf80211/phyLayer/*.cc linklayer/mf80211/phyLayer/decider/*.cc linklayer/mf80211/phyLayer/snrEval/*.cc linklayer/mfcore/*.cc linklayer/ppp/*.cc linklayer/radio/*.cc mobility/*.cc networklayer/*.cc networklayer/arp/*.cc networklayer/autorouting/*.cc networklayer/common/*.cc networklayer/contract/*.cc networklayer/extras/*.cc networklayer/icmpv6/*.cc networklayer/ipv4/*.cc networklayer/ipv6/*.cc networklayer/ldp/*.cc networklayer/manetrouting/*.cc networklayer/manetrouting/aodv/*.cc networklayer/manetrouting/aodv/aodv-uu/*.cc networklayer/manetrouting/base/*.cc networklayer/manetrouting/dsdv/*.cc networklayer/manetrouting/dsr/*.cc networklayer/manetrouting/dsr/dsr-uu/*.cc networklayer/manetrouting/dymo/*.cc networklayer/manetrouting/dymo/dymoum/*.cc networklayer/manetrouting/dymo_fau/*.cc networklayer/manetrouting/manager/*.cc networklayer/manetrouting/olsr/*.cc networklayer/mpls/*.cc networklayer/ospfv2/*.cc networklayer/ospfv2/interface/*.cc networklayer/ospfv2/messagehandler/*.cc networklayer/ospfv2/neighbor/*.cc networklayer/ospfv2/router/*.cc networklayer/queue/*.cc networklayer/rsvp_te/*.cc networklayer/ted/*.cc nodes/*.cc nodes/adhoc/*.cc nodes/ethernet/*.cc nodes/inet/*.cc nodes/ipv6/*.cc nodes/mpls/*.cc nodes/wireless/*.cc transport/*.cc transport/contract/*.cc transport/rtp/*.cc transport/rtp/profiles/*.cc transport/rtp/profiles/avprofile/*.cc transport/sctp/*.cc transport/tcp/*.cc transport/tcp/flavours/*.cc transport/tcp/queues/*.cc transport/udp/*.cc underTest/*.cc underTest/applications/*.cc underTest/applications/TrafficGenerator_Erlangen/*.cc underTest/linklayer/*.cc underTest/linklayer/Ieee80216/*.cc underTest/linklayer/Ieee80216/ControlPlane/*.cc underTest/linklayer/Ieee80216/Mac/*.cc underTest/linklayer/Ieee80216/MACSublayer/*.cc underTest/linklayer/Ieee80216/MACSublayer/QoS/*.cc underTest/linklayer/Ieee80216/MACSublayer/Receiver/*.cc underTest/linklayer/Ieee80216/MACSublayer/Transceiver/*.cc underTest/linklayer/Ieee80216/phyLayer/*.cc underTest/linklayer/Ieee80216/phyLayer/decider/*.cc underTest/linklayer/Ieee80216/phyLayer/snrEval/*.cc underTest/linklayer/radio/*.cc underTest/nodes/*.cc underTest/nodes/adhoc/*.cc underTest/nodes/WiMAX/*.cc underTest/nodes/wpan/*.cc underTest/transport/*.cc underTest/transport/aki/*.cc util/*.cc util/headerserializers/*.cc util/headerserializers/headers/*.cc world/*.cc
+	$(MAKEDEPEND) $(INCLUDE_PATH) -f Makefile -P\$$O/ -- $(MSG_CC_FILES)  ./*.cc applications/*.cc applications/ethernet/*.cc applications/generic/*.cc applications/pingapp/*.cc applications/rtpapp/*.cc applications/sctpapp/*.cc applications/tcpapp/*.cc applications/trafgen/*.cc applications/udpapp/*.cc base/*.cc experimental/*.cc experimental/linklayer/*.cc experimental/linklayer/contract/*.cc experimental/linklayer/ieee80211/*.cc experimental/linklayer/ieee80211/mgmt/*.cc experimental/nodes/*.cc experimental/nodes/adhoc/*.cc linklayer/*.cc linklayer/contract/*.cc linklayer/ethernet/*.cc linklayer/etherswitch/*.cc linklayer/ext/*.cc linklayer/ieee80211/*.cc linklayer/ieee80211/mac/*.cc linklayer/ieee80211/mgmt/*.cc linklayer/mf80211/*.cc linklayer/mf80211/macLayer/*.cc linklayer/mf80211/phyLayer/*.cc linklayer/mf80211/phyLayer/decider/*.cc linklayer/mf80211/phyLayer/snrEval/*.cc linklayer/mfcore/*.cc linklayer/ppp/*.cc linklayer/radio/*.cc mobility/*.cc networklayer/*.cc networklayer/arp/*.cc networklayer/autorouting/*.cc networklayer/common/*.cc networklayer/contract/*.cc networklayer/extras/*.cc networklayer/icmpv6/*.cc networklayer/ipv4/*.cc networklayer/ipv6/*.cc networklayer/ldp/*.cc networklayer/manetrouting/*.cc networklayer/manetrouting/aodv/*.cc networklayer/manetrouting/aodv/aodv-uu/*.cc networklayer/manetrouting/base/*.cc networklayer/manetrouting/dsdv/*.cc networklayer/manetrouting/dsr/*.cc networklayer/manetrouting/dsr/dsr-uu/*.cc networklayer/manetrouting/dymo/*.cc networklayer/manetrouting/dymo/dymoum/*.cc networklayer/manetrouting/dymo_fau/*.cc networklayer/manetrouting/manager/*.cc networklayer/manetrouting/olsr/*.cc networklayer/mpls/*.cc networklayer/ospfv2/*.cc networklayer/ospfv2/interface/*.cc networklayer/ospfv2/messagehandler/*.cc networklayer/ospfv2/neighbor/*.cc networklayer/ospfv2/router/*.cc networklayer/queue/*.cc networklayer/rsvp_te/*.cc networklayer/ted/*.cc nodes/*.cc nodes/adhoc/*.cc nodes/ethernet/*.cc nodes/inet/*.cc nodes/ipv6/*.cc nodes/mpls/*.cc nodes/wireless/*.cc transport/*.cc transport/contract/*.cc transport/rtp/*.cc transport/rtp/profiles/*.cc transport/rtp/profiles/avprofile/*.cc transport/sctp/*.cc transport/tcp/*.cc transport/tcp/flavours/*.cc transport/tcp/queues/*.cc transport/udp/*.cc underTest/*.cc underTest/applications/*.cc underTest/applications/Ieee802154TestApp/*.cc underTest/applications/TrafficGenerator_Erlangen/*.cc underTest/linklayer/*.cc underTest/linklayer/ieee802154/*.cc underTest/linklayer/ieee802154/contract/*.cc underTest/linklayer/ieee802154/mac/*.cc underTest/linklayer/ieee802154/phyLayer/*.cc underTest/linklayer/Ieee80216/*.cc underTest/linklayer/Ieee80216/ControlPlane/*.cc underTest/linklayer/Ieee80216/Mac/*.cc underTest/linklayer/Ieee80216/MACSublayer/*.cc underTest/linklayer/Ieee80216/MACSublayer/QoS/*.cc underTest/linklayer/Ieee80216/MACSublayer/Receiver/*.cc underTest/linklayer/Ieee80216/MACSublayer/Transceiver/*.cc underTest/linklayer/Ieee80216/phyLayer/*.cc underTest/linklayer/Ieee80216/phyLayer/decider/*.cc underTest/linklayer/Ieee80216/phyLayer/snrEval/*.cc underTest/linklayer/radio/*.cc underTest/nodes/*.cc underTest/nodes/adhoc/*.cc underTest/nodes/WiMAX/*.cc underTest/nodes/wpan/*.cc underTest/transport/*.cc underTest/transport/aki/*.cc underTest/wpan/*.cc underTest/wpan/battery/*.cc underTest/wpan/Isabel/*.cc underTest/wpan/Isabel/Analysis/*.cc underTest/wpan/Isabel/Base/*.cc underTest/wpan/networklayer/*.cc underTest/wpan/networklayer/contract/*.cc underTest/wpan/networklayer/Ieee802154StarRouting/*.cc util/*.cc util/headerserializers/*.cc util/headerserializers/headers/*.cc world/*.cc
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 $O/applications/ethernet/EtherAppCli.o: applications/ethernet/EtherAppCli.cc \
@@ -824,9 +871,6 @@ $O/applications/ethernet/EtherAppSrv.o: applications/ethernet/EtherAppSrv.cc \
   base/INETDefs.h \
   linklayer/contract/Ieee802Ctrl_m.h \
   applications/ethernet/EtherAppSrv.h
-$O/applications/ethernet/EtherApp_m.o: applications/ethernet/EtherApp_m.cc \
-  applications/ethernet/EtherApp_m.h \
-  base/INETDefs.h
 $O/applications/generic/IPTrafGen.o: applications/generic/IPTrafGen.cc \
   networklayer/contract/IPv6ControlInfo_m.h \
   networklayer/contract/IPControlInfo_m.h \
@@ -854,9 +898,6 @@ $O/applications/pingapp/PingApp.o: applications/pingapp/PingApp.cc \
   linklayer/contract/MACAddress.h \
   base/INETDefs.h \
   networklayer/contract/IPAddress.h
-$O/applications/pingapp/PingPayload_m.o: applications/pingapp/PingPayload_m.cc \
-  applications/pingapp/PingPayload_m.h \
-  base/INETDefs.h
 $O/applications/rtpapp/RTPApplication.o: applications/rtpapp/RTPApplication.cc \
   applications/rtpapp/RTPApplication.h \
   transport/rtp/RTPInterfacePacket.h \
@@ -965,9 +1006,6 @@ $O/applications/sctpapp/SCTPServer.o: applications/sctpapp/SCTPServer.cc \
   networklayer/contract/IPControlInfo_m.h \
   networklayer/common/InterfaceTable.h \
   networklayer/contract/IPvXAddress.h
-$O/applications/tcpapp/GenericAppMsg_m.o: applications/tcpapp/GenericAppMsg_m.cc \
-  applications/tcpapp/GenericAppMsg_m.h \
-  base/INETDefs.h
 $O/applications/tcpapp/TCPBasicClientApp.o: applications/tcpapp/TCPBasicClientApp.cc \
   networklayer/contract/IPv6Address.h \
   transport/contract/TCPCommand_m.h \
@@ -1065,6 +1103,10 @@ $O/applications/tcpapp/TelnetApp.o: applications/tcpapp/TelnetApp.cc \
   transport/contract/TCPSocket.h \
   networklayer/contract/IPvXAddress.h \
   applications/tcpapp/TCPGenericCliAppBase.h
+$O/applications/trafgen/TrafGen.o: applications/trafgen/TrafGen.cc \
+  ./applications/trafgen/TrafGen.h
+$O/applications/trafgen/TrafGenPar.o: applications/trafgen/TrafGenPar.cc \
+  applications/trafgen/TrafGenPar.h
 $O/applications/udpapp/UDPAppBase.o: applications/udpapp/UDPAppBase.cc \
   networklayer/contract/IPv6Address.h \
   applications/udpapp/UDPAppBase.h \
@@ -1101,9 +1143,6 @@ $O/applications/udpapp/UDPEchoApp.o: applications/udpapp/UDPEchoApp.cc \
   networklayer/contract/IPAddress.h \
   networklayer/contract/IPvXAddress.h \
   applications/udpapp/UDPBasicApp.h
-$O/applications/udpapp/UDPEchoAppMsg_m.o: applications/udpapp/UDPEchoAppMsg_m.cc \
-  base/INETDefs.h \
-  applications/udpapp/UDPEchoAppMsg_m.h
 $O/applications/udpapp/UDPSink.o: applications/udpapp/UDPSink.cc \
   networklayer/contract/IPv6Address.h \
   applications/udpapp/UDPAppBase.h \
@@ -1147,9 +1186,6 @@ $O/base/ByteArrayMessage.o: base/ByteArrayMessage.cc \
   base/ByteArrayMessage.h \
   base/ByteArrayMessage_m.h \
   base/INETDefs.h
-$O/base/ByteArrayMessage_m.o: base/ByteArrayMessage_m.cc \
-  base/ByteArrayMessage_m.h \
-  base/INETDefs.h
 $O/base/Join.o: base/Join.cc \
   base/INETDefs.h
 $O/base/ModuleAccess.o: base/ModuleAccess.cc \
@@ -1186,14 +1222,6 @@ $O/base/ReassemblyBuffer.o: base/ReassemblyBuffer.cc \
 $O/base/Sink.o: base/Sink.cc \
   base/Sink.h \
   base/INETDefs.h
-$O/experimental/linklayer/contract/MeshControlInfo_m.o: experimental/linklayer/contract/MeshControlInfo_m.cc \
-  networklayer/contract/IPv6Address.h \
-  linklayer/contract/MACAddress.h \
-  networklayer/manetrouting/base/uint128.h \
-  experimental/linklayer/contract/MeshControlInfo_m.h \
-  linklayer/contract/Ieee802Ctrl_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h
 $O/experimental/linklayer/ieee80211/mgmt/Ieee80211Mesh.o: experimental/linklayer/ieee80211/mgmt/Ieee80211Mesh.cc \
   networklayer/ipv4/IPv4InterfaceData.h \
   networklayer/manetrouting/base/compatibility.h \
@@ -1228,29 +1256,12 @@ $O/experimental/linklayer/ieee80211/mgmt/Ieee80211Mesh.o: experimental/linklayer
   networklayer/ipv4/IPDatagram_m.h \
   networklayer/contract/IPvXAddress.h \
   experimental/linklayer/ieee80211/mgmt/LWMPLSPacket_m.h
-$O/experimental/linklayer/ieee80211/mgmt/LWMPLSPacket_m.o: experimental/linklayer/ieee80211/mgmt/LWMPLSPacket_m.cc \
-  linklayer/contract/MACAddress.h \
-  base/INETDefs.h \
-  experimental/linklayer/ieee80211/mgmt/LWMPLSPacket_m.h
 $O/experimental/linklayer/ieee80211/mgmt/lwmpls_data.o: experimental/linklayer/ieee80211/mgmt/lwmpls_data.cc \
   experimental/linklayer/ieee80211/mgmt/lwmpls_data.h
-$O/linklayer/contract/ControlInfoBreakLink_m.o: linklayer/contract/ControlInfoBreakLink_m.cc \
-  linklayer/contract/MACAddress.h \
-  linklayer/contract/ControlInfoBreakLink_m.h \
-  base/INETDefs.h
-$O/linklayer/contract/Ieee802Ctrl_m.o: linklayer/contract/Ieee802Ctrl_m.cc \
-  linklayer/contract/MACAddress.h \
-  base/INETDefs.h \
-  linklayer/contract/Ieee802Ctrl_m.h
 $O/linklayer/contract/MACAddress.o: linklayer/contract/MACAddress.cc \
   linklayer/contract/MACAddress.h \
   networklayer/common/InterfaceToken.h \
   base/INETDefs.h
-$O/linklayer/contract/PhyControlInfo_m.o: linklayer/contract/PhyControlInfo_m.cc \
-  base/INETDefs.h \
-  linklayer/contract/PhyControlInfo_m.h
-$O/linklayer/contract/Radio80211aControlInfo_m.o: linklayer/contract/Radio80211aControlInfo_m.cc \
-  linklayer/contract/Radio80211aControlInfo_m.h
 $O/linklayer/ethernet/EtherBus.o: linklayer/ethernet/EtherBus.cc \
   linklayer/contract/MACAddress.h \
   linklayer/ethernet/Ethernet.h \
@@ -1276,12 +1287,6 @@ $O/linklayer/ethernet/EtherEncap.o: linklayer/ethernet/EtherEncap.cc \
   base/NotificationBoard.h \
   base/INETDefs.h \
   linklayer/contract/Ieee802Ctrl_m.h
-$O/linklayer/ethernet/EtherFrame_m.o: linklayer/ethernet/EtherFrame_m.cc \
-  linklayer/contract/MACAddress.h \
-  linklayer/ethernet/Ethernet.h \
-  linklayer/ethernet/EtherFrame_m.h \
-  linklayer/contract/Ieee802Ctrl_m.h \
-  base/INETDefs.h
 $O/linklayer/ethernet/EtherHub.o: linklayer/ethernet/EtherHub.cc \
   linklayer/contract/MACAddress.h \
   linklayer/ethernet/Ethernet.h \
@@ -1368,8 +1373,6 @@ $O/linklayer/etherswitch/MACRelayUnitPP.o: linklayer/etherswitch/MACRelayUnitPP.
   linklayer/contract/Ieee802Ctrl_m.h \
   base/INETDefs.h \
   linklayer/etherswitch/MACRelayUnitBase.h
-$O/linklayer/ext/ExtFrame_m.o: linklayer/ext/ExtFrame_m.cc \
-  linklayer/ext/ExtFrame_m.h
 $O/linklayer/ext/ExtInterface.o: linklayer/ext/ExtInterface.cc \
   networklayer/common/IInterfaceTable.h \
   linklayer/ext/ExtFrame_m.h \
@@ -1397,10 +1400,6 @@ $O/linklayer/ext/cSocketRTScheduler.o: linklayer/ext/cSocketRTScheduler.cc \
   base/INETDefs.h \
   util/headerserializers/headers/bsdint.h \
   util/headerserializers/headers/ethernet.h
-$O/linklayer/ieee80211/mac/Ieee80211Frame_m.o: linklayer/ieee80211/mac/Ieee80211Frame_m.cc \
-  linklayer/contract/MACAddress.h \
-  base/INETDefs.h \
-  linklayer/ieee80211/mac/Ieee80211Frame_m.h
 $O/linklayer/ieee80211/mac/Ieee80211Mac.o: linklayer/ieee80211/mac/Ieee80211Mac.cc \
   networklayer/common/IInterfaceTable.h \
   linklayer/contract/MACAddress.h \
@@ -1555,11 +1554,6 @@ $O/linklayer/ieee80211/mgmt/Ieee80211MgmtBase.o: linklayer/ieee80211/mgmt/Ieee80
   base/INETDefs.h \
   linklayer/contract/Ieee802Ctrl_m.h \
   linklayer/ieee80211/mac/Ieee80211Frame_m.h
-$O/linklayer/ieee80211/mgmt/Ieee80211MgmtFrames_m.o: linklayer/ieee80211/mgmt/Ieee80211MgmtFrames_m.cc \
-  linklayer/contract/MACAddress.h \
-  linklayer/ieee80211/mgmt/Ieee80211MgmtFrames_m.h \
-  base/INETDefs.h \
-  linklayer/ieee80211/mac/Ieee80211Frame_m.h
 $O/linklayer/ieee80211/mgmt/Ieee80211MgmtSTA.o: linklayer/ieee80211/mgmt/Ieee80211MgmtSTA.cc \
   util/FWMath.h \
   linklayer/contract/MACAddress.h \
@@ -1595,12 +1589,6 @@ $O/linklayer/ieee80211/mgmt/Ieee80211MgmtSTASimplified.o: linklayer/ieee80211/mg
   base/INETDefs.h \
   linklayer/contract/Ieee802Ctrl_m.h \
   linklayer/ieee80211/mac/Ieee80211Frame_m.h
-$O/linklayer/ieee80211/mgmt/Ieee80211Primitives_m.o: linklayer/ieee80211/mgmt/Ieee80211Primitives_m.cc \
-  linklayer/contract/MACAddress.h \
-  linklayer/ieee80211/mgmt/Ieee80211Primitives_m.h \
-  linklayer/ieee80211/mgmt/Ieee80211MgmtFrames_m.h \
-  base/INETDefs.h \
-  linklayer/ieee80211/mac/Ieee80211Frame_m.h
 $O/linklayer/mf80211/macLayer/CSMAMacLayer.o: linklayer/mf80211/macLayer/CSMAMacLayer.cc \
   networklayer/common/IInterfaceTable.h \
   linklayer/contract/MACAddress.h \
@@ -1635,15 +1623,6 @@ $O/linklayer/mf80211/macLayer/Mac80211.o: linklayer/mf80211/macLayer/Mac80211.cc
   base/INETDefs.h \
   linklayer/contract/Ieee802Ctrl_m.h \
   linklayer/mfcore/WirelessMacBase.h
-$O/linklayer/mf80211/macLayer/Mac80211Pkt_m.o: linklayer/mf80211/macLayer/Mac80211Pkt_m.cc \
-  linklayer/contract/MACAddress.h \
-  linklayer/mf80211/macLayer/Mac80211Pkt_m.h \
-  linklayer/mf80211/macLayer/MacPkt_m.h \
-  base/INETDefs.h
-$O/linklayer/mf80211/macLayer/MacPkt_m.o: linklayer/mf80211/macLayer/MacPkt_m.cc \
-  linklayer/contract/MACAddress.h \
-  linklayer/mf80211/macLayer/MacPkt_m.h \
-  base/INETDefs.h
 $O/linklayer/mf80211/phyLayer/decider/Decider80211.o: linklayer/mf80211/phyLayer/decider/Decider80211.cc \
   util/FWMath.h \
   base/BasicModule.h \
@@ -1745,11 +1724,6 @@ $O/linklayer/mf80211/phyLayer/snrEval/SnrEval80211.o: linklayer/mf80211/phyLayer
   base/INETDefs.h \
   linklayer/mfcore/SnrControlInfo_m.h \
   linklayer/contract/PhyControlInfo_m.h
-$O/linklayer/mfcore/AirFrame_m.o: linklayer/mfcore/AirFrame_m.cc \
-  util/FWMath.h \
-  linklayer/mfcore/AirFrame_m.h \
-  base/Coord.h \
-  base/INETDefs.h
 $O/linklayer/mfcore/BasicDecider.o: linklayer/mfcore/BasicDecider.cc \
   base/BasicModule.h \
   util/FWMath.h \
@@ -1779,13 +1753,6 @@ $O/linklayer/mfcore/BasicSnrEval.o: linklayer/mfcore/BasicSnrEval.cc \
   world/ChannelAccess.h \
   base/INETDefs.h \
   linklayer/mfcore/SnrControlInfo_m.h
-$O/linklayer/mfcore/SnrControlInfo_m.o: linklayer/mfcore/SnrControlInfo_m.cc \
-  linklayer/mfcore/SnrList.h \
-  base/INETDefs.h \
-  linklayer/mfcore/SnrControlInfo_m.h
-$O/linklayer/mfcore/TransmComplete_m.o: linklayer/mfcore/TransmComplete_m.cc \
-  linklayer/mfcore/TransmComplete_m.h \
-  base/INETDefs.h
 $O/linklayer/mfcore/WirelessMacBase.o: linklayer/mfcore/WirelessMacBase.cc \
   base/INotifiable.h \
   base/ModuleAccess.h \
@@ -1806,9 +1773,6 @@ $O/linklayer/ppp/PPP.o: linklayer/ppp/PPP.cc \
   base/NotifierConsts.h \
   base/NotificationBoard.h \
   linklayer/ppp/PPP.h \
-  base/INETDefs.h \
-  linklayer/ppp/PPPFrame_m.h
-$O/linklayer/ppp/PPPFrame_m.o: linklayer/ppp/PPPFrame_m.cc \
   base/INETDefs.h \
   linklayer/ppp/PPPFrame_m.h
 $O/linklayer/ppp/ThruputMeter.o: linklayer/ppp/ThruputMeter.cc \
@@ -2172,11 +2136,9 @@ $O/mobility/RectangleMobility.o: mobility/RectangleMobility.cc \
   base/NotifierConsts.h \
   base/NotificationBoard.h \
   base/INETDefs.h
-$O/mobility/StaticPlaceMobility.o: mobility/StaticPlaceMobility.cc \
+$O/mobility/StaticGridMobility.o: mobility/StaticGridMobility.cc \
   util/FWMath.h \
   base/BasicModule.h \
-  mobility/StaticPlaceMobility.h \
-  mobility/BasicMobility.h \
   linklayer/mfcore/AirFrame_m.h \
   base/Coord.h \
   base/INotifiable.h \
@@ -2184,7 +2146,9 @@ $O/mobility/StaticPlaceMobility.o: mobility/StaticPlaceMobility.cc \
   world/ChannelControl.h \
   base/NotifierConsts.h \
   base/NotificationBoard.h \
-  base/INETDefs.h
+  ./mobility/BasicMobility.h \
+  base/INETDefs.h \
+  ./mobility/StaticGridMobility.h
 $O/mobility/TraCIMobility.o: mobility/TraCIMobility.cc \
   util/FWMath.h \
   base/BasicModule.h \
@@ -2235,11 +2199,6 @@ $O/networklayer/arp/ARP.o: networklayer/arp/ARP.cc \
   networklayer/contract/IPControlInfo_m.h \
   networklayer/ipv4/IPDatagram_m.h \
   networklayer/arp/ARP.h
-$O/networklayer/arp/ARPPacket_m.o: networklayer/arp/ARPPacket_m.cc \
-  linklayer/contract/MACAddress.h \
-  networklayer/arp/ARPPacket_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h
 $O/networklayer/autorouting/FlatNetworkConfigurator.o: networklayer/autorouting/FlatNetworkConfigurator.cc \
   networklayer/ipv4/IPv4InterfaceData.h \
   networklayer/contract/IPv6Address.h \
@@ -2355,15 +2314,6 @@ $O/networklayer/contract/IPControlInfo.o: networklayer/contract/IPControlInfo.cc
   networklayer/contract/IPAddress.h \
   networklayer/contract/IPControlInfo_m.h \
   networklayer/ipv4/IPDatagram_m.h
-$O/networklayer/contract/IPControlInfo_m.o: networklayer/contract/IPControlInfo_m.cc \
-  linklayer/contract/MACAddress.h \
-  networklayer/contract/IPProtocolId_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/contract/IPControlInfo_m.h
-$O/networklayer/contract/IPProtocolId_m.o: networklayer/contract/IPProtocolId_m.cc \
-  networklayer/contract/IPProtocolId_m.h \
-  base/INETDefs.h
 $O/networklayer/contract/IPv6Address.o: networklayer/contract/IPv6Address.cc \
   networklayer/contract/IPv6Address.h \
   networklayer/common/InterfaceToken.h \
@@ -2376,11 +2326,6 @@ $O/networklayer/contract/IPv6ControlInfo.o: networklayer/contract/IPv6ControlInf
   networklayer/contract/IPProtocolId_m.h \
   base/INETDefs.h \
   networklayer/contract/IPv6ControlInfo.h
-$O/networklayer/contract/IPv6ControlInfo_m.o: networklayer/contract/IPv6ControlInfo_m.cc \
-  networklayer/contract/IPv6ControlInfo_m.h \
-  networklayer/contract/IPv6Address.h \
-  networklayer/contract/IPProtocolId_m.h \
-  base/INETDefs.h
 $O/networklayer/contract/IPvXAddress.o: networklayer/contract/IPvXAddress.cc \
   networklayer/contract/IPv6Address.h \
   base/INETDefs.h \
@@ -2425,15 +2370,6 @@ $O/networklayer/icmpv6/ICMPv6.o: networklayer/icmpv6/ICMPv6.cc \
   base/INETDefs.h \
   networklayer/icmpv6/ICMPv6.h \
   networklayer/contract/IPv6ControlInfo.h
-$O/networklayer/icmpv6/ICMPv6Message_m.o: networklayer/icmpv6/ICMPv6Message_m.cc \
-  networklayer/icmpv6/ICMPv6Message_m.h \
-  base/INETDefs.h
-$O/networklayer/icmpv6/IPv6NDMessage_m.o: networklayer/icmpv6/IPv6NDMessage_m.cc \
-  networklayer/contract/IPv6Address.h \
-  linklayer/contract/MACAddress.h \
-  networklayer/icmpv6/ICMPv6Message_m.h \
-  base/INETDefs.h \
-  networklayer/icmpv6/IPv6NDMessage_m.h
 $O/networklayer/icmpv6/IPv6NeighbourCache.o: networklayer/icmpv6/IPv6NeighbourCache.cc \
   networklayer/contract/IPv6Address.h \
   linklayer/contract/MACAddress.h \
@@ -2465,13 +2401,6 @@ $O/networklayer/icmpv6/IPv6NeighbourDiscovery.o: networklayer/icmpv6/IPv6Neighbo
   networklayer/icmpv6/ICMPv6.h \
   networklayer/contract/IPv6ControlInfo.h \
   networklayer/icmpv6/IPv6NeighbourDiscovery.h
-$O/networklayer/ipv4/ControlManetRouting_m.o: networklayer/ipv4/ControlManetRouting_m.cc \
-  networklayer/contract/IPv6Address.h \
-  networklayer/ipv4/ControlManetRouting_m.h \
-  linklayer/contract/MACAddress.h \
-  networklayer/manetrouting/base/uint128.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h
 $O/networklayer/ipv4/ErrorHandling.o: networklayer/ipv4/ErrorHandling.cc \
   linklayer/contract/MACAddress.h \
   networklayer/contract/IPProtocolId_m.h \
@@ -2500,9 +2429,6 @@ $O/networklayer/ipv4/ICMP.o: networklayer/ipv4/ICMP.cc \
   networklayer/contract/IPControlInfo_m.h \
   networklayer/ipv4/IPDatagram_m.h \
   networklayer/ipv4/ICMPMessage.h
-$O/networklayer/ipv4/ICMPMessage_m.o: networklayer/ipv4/ICMPMessage_m.cc \
-  networklayer/ipv4/ICMPMessage_m.h \
-  base/INETDefs.h
 $O/networklayer/ipv4/IP.o: networklayer/ipv4/IP.cc \
   networklayer/ipv4/ICMP.h \
   base/ReassemblyBuffer.h \
@@ -2536,11 +2462,6 @@ $O/networklayer/ipv4/IP.o: networklayer/ipv4/IP.cc \
   networklayer/contract/IPControlInfo_m.h \
   networklayer/ipv4/IPDatagram_m.h \
   networklayer/ipv4/ICMPMessage.h
-$O/networklayer/ipv4/IPDatagram_m.o: networklayer/ipv4/IPDatagram_m.cc \
-  networklayer/contract/IPProtocolId_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/ipv4/IPDatagram_m.h
 $O/networklayer/ipv4/IPFragBuf.o: networklayer/ipv4/IPFragBuf.cc \
   base/ReassemblyBuffer.h \
   networklayer/ipv4/ICMP.h \
@@ -2646,11 +2567,6 @@ $O/networklayer/ipv6/IPv6Datagram.o: networklayer/ipv6/IPv6Datagram.cc \
   networklayer/contract/IPProtocolId_m.h \
   networklayer/ipv6/IPv6ExtensionHeaders_m.h \
   base/INETDefs.h
-$O/networklayer/ipv6/IPv6Datagram_m.o: networklayer/ipv6/IPv6Datagram_m.cc \
-  networklayer/contract/IPv6Address.h \
-  networklayer/contract/IPProtocolId_m.h \
-  networklayer/ipv6/IPv6Datagram_m.h \
-  base/INETDefs.h
 $O/networklayer/ipv6/IPv6ErrorHandling.o: networklayer/ipv6/IPv6ErrorHandling.cc \
   networklayer/contract/IPv6ControlInfo_m.h \
   networklayer/ipv6/IPv6ErrorHandling.h \
@@ -2661,13 +2577,6 @@ $O/networklayer/ipv6/IPv6ErrorHandling.o: networklayer/ipv6/IPv6ErrorHandling.cc
   networklayer/icmpv6/ICMPv6Message_m.h \
   base/INETDefs.h \
   networklayer/contract/IPv6ControlInfo.h
-$O/networklayer/ipv6/IPv6ExtensionHeaders_m.o: networklayer/ipv6/IPv6ExtensionHeaders_m.cc \
-  networklayer/contract/IPv6Address.h \
-  networklayer/ipv6/IPv6Datagram.h \
-  networklayer/contract/IPProtocolId_m.h \
-  networklayer/ipv6/IPv6Datagram_m.h \
-  networklayer/ipv6/IPv6ExtensionHeaders_m.h \
-  base/INETDefs.h
 $O/networklayer/ipv6/IPv6FragBuf.o: networklayer/ipv6/IPv6FragBuf.cc \
   networklayer/contract/IPv6ControlInfo_m.h \
   base/ReassemblyBuffer.h \
@@ -2755,10 +2664,6 @@ $O/networklayer/ldp/LDP.o: networklayer/ldp/LDP.cc \
   transport/contract/TCPSocketMap.h \
   transport/tcp/TCPSegment.h \
   transport/contract/UDPSocket.h
-$O/networklayer/ldp/LDPPacket_m.o: networklayer/ldp/LDPPacket_m.cc \
-  networklayer/ldp/LDPPacket_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h
 $O/networklayer/manetrouting/aodv/aodv_msg_struct.o: networklayer/manetrouting/aodv/aodv_msg_struct.cc \
   networklayer/contract/IPv6ControlInfo_m.h \
   transport/udp/UDPPacket.h \
@@ -3611,10 +3516,6 @@ $O/networklayer/manetrouting/dsdv/DSDV_2.o: networklayer/manetrouting/dsdv/DSDV_
   networklayer/contract/IPAddress.h \
   networklayer/contract/IPControlInfo_m.h \
   networklayer/ipv4/IPDatagram_m.h
-$O/networklayer/manetrouting/dsdv/DSDVhello_m.o: networklayer/manetrouting/dsdv/DSDVhello_m.cc \
-  networklayer/manetrouting/dsdv/DSDVhello_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h
 $O/networklayer/manetrouting/dsr/dsr-pkt_omnet.o: networklayer/manetrouting/dsr/dsr-pkt_omnet.cc \
   networklayer/manetrouting/dsr/dsr-uu/dsr-opt.h \
   linklayer/contract/MACAddress.h \
@@ -5373,35 +5274,6 @@ $O/networklayer/manetrouting/dymo_fau/DYMO_OutstandingRREQList.o: networklayer/m
   networklayer/contract/IPAddress.h \
   networklayer/manetrouting/dymo_fau/DYMO_Timeout_m.h \
   networklayer/manetrouting/dymo_fau/DYMO_Timer.h
-$O/networklayer/manetrouting/dymo_fau/DYMO_PacketBBMessage_m.o: networklayer/manetrouting/dymo_fau/DYMO_PacketBBMessage_m.cc \
-  networklayer/manetrouting/dymo_fau/DYMO_PacketBBMessage_m.h
-$O/networklayer/manetrouting/dymo_fau/DYMO_Packet_m.o: networklayer/manetrouting/dymo_fau/DYMO_Packet_m.cc \
-  networklayer/manetrouting/dymo_fau/DYMO_Packet_m.h
-$O/networklayer/manetrouting/dymo_fau/DYMO_RERR_m.o: networklayer/manetrouting/dymo_fau/DYMO_RERR_m.cc \
-  networklayer/manetrouting/dymo_fau/DYMO_RERR_m.h \
-  networklayer/manetrouting/dymo_fau/InspectorHelpers.h \
-  networklayer/manetrouting/dymo_fau/DYMO_PacketBBMessage_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_AddressBlock.h
-$O/networklayer/manetrouting/dymo_fau/DYMO_RM_m.o: networklayer/manetrouting/dymo_fau/DYMO_RM_m.cc \
-  networklayer/manetrouting/dymo_fau/DYMO_RERR_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_RM_m.h \
-  networklayer/manetrouting/dymo_fau/InspectorHelpers.h \
-  networklayer/manetrouting/dymo_fau/DYMO_PacketBBMessage_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_AddressBlock.h
-$O/networklayer/manetrouting/dymo_fau/DYMO_RREP_m.o: networklayer/manetrouting/dymo_fau/DYMO_RREP_m.cc \
-  networklayer/manetrouting/dymo_fau/DYMO_RREP_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_RERR_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_RM_m.h \
-  networklayer/manetrouting/dymo_fau/InspectorHelpers.h \
-  networklayer/manetrouting/dymo_fau/DYMO_PacketBBMessage_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_AddressBlock.h
-$O/networklayer/manetrouting/dymo_fau/DYMO_RREQ_m.o: networklayer/manetrouting/dymo_fau/DYMO_RREQ_m.cc \
-  networklayer/manetrouting/dymo_fau/DYMO_RERR_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_RM_m.h \
-  networklayer/manetrouting/dymo_fau/InspectorHelpers.h \
-  networklayer/manetrouting/dymo_fau/DYMO_PacketBBMessage_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_RREQ_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_AddressBlock.h
 $O/networklayer/manetrouting/dymo_fau/DYMO_RoutingEntry.o: networklayer/manetrouting/dymo_fau/DYMO_RoutingEntry.cc \
   base/ReassemblyBuffer.h \
   networklayer/ipv4/ICMP.h \
@@ -5516,8 +5388,6 @@ $O/networklayer/manetrouting/dymo_fau/DYMO_RoutingTable.o: networklayer/manetrou
   networklayer/manetrouting/dymo_fau/DYMO_AddressBlock.h \
   networklayer/manetrouting/dymo_fau/DYMO_UERR_m.h \
   networklayer/manetrouting/dymo_fau/DYMO_RoutingTable.h
-$O/networklayer/manetrouting/dymo_fau/DYMO_Timeout_m.o: networklayer/manetrouting/dymo_fau/DYMO_Timeout_m.cc \
-  networklayer/manetrouting/dymo_fau/DYMO_Timeout_m.h
 $O/networklayer/manetrouting/dymo_fau/DYMO_Timer.o: networklayer/manetrouting/dymo_fau/DYMO_Timer.cc \
   networklayer/manetrouting/dymo_fau/DYMO_Timeout_m.h \
   networklayer/manetrouting/dymo_fau/DYMO_Timer.h
@@ -5573,9 +5443,6 @@ $O/networklayer/manetrouting/dymo_fau/DYMO_TokenBucket.o: networklayer/manetrout
   networklayer/manetrouting/dymo_fau/DYMO_AddressBlock.h \
   networklayer/manetrouting/dymo_fau/DYMO_UERR_m.h \
   networklayer/manetrouting/dymo_fau/DYMO_RoutingTable.h
-$O/networklayer/manetrouting/dymo_fau/DYMO_UERR_m.o: networklayer/manetrouting/dymo_fau/DYMO_UERR_m.cc \
-  networklayer/manetrouting/dymo_fau/DYMO_PacketBBMessage_m.h \
-  networklayer/manetrouting/dymo_fau/DYMO_UERR_m.h
 $O/networklayer/manetrouting/dymo_fau/InspectorHelpers.o: networklayer/manetrouting/dymo_fau/InspectorHelpers.cc \
   networklayer/manetrouting/dymo_fau/DYMO_RERR_m.h \
   networklayer/manetrouting/dymo_fau/DYMO_RM_m.h \
@@ -5784,14 +5651,6 @@ $O/networklayer/manetrouting/olsr/OLSR_state.o: networklayer/manetrouting/olsr/O
   networklayer/ipv4/IPDatagram_m.h \
   networklayer/contract/IPvXAddress.h \
   networklayer/manetrouting/olsr/OLSRpkt_m.h
-$O/networklayer/manetrouting/olsr/OLSRpkt_m.o: networklayer/manetrouting/olsr/OLSRpkt_m.cc \
-  networklayer/contract/IPv6Address.h \
-  linklayer/contract/MACAddress.h \
-  networklayer/manetrouting/olsr/OLSR_ETX_parameter.h \
-  networklayer/manetrouting/base/uint128.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/manetrouting/olsr/OLSRpkt_m.h
 $O/networklayer/mpls/LIBTable.o: networklayer/mpls/LIBTable.cc \
   util/XMLUtils.h \
   networklayer/ipv4/RoutingTableAccess.h \
@@ -5846,10 +5705,6 @@ $O/networklayer/mpls/MPLS.o: networklayer/mpls/MPLS.cc \
 $O/networklayer/mpls/MPLSPacket.o: networklayer/mpls/MPLSPacket.cc \
   networklayer/mpls/MPLSPacket.h \
   base/INETDefs.h
-$O/networklayer/ospfv2/OSPFPacket_m.o: networklayer/ospfv2/OSPFPacket_m.cc \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/ospfv2/OSPFPacket_m.h
 $O/networklayer/ospfv2/OSPFRouting.o: networklayer/ospfv2/OSPFRouting.cc \
   networklayer/ospfv2/neighbor/OSPFNeighbor.h \
   networklayer/contract/IPv6Address.h \
@@ -5886,9 +5741,6 @@ $O/networklayer/ospfv2/OSPFRouting.o: networklayer/ospfv2/OSPFRouting.cc \
   networklayer/ospfv2/router/OSPFcommon.h \
   networklayer/ospfv2/messagehandler/LinkStateAcknowledgementHandler.h \
   networklayer/ospfv2/router/OSPFArea.h
-$O/networklayer/ospfv2/OSPFTimer_m.o: networklayer/ospfv2/OSPFTimer_m.cc \
-  networklayer/ospfv2/OSPFTimer_m.h \
-  base/INETDefs.h
 $O/networklayer/ospfv2/interface/OSPFInterface.o: networklayer/ospfv2/interface/OSPFInterface.cc \
   networklayer/ipv4/IPv4InterfaceData.h \
   networklayer/ospfv2/neighbor/OSPFNeighbor.h \
@@ -6840,10 +6692,6 @@ $O/networklayer/queue/REDQueue.o: networklayer/queue/REDQueue.cc \
   base/PassiveQueueBase.h \
   networklayer/queue/REDQueue.h \
   base/INETDefs.h
-$O/networklayer/rsvp_te/IntServ_m.o: networklayer/rsvp_te/IntServ_m.cc \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/rsvp_te/IntServ_m.h
 $O/networklayer/rsvp_te/RSVP.o: networklayer/rsvp_te/RSVP.cc \
   networklayer/rsvp_te/RSVPPathMsg.h \
   networklayer/ipv4/IPv4InterfaceData.h \
@@ -6892,40 +6740,6 @@ $O/networklayer/rsvp_te/RSVP.o: networklayer/rsvp_te/RSVP.cc \
   networklayer/mpls/IClassifier.h \
   networklayer/rsvp_te/IRSVPClassifier.h \
   networklayer/rsvp_te/RSVPResvMsg_m.h
-$O/networklayer/rsvp_te/RSVPHello_m.o: networklayer/rsvp_te/RSVPHello_m.cc \
-  networklayer/rsvp_te/RSVPPacket.h \
-  networklayer/rsvp_te/RSVPPacket_m.h \
-  networklayer/rsvp_te/RSVPHello_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/rsvp_te/IntServ_m.h
-$O/networklayer/rsvp_te/RSVPPacket_m.o: networklayer/rsvp_te/RSVPPacket_m.cc \
-  networklayer/rsvp_te/RSVPPacket_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/rsvp_te/IntServ_m.h
-$O/networklayer/rsvp_te/RSVPPathMsg_m.o: networklayer/rsvp_te/RSVPPathMsg_m.cc \
-  networklayer/rsvp_te/IntServ.h \
-  networklayer/rsvp_te/RSVPPacket.h \
-  networklayer/rsvp_te/RSVPPacket_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/rsvp_te/RSVPPathMsg_m.h \
-  networklayer/rsvp_te/IntServ_m.h
-$O/networklayer/rsvp_te/RSVPResvMsg_m.o: networklayer/rsvp_te/RSVPResvMsg_m.cc \
-  networklayer/rsvp_te/IntServ.h \
-  networklayer/rsvp_te/RSVPPacket.h \
-  networklayer/rsvp_te/RSVPPacket_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/rsvp_te/IntServ_m.h \
-  networklayer/rsvp_te/RSVPResvMsg_m.h
-$O/networklayer/rsvp_te/SignallingMsg_m.o: networklayer/rsvp_te/SignallingMsg_m.cc \
-  networklayer/rsvp_te/IntServ.h \
-  base/INETDefs.h \
-  networklayer/rsvp_te/SignallingMsg_m.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/rsvp_te/IntServ_m.h
 $O/networklayer/rsvp_te/SimpleClassifier.o: networklayer/rsvp_te/SimpleClassifier.cc \
   networklayer/rsvp_te/RSVPPathMsg.h \
   util/XMLUtils.h \
@@ -6966,11 +6780,6 @@ $O/networklayer/rsvp_te/Utils.o: networklayer/rsvp_te/Utils.cc \
   base/INETDefs.h \
   networklayer/contract/IPAddress.h \
   networklayer/rsvp_te/IntServ_m.h
-$O/networklayer/ted/LinkStatePacket_m.o: networklayer/ted/LinkStatePacket_m.cc \
-  networklayer/ted/LinkStatePacket_m.h \
-  networklayer/ted/TED_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h
 $O/networklayer/ted/LinkStateRouting.o: networklayer/ted/LinkStateRouting.cc \
   networklayer/ipv4/IPv4InterfaceData.h \
   networklayer/ted/LinkStatePacket_m.h \
@@ -7020,41 +6829,6 @@ $O/networklayer/ted/TED.o: networklayer/ted/TED.cc \
   networklayer/contract/IPControlInfo_m.h \
   networklayer/ted/TED.h \
   networklayer/rsvp_te/IntServ_m.h
-$O/networklayer/ted/TED_m.o: networklayer/ted/TED_m.cc \
-  networklayer/ted/TED_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h
-$O/transport/contract/SCTPCommand_m.o: transport/contract/SCTPCommand_m.cc \
-  networklayer/contract/IPv6Address.h \
-  networklayer/common/IInterfaceTable.h \
-  transport/sctp/SCTP.h \
-  transport/contract/SCTPCommand_m.h \
-  linklayer/contract/MACAddress.h \
-  networklayer/common/InterfaceTableAccess.h \
-  networklayer/common/InterfaceEntry.h \
-  networklayer/ipv4/RoutingTableAccess.h \
-  networklayer/common/InterfaceToken.h \
-  base/INotifiable.h \
-  networklayer/contract/IPProtocolId_m.h \
-  transport/sctp/SCTPQueue.h \
-  transport/sctp/SCTPAssociation.h \
-  networklayer/contract/IPControlInfo.h \
-  transport/sctp/SCTPMessage_m.h \
-  networklayer/ipv4/IRoutingTable.h \
-  transport/sctp/SCTPReceiveStream.h \
-  transport/sctp/SCTPMessage.h \
-  networklayer/ipv4/RoutingTable.h \
-  base/ModuleAccess.h \
-  transport/sctp/SCTPSendStream.h \
-  base/NotifierConsts.h \
-  base/NotificationBoard.h \
-  base/INETDefs.h \
-  networklayer/ipv4/IPRoute.h \
-  networklayer/contract/IPAddress.h \
-  transport/contract/SCTPCommand.h \
-  networklayer/contract/IPControlInfo_m.h \
-  networklayer/common/InterfaceTable.h \
-  networklayer/contract/IPvXAddress.h
 $O/transport/contract/SCTPSocket.o: transport/contract/SCTPSocket.cc \
   networklayer/contract/IPv6Address.h \
   networklayer/common/IInterfaceTable.h \
@@ -7087,12 +6861,6 @@ $O/transport/contract/SCTPSocket.o: transport/contract/SCTPSocket.cc \
   networklayer/contract/IPControlInfo_m.h \
   networklayer/common/InterfaceTable.h \
   networklayer/contract/IPvXAddress.h
-$O/transport/contract/TCPCommand_m.o: transport/contract/TCPCommand_m.cc \
-  networklayer/contract/IPv6Address.h \
-  transport/contract/TCPCommand_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/contract/IPvXAddress.h
 $O/transport/contract/TCPSocket.o: transport/contract/TCPSocket.cc \
   networklayer/contract/IPv6Address.h \
   transport/contract/TCPCommand_m.h \
@@ -7108,12 +6876,6 @@ $O/transport/contract/TCPSocketMap.o: transport/contract/TCPSocketMap.cc \
   transport/contract/TCPSocket.h \
   networklayer/contract/IPvXAddress.h \
   transport/contract/TCPSocketMap.h
-$O/transport/contract/UDPControlInfo_m.o: transport/contract/UDPControlInfo_m.cc \
-  networklayer/contract/IPv6Address.h \
-  transport/contract/UDPControlInfo_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/contract/IPvXAddress.h
 $O/transport/contract/UDPSocket.o: transport/contract/UDPSocket.cc \
   networklayer/contract/IPv6Address.h \
   transport/contract/UDPControlInfo_m.h \
@@ -7222,9 +6984,6 @@ $O/transport/rtp/RTPReceiverInfo.o: transport/rtp/RTPReceiverInfo.cc \
   base/INETDefs.h \
   networklayer/contract/IPAddress.h \
   transport/rtp/reports.h
-$O/transport/rtp/RTPSenderControlMessage_m.o: transport/rtp/RTPSenderControlMessage_m.cc \
-  transport/rtp/RTPSenderControlMessage_m.h \
-  base/INETDefs.h
 $O/transport/rtp/RTPSenderInfo.o: transport/rtp/RTPSenderInfo.cc \
   transport/rtp/sdes.h \
   transport/rtp/RTPSenderInfo.h \
@@ -7234,9 +6993,6 @@ $O/transport/rtp/RTPSenderInfo.o: transport/rtp/RTPSenderInfo.cc \
   base/INETDefs.h \
   networklayer/contract/IPAddress.h \
   transport/rtp/reports.h
-$O/transport/rtp/RTPSenderStatusMessage_m.o: transport/rtp/RTPSenderStatusMessage_m.cc \
-  base/INETDefs.h \
-  transport/rtp/RTPSenderStatusMessage_m.h
 $O/transport/rtp/reports.o: transport/rtp/reports.cc \
   base/INETDefs.h \
   networklayer/contract/IPAddress.h \
@@ -7269,9 +7025,6 @@ $O/transport/rtp/profiles/avprofile/RTPAVProfilePayload32Sender.o: transport/rtp
   networklayer/contract/IPAddress.h \
   transport/rtp/RTPSenderStatusMessage_m.h \
   transport/rtp/RTPPayloadSender.h
-$O/transport/rtp/profiles/avprofile/RTPMpegPacket_m.o: transport/rtp/profiles/avprofile/RTPMpegPacket_m.cc \
-  transport/rtp/profiles/avprofile/RTPMpegPacket_m.h \
-  base/INETDefs.h
 $O/transport/sctp/SCTP.o: transport/sctp/SCTP.cc \
   networklayer/contract/IPv6ControlInfo_m.h \
   networklayer/contract/IPv6Address.h \
@@ -7530,12 +7283,6 @@ $O/transport/sctp/SCTPMessage.o: transport/sctp/SCTPMessage.cc \
   networklayer/contract/IPControlInfo_m.h \
   networklayer/common/InterfaceTable.h \
   networklayer/contract/IPvXAddress.h
-$O/transport/sctp/SCTPMessage_m.o: transport/sctp/SCTPMessage_m.cc \
-  networklayer/contract/IPv6Address.h \
-  transport/sctp/SCTPMessage_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/contract/IPvXAddress.h
 $O/transport/sctp/SCTPQueue.o: transport/sctp/SCTPQueue.cc \
   networklayer/contract/IPv6Address.h \
   transport/sctp/SCTP.h \
@@ -7682,9 +7429,6 @@ $O/transport/tcp/TCPSegment.o: transport/tcp/TCPSegment.cc \
   base/INETDefs.h \
   transport/tcp/TCPSegment_m.h \
   transport/tcp/TCPSegment.h
-$O/transport/tcp/TCPSegment_m.o: transport/tcp/TCPSegment_m.cc \
-  base/INETDefs.h \
-  transport/tcp/TCPSegment_m.h
 $O/transport/tcp/flavours/DumbTCP.o: transport/tcp/flavours/DumbTCP.cc \
   networklayer/contract/IPv6Address.h \
   transport/tcp/TCPAlgorithm.h \
@@ -7839,14 +7583,14 @@ $O/transport/udp/UDP.o: transport/udp/UDP.cc \
   networklayer/ipv4/IPDatagram_m.h \
   networklayer/contract/IPvXAddress.h \
   networklayer/ipv4/ICMPMessage.h
-$O/transport/udp/UDPPacket_m.o: transport/udp/UDPPacket_m.cc \
-  transport/udp/UDPPacket_m.h \
-  base/INETDefs.h
-$O/underTest/applications/TrafficGenerator_Erlangen/TrafGen.o: underTest/applications/TrafficGenerator_Erlangen/TrafGen.cc \
-  underTest/applications/TrafficGenerator_Erlangen/TrafGen.h
-$O/underTest/applications/TrafficGenerator_Erlangen/TrafGenPar.o: underTest/applications/TrafficGenerator_Erlangen/TrafGenPar.cc \
-  underTest/applications/TrafficGenerator_Erlangen/TrafGenPar.h
+$O/underTest/applications/Ieee802154TestApp/Ieee802154AppPkt_m.o: underTest/applications/Ieee802154TestApp/Ieee802154AppPkt_m.cc \
+  underTest/applications/Ieee802154TestApp/Ieee802154AppPkt_m.h
+$O/underTest/applications/Ieee802154TestApp/Ieee802154TestApp.o: underTest/applications/Ieee802154TestApp/Ieee802154TestApp.cc \
+  applications/trafgen/TrafGenPar.h \
+  underTest/applications/Ieee802154TestApp/Ieee802154TestApp.h \
+  underTest/applications/Ieee802154TestApp/Ieee802154AppPkt_m.h
 $O/underTest/applications/TrafficGenerator_Erlangen/WiMAXQoSTrafficGenerator.o: underTest/applications/TrafficGenerator_Erlangen/WiMAXQoSTrafficGenerator.cc \
+  applications/trafgen/TrafGen.h \
   underTest/applications/TrafficGenerator_Erlangen/WiMAXQoSTrafficGenerator.h \
   underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
   networklayer/common/IInterfaceTable.h \
@@ -7864,8 +7608,69 @@ $O/underTest/applications/TrafficGenerator_Erlangen/WiMAXQoSTrafficGenerator.o: 
   linklayer/contract/Ieee802Ctrl_m.h \
   networklayer/contract/IPAddress.h \
   networklayer/ipv4/IPDatagram_m.h \
-  underTest/applications/TrafficGenerator_Erlangen/TrafGen.h \
   underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h
+$O/underTest/linklayer/ieee802154/contract/Ieee802154MacPhyPrimitives_m.o: underTest/linklayer/ieee802154/contract/Ieee802154MacPhyPrimitives_m.cc \
+  underTest/linklayer/ieee802154/contract/Ieee802154MacPhyPrimitives_m.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Const.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Def.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Enum.h
+$O/underTest/linklayer/ieee802154/mac/Ieee802154Frame_m.o: underTest/linklayer/ieee802154/mac/Ieee802154Frame_m.cc \
+  underTest/linklayer/ieee802154/contract/Ieee802154Const.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Def.h \
+  underTest/linklayer/ieee802154/mac/Ieee802154Frame_m.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Field.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Enum.h
+$O/underTest/linklayer/ieee802154/mac/Ieee802154Link.o: underTest/linklayer/ieee802154/mac/Ieee802154Link.cc \
+  underTest/linklayer/ieee802154/mac/Ieee802154Link.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Def.h
+$O/underTest/linklayer/ieee802154/mac/Ieee802154Mac.o: underTest/linklayer/ieee802154/mac/Ieee802154Mac.cc \
+  underTest/wpan/networklayer/contract/Ieee802154NetworkCtrlInfo_m.h \
+  base/IPassiveQueue.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154MacPhyPrimitives_m.h \
+  base/INotifiable.h \
+  underTest/linklayer/ieee802154/mac/Ieee802154Link.h \
+  base/ModuleAccess.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Const.h \
+  base/NotifierConsts.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Def.h \
+  underTest/linklayer/ieee802154/mac/Ieee802154Frame_m.h \
+  base/NotificationBoard.h \
+  linklayer/contract/RadioState.h \
+  base/INETDefs.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Field.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Enum.h \
+  underTest/linklayer/ieee802154/mac/Ieee802154Mac.h
+$O/underTest/linklayer/ieee802154/phyLayer/Ieee802154Phy.o: underTest/linklayer/ieee802154/phyLayer/Ieee802154Phy.cc \
+  util/FWMath.h \
+  base/BasicModule.h \
+  linklayer/radio/IRadioModel.h \
+  underTest/linklayer/ieee802154/phyLayer/Ieee802154Phy.h \
+  linklayer/mfcore/AirFrame_m.h \
+  base/Coord.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154MacPhyPrimitives_m.h \
+  base/INotifiable.h \
+  linklayer/mfcore/SnrList.h \
+  world/ChannelControl.h \
+  base/ModuleAccess.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Const.h \
+  base/NotifierConsts.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Def.h \
+  base/NotificationBoard.h \
+  linklayer/contract/RadioState.h \
+  world/ChannelAccess.h \
+  base/INETDefs.h \
+  linklayer/radio/IReceptionModel.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Enum.h
+$O/underTest/linklayer/ieee802154/phyLayer/Ieee802154RadioModel.o: underTest/linklayer/ieee802154/phyLayer/Ieee802154RadioModel.cc \
+  util/FWMath.h \
+  linklayer/radio/IRadioModel.h \
+  linklayer/mfcore/AirFrame_m.h \
+  base/Coord.h \
+  linklayer/mfcore/SnrList.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Const.h \
+  underTest/linklayer/ieee802154/contract/Ieee802154Def.h \
+  underTest/linklayer/ieee802154/phyLayer/Ieee802154RadioModel.h \
+  base/INETDefs.h
 $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneAP.cc \
   underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
   linklayer/contract/MACAddress.h \
@@ -7974,21 +7779,6 @@ $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMS.o: underTest/linkla
 $O/underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMobilestation.o: underTest/linklayer/Ieee80216/ControlPlane/ControlPlaneMobilestation.cc \
   linklayer/mfcore/SnrList.h \
   underTest/linklayer/Ieee80216/ControlPlane/ModulationsConsts.h
-$O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.o: underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.cc \
-  linklayer/contract/MACAddress.h \
-  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216ManagementMessages_m.h \
-  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
-  linklayer/mfcore/SnrList.h \
-  underTest/linklayer/Ieee80216/ControlPlane/Struct.h \
-  base/INETDefs.h \
-  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h
-$O/underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.o: underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.cc \
-  underTest/linklayer/Ieee80216/ControlPlane/Ieee80216Primitives_m.h \
-  linklayer/contract/MACAddress.h \
-  underTest/linklayer/Ieee80216/MACSublayer/QoS/global_enums.h \
-  linklayer/mfcore/SnrList.h \
-  base/INETDefs.h \
-  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h
 $O/underTest/linklayer/Ieee80216/Mac/CommonPartSublayerDown.o: underTest/linklayer/Ieee80216/Mac/CommonPartSublayerDown.cc \
   linklayer/contract/MACAddress.h \
   underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.h \
@@ -8011,10 +7801,6 @@ $O/underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerUp.o: underTest/linklaye
   underTest/linklayer/Ieee80216/Mac/ConvergenceSublayerUp.h \
   base/INETDefs.h \
   linklayer/contract/PhyControlInfo_m.h
-$O/underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.o: underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.cc \
-  linklayer/contract/MACAddress.h \
-  base/INETDefs.h \
-  underTest/linklayer/Ieee80216/Mac/Ieee80216MacHeader_m.h
 $O/underTest/linklayer/Ieee80216/Mac/SecuritySublayerDown.o: underTest/linklayer/Ieee80216/Mac/SecuritySublayerDown.cc \
   underTest/linklayer/Ieee80216/Mac/SecuritySublayerDown.h \
   base/INETDefs.h \
@@ -8023,8 +7809,6 @@ $O/underTest/linklayer/Ieee80216/Mac/SecuritySublayerUp.o: underTest/linklayer/I
   base/INETDefs.h \
   linklayer/contract/PhyControlInfo_m.h \
   underTest/linklayer/Ieee80216/Mac/SecuritySublayerUp.h
-$O/underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.o: underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.cc \
-  underTest/linklayer/Ieee80216/Mac/WiMAXRadioControl_m.h
 $O/underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerAuthorizationModule.o: underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerAuthorizationModule.cc \
   linklayer/contract/MACAddress.h \
   underTest/linklayer/Ieee80216/MACSublayer/QoS/CommonPartSublayerAuthorizationModule.h \
@@ -8316,19 +8100,6 @@ $O/underTest/linklayer/radio/WiMAXPathLossReceptionModel.o: underTest/linklayer/
   base/INETDefs.h \
   linklayer/radio/IReceptionModel.h \
   underTest/linklayer/radio/WiMAXPathLossReceptionModel.h
-$O/underTest/transport/aki/AkiControlInfo_m.o: underTest/transport/aki/AkiControlInfo_m.cc \
-  networklayer/contract/IPv6Address.h \
-  underTest/transport/aki/AkiControlInfo_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/contract/IPvXAddress.h
-$O/underTest/transport/aki/AkiPacket_m.o: underTest/transport/aki/AkiPacket_m.cc \
-  networklayer/contract/IPv6Address.h \
-  underTest/transport/aki/AkiControlInfo_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/contract/IPvXAddress.h \
-  underTest/transport/aki/AkiPacket_m.h
 $O/underTest/transport/aki/aki.o: underTest/transport/aki/aki.cc \
   base/BasicModule.h \
   networklayer/contract/IPv6Address.h \
@@ -8349,13 +8120,51 @@ $O/underTest/transport/aki/aki.o: underTest/transport/aki/aki.cc \
   underTest/transport/aki/AkiPacket_m.h \
   applications/udpapp/UDPBasicApp.h \
   transport/contract/UDPSocket.h
-$O/underTest/transport/aki/akiMsg_m.o: underTest/transport/aki/akiMsg_m.cc \
-  networklayer/contract/IPv6Address.h \
-  underTest/transport/aki/AkiControlInfo_m.h \
-  base/INETDefs.h \
-  networklayer/contract/IPAddress.h \
-  networklayer/contract/IPvXAddress.h \
-  underTest/transport/aki/akiMsg_m.h
+$O/underTest/wpan/battery/BasicBattery.o: underTest/wpan/battery/BasicBattery.cc \
+  util/FWMath.h \
+  underTest/wpan/battery/BasicBattery.h \
+  linklayer/mfcore/AirFrame_m.h \
+  base/Coord.h \
+  base/INotifiable.h \
+  underTest/wpan/battery/Energy.h \
+  base/ModuleAccess.h \
+  world/ChannelControl.h \
+  underTest/wpan/Isabel/Analysis/AnalysisEnergy.h \
+  base/NotifierConsts.h \
+  base/NotificationBoard.h \
+  base/INETDefs.h
+$O/underTest/wpan/battery/Ieee802154Battery.o: underTest/wpan/battery/Ieee802154Battery.cc \
+  util/FWMath.h \
+  underTest/wpan/battery/BasicBattery.h \
+  linklayer/mfcore/AirFrame_m.h \
+  base/Coord.h \
+  base/INotifiable.h \
+  underTest/wpan/battery/Energy.h \
+  world/ChannelControl.h \
+  base/ModuleAccess.h \
+  underTest/wpan/Isabel/Analysis/AnalysisEnergy.h \
+  base/NotifierConsts.h \
+  base/NotificationBoard.h \
+  underTest/wpan/battery/Ieee802154Battery.h \
+  linklayer/contract/RadioState.h \
+  base/INETDefs.h
+$O/underTest/wpan/Isabel/Analysis/AnalysisEnergy.o: underTest/wpan/Isabel/Analysis/AnalysisEnergy.cc \
+  util/FWMath.h \
+  underTest/wpan/battery/BasicBattery.h \
+  linklayer/mfcore/AirFrame_m.h \
+  base/Coord.h \
+  underTest/wpan/battery/Energy.h \
+  world/ChannelControl.h \
+  underTest/wpan/Isabel/Analysis/AnalysisEnergy.h \
+  base/INETDefs.h
+$O/underTest/wpan/Isabel/Base/Display.o: underTest/wpan/Isabel/Base/Display.cc \
+  underTest/wpan/Isabel/Base/Display.h
+$O/underTest/wpan/networklayer/contract/Ieee802154NetworkCtrlInfo_m.o: underTest/wpan/networklayer/contract/Ieee802154NetworkCtrlInfo_m.cc \
+  underTest/wpan/networklayer/contract/Ieee802154NetworkCtrlInfo_m.h
+$O/underTest/wpan/networklayer/Ieee802154StarRouting/Ieee802154StarRouting.o: underTest/wpan/networklayer/Ieee802154StarRouting/Ieee802154StarRouting.cc \
+  underTest/wpan/networklayer/contract/Ieee802154NetworkCtrlInfo_m.h \
+  underTest/wpan/networklayer/Ieee802154StarRouting/Ieee802154StarRouting.h \
+  underTest/applications/Ieee802154TestApp/Ieee802154AppPkt_m.h
 $O/util/NAMTraceWriter.o: util/NAMTraceWriter.cc \
   linklayer/contract/TxNotifDetails.h \
   networklayer/common/IInterfaceTable.h \
@@ -8569,3 +8378,4 @@ $O/world/TraCIScenarioManager.o: world/TraCIScenarioManager.cc \
   base/NotificationBoard.h \
   world/TraCIScenarioManager.h \
   base/INETDefs.h
+$O/world/TraCIScenarioManagerLaunchd.o: world/TraCIScenarioManagerLaunchd.cc

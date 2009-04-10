@@ -19,14 +19,22 @@ package inet.underTest.applications.TrafficGenerator_Erlangen;
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
-simple TrafGen
-{
-    parameters:
 
-        int defaultTrafConfigId;
-        xml trafConfig;
+package inet.applications.trafgen;
+simple TrafGenPar
+{
+        bool isSink = default(true); // if true the node doesn't send traffic
+        volatile int packetSize @unit("B")= default(10B);
+	    volatile double interDepartureTime @unit("s") = default(exponential(1s));
+	    volatile double firstPacketTime @unit("s")= default(5s);
+	    string   trafDest =  default("BROADCAST");
+	    bool      onIdenticalTrafDest = default (false);
+	    volatile double onLength @unit("s")= default(0s);
+	    volatile double offLength @unit("s")= default(0s);
+	    volatile double offInterDepartureTime @unit("s")= default(0s);
     //    xml trafConfig;
     gates:
         input lowergateIn;
         output lowergateOut;
 }
+
