@@ -1,4 +1,4 @@
-package inet.underTest.applications.TrafficGenerator_Erlangen;
+package inet.applications.trafgen;
 //
 // Copyright (C) 2006 Autonomic Networking Group, 
 // Department of Computer Science 7, University of Erlangen, Germany
