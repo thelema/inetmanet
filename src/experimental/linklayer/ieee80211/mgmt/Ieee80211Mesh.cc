@@ -26,6 +26,7 @@
 //#include "dymo_msg_struct.h"
 //#include "aodv_msg_struct.h"
 #include "InterfaceTableAccess.h"
+#include "IPDatagram.h"
 #include <string.h>
 
 
@@ -522,7 +523,7 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 			}
 			send(msg,"routingOutReactive");
 		}
-		else // Normal frame test if use the mac label address method
+		else // Normal frame test if upper layer frame in other case delete
 			sendUp(msg);
 		return;
 	}
@@ -1793,5 +1794,20 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 	//send(msg, macBaseGateId + ie->getNetworkLayerGateIndex());
 	sendOrEnqueue(frame);
 	return true;
+}
+
+void Ieee80211Mesh::sendUp(cMessage *msg)
+{
+	if (isUpperLayer(msg))
+		send(msg, "uppergateOut");
+	else
+		delete msg;
+}
+
+bool Ieee80211Mesh::isUpperLayer(cMessage *msg)
+{
+	if (dynamic_cast<IPDatagram*>(msg))
+		return true;
+	return false;
 }
 
