@@ -2110,6 +2110,7 @@ uint32_t OLSR::getRoute(const Uint128 &dest,Uint128 add[])
 		return 0;
 	for (int i=0;i<(int)rt_entry->route.size();i++)
 		add[i] = rt_entry->route[i];
+	add[rt_entry->route.size()]=dest;
 	return rt_entry->dist();
 
 }

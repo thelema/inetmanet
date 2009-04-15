@@ -116,10 +116,12 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
     virtual void handleProbeRequestFrame(Ieee80211ProbeRequestFrame *frame);
     virtual void handleProbeResponseFrame(Ieee80211ProbeResponseFrame *frame);
     //@}
+    /** Redefined from Ieee80211MgmtBase: send message to MAC */
     virtual void sendOut(cMessage *msg);
+    /** Redefined from Ieee80211MgmtBase Utility method: sends the packet to the upper layer */
+    virtual void sendUp(cMessage *msg);
 
-
-
+    virtual bool isUpperLayer(cMessage *);
 };
 
 #endif
