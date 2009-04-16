@@ -55,9 +55,30 @@ from optparse import OptionParser
  
  
 _CMD_FILE_SEND = 0x75
-_FINDUNUSEDPORT_LOCK = thread.allocate_lock()
- 
- 
+class UnusedPortLock:
+    lock = thread.allocate_lock()
+
+    def __init__(self):
+        self.acquired = False
+
+    def __enter__(self):
+        self.acquire()
+
+    def __exit__(self):
+        self.release()
+
+    def acquire(self):
+        if not self.acquired:
+            logging.debug("Claiming lock on port")
+            UnusedPortLock.lock.acquire()
+            self.acquired = True
+
+    def release(self):
+        if self.acquired:
+            logging.debug("Releasing lock on port")
+            UnusedPortLock.lock.release()
+            self.acquired = False
+
 def find_unused_port():
     """
 Return an unused port number.
@@ -72,9 +93,9 @@ Return an unused port number.
  
 def forward_connection(client_socket, server_socket, process):
     """
-Proxy connections until either socket runs out of data or process terminates.
-"""
- 
+    Proxy connections until either socket runs out of data or process terminates.
+    """
+
     logging.debug("Starting proxy mode")
  
     do_exit = False
@@ -105,21 +126,16 @@ Proxy connections until either socket runs out of data or process terminates.
                 do_exit = True
             finally:
                 client_socket.send(data)
- 
         rc = process.poll()
         if (rc != None):
             do_exit = True
             break
- 
         time.sleep(0.1)
- 
     logging.debug("Done with proxy mode")
- 
- 
 def parse_launch_configuration(launch_xml_string):
     """
-Returns tuple of options set in launch configuration
-"""
+    Returns tuple of options set in launch configuration
+    """
     
     p = xml.dom.minidom.parseString(launch_xml_string)
     
@@ -142,15 +158,12 @@ Returns tuple of options set in launch configuration
     copy_nodes = [x for x in launch_node.getElementsByTagName("copy") if x.parentNode==launch_node]
     
     return (basedir, copy_nodes)
- 
- 
-def run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket):
+
+def run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket, unused_port_lock):
     """
-Actually run SUMO.
-"""
- 
-    have_unusedport_lock = True
-    
+    Actually run SUMO.
+    """
+
     # create log files
     sumoLogOut = open(os.path.join(runpath, 'sumo-launchd.out.log'), 'w')
     sumoLogErr = open(os.path.join(runpath, 'sumo-launchd.err.log'), 'w')
@@ -181,9 +194,7 @@ Actually run SUMO.
                     raise
                 time.sleep(tries * 0.25)
                 tries += 1
- 
-        _FINDUNUSEDPORT_LOCK.release()
-        have_unusedport_lock = False
+        unused_port_lock.release()
         forward_connection(client_socket, sumo_socket, sumo)
  
         client_socket.close()
@@ -227,11 +238,6 @@ Actually run SUMO.
     except:
         raise
     
-    finally:
-        if have_unusedport_lock:
-            _FINDUNUSEDPORT_LOCK.release()
-            have_unusedport_lock = False
- 
     # statistics
     sumo_end = int(time.time())
  
@@ -342,41 +348,45 @@ Copy (and modify) files, return config file name
  
 def handle_launch_configuration(sumo_command, launch_xml_string, client_socket):
     """
-Process launch configuration in launch_xml_string.
-"""
-    
-    logging.debug("Creating temporary directory...")
- 
+    Process launch configuration in launch_xml_string.
+    """
+
     # create temporary directory
+    logging.debug("Creating temporary directory...")
     runpath = tempfile.mkdtemp(prefix="sumo-launchd-tmp-")
     if not runpath:
         raise RuntimeError("Could not create temporary directory")
     if not os.path.exists(runpath):
         raise RuntimeError('Temporary directory "%s" does not exist, even though it should have been created' % runpath)
- 
     logging.debug("Temporary dir is %s" % runpath)
- 
-    logging.debug("Finding free port number...")
- 
-    # parse launch configuration
-    (basedir, copy_nodes) = parse_launch_configuration(launch_xml_string)
- 
-    # find remote_port
-    _FINDUNUSEDPORT_LOCK.acquire()
-    remote_port = find_unused_port()
- 
-    # copy (and modify) files
-    config_file_name = copy_and_modify_files(basedir, copy_nodes, runpath, remote_port)
-    
-    # run SUMO
-    result_xml = run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket)
- 
-    # clean up
-    logging.debug("Cleaning up")
-    shutil.rmtree(runpath)
- 
-    logging.debug('Result: "%s"' % result_xml)
- 
+
+    result_xml = None
+    unused_port_lock = UnusedPortLock()
+    try:    
+        # parse launch configuration 
+        (basedir, copy_nodes) = parse_launch_configuration(launch_xml_string)
+
+        # find remote_port
+        logging.debug("Finding free port number...")
+        unused_port_lock.__enter__()
+        remote_port = find_unused_port()
+        logging.debug("...found port %d" % remote_port)
+
+        # copy (and modify) files
+        config_file_name = copy_and_modify_files(basedir, copy_nodes, runpath, remote_port)
+        
+        # run SUMO
+        result_xml = run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket, unused_port_lock)
+
+    finally:
+        unused_port_lock.__exit__()
+
+        # clean up
+        logging.debug("Cleaning up")
+        shutil.rmtree(runpath)
+
+        logging.debug('Result: "%s"' % result_xml)
+
     return result_xml
  
  
@@ -451,9 +461,8 @@ Handle incoming connection.
     try:
         data = read_launch_config(conn)
         handle_launch_configuration(sumo_command, data, conn)
- 
-    except:
-        raise
+    except Exception, e:
+        logging.error("Aborting on error: %s" % e)
     
     finally:
         logging.debug("Closing connection from %s on port %d" % addr)
