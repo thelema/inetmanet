@@ -56,3 +56,11 @@ packet AirFrame
     double powRec; // Power in the receiver
     Coord senderPos;
 }
+//
+// Support of multiples gates
+//
+packet AirFrameExtended extends AirFrame
+{
+   double carrierFrequency; // 
+   double bandwidth;
+}
