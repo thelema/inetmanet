@@ -62,7 +62,7 @@ bool ChannelControlExtended::HostEntryExtended::isReceivingInChannel(int channel
    /* if there is some radio on the channel on this host */
    for(ChannelControlExtended::RadioList::const_iterator it = radioList.begin();it!=radioList.end();it++)
    {
-      if (((*it).channel==channel) && (abs(((*it).radioCarrier - freq)/freq)<=percentaje))
+      if (((*it).channel==channel) && (fabs(((*it).radioCarrier - freq)/freq)<=percentage))
 	  {
          return(true);
       }
@@ -79,7 +79,7 @@ ChannelControlExtended::radioGatesList ChannelControlExtended::HostEntryExtended
 	   freq=carrierFrequency;
 
    for(ChannelControlExtended::RadioList::const_iterator it = radioList.begin();it!=radioList.end();it++) {
-	   if (((*it).channel==channel) && (abs(((*it).radioCarrier - freq)/freq)<=percentaje)) {
+	   if (((*it).channel==channel) && (fabs(((*it).radioCarrier - freq)/freq)<=percentage)) {
          cGate* radioGate = NULL;
          if ((*it).hostGateId!=-1) {
             radioGate = (this->host)->gate((*it).hostGateId);
@@ -211,6 +211,7 @@ void ChannelControlExtended::initialize()
 
     numChannels = par("numChannels");
     transmissions.resize(numChannels);
+    percentage = par("percentage");
 
     lastOngoingTransmissionsUpdate = 0;
 
@@ -222,7 +223,7 @@ void ChannelControlExtended::initialize()
 
     updateDisplayString(getParentModule());
 	carrierFrequency = par("carrierFrequency");
-	percentaje = 0.1;
+	percentage = 0.1;
 }
 
 
@@ -237,7 +238,7 @@ ChannelControl::HostRef ChannelControlExtended::registerHost(cModule * host, con
     he.host = host;
     he.pos = initialPos;
     he.carrierFrequency=carrierFrequency;
-    he.percentaje=percentaje;
+    he.percentage=percentage;
     he.isModuleListValid = false;
     // TODO: get it from caller
     he.channel = 0;

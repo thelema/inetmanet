@@ -41,6 +41,7 @@ package inet.world;
 simple ChannelControlExtended extends ChannelControl
 {
     parameters:
+        double percentage=default(0.1);
         @display("i=misc/sun");
 }
 

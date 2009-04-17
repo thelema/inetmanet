@@ -137,7 +137,7 @@ bool AbstractRadioExtended::processAirFrame(AirFrame *airframe)
 	AirFrameExtended *airframeext = dynamic_cast<AirFrameExtended *>(airframe);
 	if (ccExt && airframeext)
 	{
-		double perc = ccExt->getPercentaje();
+		double perc = ccExt->getPercentage();
 		double fqFrame = airframeext->getCarrierFrequency();
 		if (chnum == getChannelNumber() && (abs((fqFrame - carrierFrequency)/carrierFrequency)<=perc))
 			return true;

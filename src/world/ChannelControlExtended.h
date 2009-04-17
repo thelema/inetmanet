@@ -100,7 +100,7 @@ class ChannelControlExtended : public ChannelControl
 		 RadioList radioList;
 
 		 double carrierFrequency;
-		 double percentaje;
+		 double percentage;
 
 		 //radioGatesList getHostGatesOnChannel(int);
 		 radioGatesList getHostGatesOnChannel(int,double);
@@ -116,7 +116,7 @@ class ChannelControlExtended : public ChannelControl
     HostList hosts;
 
 	double carrierFrequency;
-	double percentaje;
+	double percentage;
 
   protected:
     virtual void updateConnections(HostRef h);
@@ -150,7 +150,7 @@ class ChannelControlExtended : public ChannelControl
 
      /** @brief Returns the number of radio channels (frequencies) simulated */
     const int getNumChannels() {return numChannels;}
-	const double getPercentaje(){return percentaje;}
+	const double getPercentage(){return percentage;}
 };
 
 #endif
