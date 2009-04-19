@@ -87,7 +87,12 @@ void AbstractRadioExtended::initialize(int stage)
         WATCH(noiseLevel);
         WATCH(rs);
 
-        receptionModel = createReceptionModel();
+        if (par("attenuationModel").stdstringValue ()=="tworay")
+        	receptionModel = createReceptionModelTwoRay();
+        if (par("attenuationModel").stdstringValue ()=="pathlost")
+        	receptionModel = createReceptionModelPathLost();
+        else
+        	receptionModel = createReceptionModel();
         receptionModel->initializeFrom(this);
 
         radioModel = createRadioModel();
@@ -447,7 +452,17 @@ void AbstractRadioExtended::handleLowerMsgStart(AirFrame* airframe)
     double distance = myPos.distance(framePos);
 
     // calculate receive power
-    double rcvdPower = receptionModel->calculateReceivedPower(airframe->getPSend(), carrierFrequency, distance);
+    AirFrameExtended * airframeExt = dynamic_cast<AirFrameExtended * >(airframe);
+
+    double frequency = carrierFrequency;
+    if (airframeExt)
+    {
+    	if (airframeExt->getCarrierFrequency()>0.0)
+    		frequency = airframeExt->getCarrierFrequency();
+
+    }
+
+    double rcvdPower = receptionModel->calculateReceivedPower(airframe->getPSend(), frequency, distance);
     airframe->setPowRec(rcvdPower);
     // store the receive power in the recvBuff
     recvBuff[airframe] = rcvdPower;
@@ -629,13 +644,16 @@ void AbstractRadioExtended::changeChannel(int channel)
     EV << "Changing to channel #" << channel << "\n";
 
     rs.setChannelNumber(channel);
+
     //cc->updateHostChannel(myHostRef, channel);
     if (ccExt)
+    {
     	ccExt->updateHostChannel(myHostRef, rs.getChannelNumber(),this,carrierFrequency);
+    }
     else
+    {
     	cc->updateHostChannel(myHostRef, rs.getChannelNumber());
-
-    ChannelControl::TransmissionList tlAux =  cc->getOngoingTransmissions(channel);
+    }
 
     cModule *myHost = findHost();
     cGate *radioGate = myHost->gate("radioIn");
@@ -644,10 +662,10 @@ void AbstractRadioExtended::changeChannel(int channel)
     EV << "Picking up ongoing transmissions on new channel:\n";
     if (ccExt)
     {
-    	ChannelControlExtended::TransmissionList *tl = (ChannelControlExtended::TransmissionList*) &tlAux;
-    	for (ChannelControlExtended::TransmissionList::const_iterator it = tl->begin(); it != tl->end(); ++it)
+    	ChannelControlExtended::TransmissionList tlAux = ccExt->getOngoingTransmissions(channel);
+    	for (ChannelControlExtended::TransmissionList::const_iterator it = tlAux.begin(); it != tlAux.end(); ++it)
     	{
-    		AirFrameExtended *airframe = *it;
+    		AirFrameExtended *airframe = check_and_cast<AirFrameExtended *> (*it);
         // time for the message to reach us
     		double distance = myHostRef->pos.distance(airframe->getSenderPos());
     		simtime_t propagationDelay = distance / LIGHT_SPEED;
@@ -685,6 +703,7 @@ void AbstractRadioExtended::changeChannel(int channel)
     }
     else
     {
+    	ChannelControl::TransmissionList tlAux = cc->getOngoingTransmissions(channel);
      	for (ChannelControl::TransmissionList::const_iterator it = tlAux.begin(); it != tlAux.end(); ++it)
     	{
      	   AirFrame *airframe = *it;

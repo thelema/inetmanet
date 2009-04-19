@@ -7,7 +7,8 @@ Define_Module(Ieee80216Radio);
 
 void Ieee80216Radio::initialize(int stage)
 {
-	AbstractRadio::initialize(stage);
+	//AbstractRadio::initialize(stage);
+	AbstractRadioExtended::initialize(stage);
 	if (stage == 0)
 	{
 		rs.setRadioId(this->getId());//Änderung am 6 Dezember neue FUnktion in RadioState eingefügt
@@ -106,7 +107,7 @@ void Ieee80216Radio::handleLowerMsgEnd(AirFrame * airframe)
         SnrList list;
         list = snrInfo.sList;
 
-	double rcvdPower = snrInfo.rcvdPower;
+        double rcvdPower = snrInfo.rcvdPower;
 
         // delete the pointer to indicate that no message is currently
         // being received and clear the list
@@ -190,18 +191,18 @@ void Ieee80216Radio::sendUp(AirFrame *airframe, SnrList list, double rcvdPower)
         //if (iter->snr < snrMin)
         //    snrMin = iter->snr;
     	++Zaehler;
-	EV << "Radio Module iter" << Zaehler <<" snr:" << iter->snr <<"\n";
+    	EV << "Radio Module iter" << Zaehler <<" snr:" << iter->snr <<"\n";
     	snrGes = snrGes + iter->snr;
     }
     snrMit = snrGes/Zaehler;
-	EV << "Radio Module sntMit" << snrMit <<" snr Ges:" << snrGes <<" Z�hler:"<< Zaehler <<"\n";
+	EV << "Radio Module sntMit" << snrMit <<" snr Ges:" << snrGes <<" Z�hler:"<< Zaehler <<"\n";
 
     Ieee80216MacHeader *macFrame = dynamic_cast<Ieee80216MacHeader *>(frame); // Empfangendes Paket ist eine IEEE802.16e Frame
     if (macFrame)
     {
     	macFrame->setSNR(10*log10(snrMit));
-	macFrame->setRcvdPower(rcvdPower);
-	macFrame->setThermNoise(noiseLevel);
+    	macFrame->setRcvdPower(rcvdPower);
+    	macFrame->setThermNoise(noiseLevel);
     	macFrame->setAbstand(distance);
     	macFrame->setXPos(myPos.x);
     	macFrame->setYPos(myPos.y);
@@ -212,5 +213,5 @@ void Ieee80216Radio::sendUp(AirFrame *airframe, SnrList list, double rcvdPower)
 
 SnrList Ieee80216Radio::getSNRlist()
 {
-return snrInfo.sList;
+	return snrInfo.sList;
 }

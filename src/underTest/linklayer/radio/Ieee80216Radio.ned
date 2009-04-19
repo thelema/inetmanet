@@ -10,6 +10,8 @@ simple Ieee80216Radio
         double standardabweichung;
         double snirThreshold; // if signal-noise ratio is below this threshold, frame is considered noise (in dB)
         double sensitivity; // received signals with power below sensitivity are ignored
+        double carrierFrequency @unit("Hz") = default(3.1GHz);
+        string attenuationModel = default("");// Values "pathlost" or "tworay" 
     gates:
         input uppergateIn;   // from higher layer protocol (MAC)
         output uppergateOut; // to decider (decider connects to higher layer protocol, i.e. the MAC)

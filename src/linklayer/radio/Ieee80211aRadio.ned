@@ -34,6 +34,7 @@ simple Ieee80211aRadio
 {
     parameters:
         int channelNumber = default(0); // channel identifier
+        double carrierFrequency @unit("Hz") = default(5.1GHz);
         double transmitterPower @unit("mW") = default(20mW); // power used for transmission of messages (in mW)
         double bitrate @unit("bps"); // (in bits/s)
         double thermalNoise @unit("dBm") = default(-110dBm); // base noise level (dBm)
@@ -49,9 +50,11 @@ simple Ieee80211aRadio
         double shadowingVariance= default(2);  // Shadow model
         int shadowingNumberofSamples = default(10); // Shadow model
         double receiverAntennaGain = default(1); // Multiplier factor 1 isotropic
-	int phyOpMode= default(3); // 1='b', 2='g', 3='a'
-	int ID = default(0);
+        int phyOpMode= default(3); // 1='b', 2='g', 3='a'
+        int ID = default(0);
         int channelModel = default (1); // 1=(Rayleigh) or 2= a (AWGN)
+        
+        string attenuationModel = default("");// Values "pathlost" or "tworay" 
         @display("i=block/wrxtx");
     gates:
         input uppergateIn;   // from higher layer protocol (MAC)

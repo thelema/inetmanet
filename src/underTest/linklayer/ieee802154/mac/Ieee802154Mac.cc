@@ -542,8 +542,8 @@ void Ieee802154Mac::handleLowerMsg(cMessage* msg)
 	bool noAck;
 	int i;
 	Ieee802154Frame* frame = dynamic_cast<Ieee802154Frame *>(msg);
-	 if (!frame)
-        {
+	if (!frame)
+    {
 		EV << "[MAC]: message from physical layer (" <<  msg->getClassName() << ")" << msg->getName() << " is not a subclass of Ieee802154Frame, drop it" << endl;
 		delete frame;
 		return;

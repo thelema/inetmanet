@@ -61,6 +61,7 @@ class INET_API ChannelControl : public cSimpleModule
 
         bool isModuleListValid;  // "neighborModules" is produced from "neighbors" on demand
         ModuleList neighborModules; // derived from "neighbors"
+        virtual bool getIsModuleListValid(){return isModuleListValid;}
     };
     HostList hosts;
 

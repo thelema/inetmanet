@@ -24,7 +24,8 @@ import inet.nodes.adhoc.MobileHost;
 import inet.nodes.adhoc.FixManetRoutingHost;
 import inet.nodes.adhoc.MobileManetRoutingHost;
 
-import inet.world.ChannelControl;
+//import inet.world.ChannelControl;
+import inet.world.ChannelControlExtended;
 
 network Grid_movilidad
 {
@@ -38,7 +39,7 @@ network Grid_movilidad
 		//	nodeId = index;
                 @display("i=device/pocketpc_s;r=,,#707070");
         }
-        channelcontrol: ChannelControl {
+        channelcontrol: ChannelControlExtended {
             parameters:
                 playgroundSizeX = playgroundSizeX;
                 playgroundSizeY = playgroundSizeY;

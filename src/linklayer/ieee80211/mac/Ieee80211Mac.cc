@@ -319,8 +319,15 @@ void Ieee80211Mac::handleLowerMsg(cPacket *msg)
 
     Ieee80211Frame *frame = dynamic_cast<Ieee80211Frame *>(msg);
     if (!frame)
-        error("message from physical layer (%s)%s is not a subclass of Ieee80211Frame",
-              msg->getClassName(), msg->getName());
+    {
+#ifdef FRAMETYPESTOP
+    	error("message from physical layer (%s)%s is not a subclass of Ieee80211Frame",msg->getClassName(), msg->getName());
+#endif
+    	EV << "message from physical layer (%s)%s is not a subclass of Ieee80211Frame" << msg->getClassName() << " " << msg->getName() <<  endl;
+    	delete msg;
+    	return;
+       // error("message from physical layer (%s)%s is not a subclass of Ieee80211Frame",msg->getClassName(), msg->getName());
+    }
 
     EV << "Self address: " << address
        << ", receiver address: " << frame->getReceiverAddress()

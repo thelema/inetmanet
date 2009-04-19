@@ -52,7 +52,10 @@ void ChannelAccessExtended::initialize(int stage)
     else if (stage == 2)
     {
         cModule *hostModule = findHost();
-        myHostRef = cc->lookupHost(hostModule);
+        if (ccExt)
+        	myHostRef = ccExt->lookupHost(hostModule);
+        else
+        	myHostRef = cc->lookupHost(hostModule);
         if (myHostRef==0)
             error("host not registered yet in ChannelControl (this should be done by "
                   "the Mobility module -- maybe this host doesn't have one?)");
@@ -70,7 +73,13 @@ void ChannelAccessExtended::initialize(int stage)
 void ChannelAccessExtended::sendToChannel(AirFrame *msg)
 {
 
-    const ChannelControlExtended::ModuleList& neighbors = cc->getNeighbors(myHostRef);
+	if (!ccExt)
+	{
+		ChannelAccess::sendToChannel(msg);
+		return;
+	}
+
+    const  ChannelControl::ModuleList &neighbors= ccExt->getNeighbors(myHostRef);
     coreEV << "sendToChannel: sending to gates\n";
 
     // loop through all hosts in range
@@ -85,7 +94,8 @@ void ChannelAccessExtended::sendToChannel(AirFrame *msg)
         //    error("module %s must have a gate called radioIn", mod->getFullPath().c_str());
 
         // Check if the host is registered
-        ChannelControlExtended::HostRefExtended h = (ChannelControlExtended::HostRefExtended) cc->lookupHost(mod);
+        ChannelControlExtended::HostRefExtended h;
+       	h = dynamic_cast<ChannelControlExtended::HostRefExtended> (ccExt->lookupHost(mod));
         if (h == NULL)
             error("cannot find module in channel control");
 
@@ -121,5 +131,5 @@ void ChannelAccessExtended::sendToChannel(AirFrame *msg)
         }
     }
     // register transmission in ChannelControl
-    cc->addOngoingTransmission(myHostRef, msg);
+   	ccExt->addOngoingTransmission(myHostRef, msg);
 }

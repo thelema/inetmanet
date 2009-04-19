@@ -20,6 +20,7 @@ simple Ieee802154Phy
 
         // used by Ieee802154RadioModel
         double snirThreshold @unit("dB") = default(4dB); 
+        double carrierFrequency @unit("Hz") = default(2.4GHz); 
 
     gates:
         input uppergateIn;			// from Mac

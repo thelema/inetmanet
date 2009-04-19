@@ -17,7 +17,6 @@
 // * part of:     framework implementation developed by tkn
 // **************************************************************************/
 
-import inet.world.ChannelControl;
 package inet.world;
 
 //
@@ -38,10 +37,18 @@ package inet.world;
 // @author Andras Varga (based on MF's ChannelControl by Steffen Sroka and Daniel Willkomm)
 // @see BasicMobility
 //
-simple ChannelControlExtended extends ChannelControl
+simple ChannelControlExtended
 {
     parameters:
-        double percentage=default(0.1);
-        @display("i=misc/sun");
+       bool coreDebug = default(false); // debug switch for core framework
+        double playgroundSizeX = default(600); // x size of the playground (in meters)
+        double playgroundSizeY = default(400); // y size of the playground (in meters)
+        double pMax @unit("mW") = default(20mW); // maximum sending power used for this network (in mW)
+        double sat @unit("dBm") = default(-110dBm); // signal attenuation threshold (in dBm)
+        double alpha = default(2); // path loss coefficient
+        double carrierFrequency @unit("Hz") = default(2.4GHz); // carrier frequency of the channel (in Hz)
+        double percentage = default(0.1);
+        int numChannels = default(1); // number of radio channels (frequencies)
+        @display("i=misc/cloud");
 }
 

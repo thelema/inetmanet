@@ -115,7 +115,15 @@ void CommonPartSublayerReceiver::handleLowerMsg(cPacket *msg)
 
     Ieee80216MacHeader *macFrame = dynamic_cast<Ieee80216MacHeader *>(msg); // Empfangendes Paket ist eine IEEE802.16e Frame
     if (!macFrame)// Wenn nicht Fehlermeldung ausgeben
-        error("message from physical layer is not a IEEE 802.16e MAC frame",msg->getClassName(), msg->getName(), msg->getByteLength());
+    {
+#ifdef FRAMETYPESTOP
+    	error("message from physical layer is not a IEEE 802.16e MAC frame",msg->getClassName(), msg->getName(), msg->getByteLength());
+#endif
+    	EV << "message from physical layer (%s)%s is not a subclass of Ieee80216MacHeader " << msg->getClassName() << " " << msg->getName() <<  endl;
+    	delete msg;
+    	return;
+
+    }
 
 	ev << "CID: " << macFrame->getCID() << endl;
 
@@ -134,7 +142,7 @@ void CommonPartSublayerReceiver::handleLowerMsg(cPacket *msg)
 		break;
 
 		default:
-			ev << "Ueberpruefe¼fe die PDU:" << macFrame->getName() << " ob ihre CID: " << macFrame->getCID() <<" in der MAP Conection enthalten ist." << endl;
+			ev << "Ueberpruefeï¿½fe die PDU:" << macFrame->getName() << " ob ihre CID: " << macFrame->getCID() <<" in der MAP Conection enthalten ist." << endl;
 			//Ueberprueft ob CID in der Connection Map enthalten ist
 			if (CIDInConnectionMap(macFrame->getCID()))
 			{

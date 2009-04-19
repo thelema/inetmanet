@@ -34,12 +34,15 @@ simple Ieee80211Radio
 {
     parameters:
         int channelNumber = default(0); // channel identifier
+        double carrierFrequency @unit("Hz") = default(2.4GHz);
         double transmitterPower @unit("mW") = default(20mW); // power used for transmission of messages (in mW)
         double bitrate @unit("bps"); // (in bits/s)
         double thermalNoise @unit("dBm") = default(-110dBm); // base noise level (dBm)
         double pathLossAlpha = default(2); // used by the path loss calculation
         double snirThreshold @unit("dB") = default(4dB); // if signal-noise ratio is below this threshold, frame is considered noise (in dB)
         double sensitivity @unit("dBm"); // received signals with power below sensitivity are ignored
+        
+        string attenuationModel = default("");// Values "pathlost" or "tworay" 
         @display("i=block/wrxtx");
     gates:
         input uppergateIn;   // from higher layer protocol (MAC)

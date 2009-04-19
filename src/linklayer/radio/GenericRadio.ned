@@ -29,6 +29,7 @@ simple GenericRadio
 {
     parameters:
         int channelNumber = default(0); // channel identifier
+        double carrierFrequency @unit("Hz") = default(2.4GHz);
         double transmitterPower @unit("mW") = default(20mW); // power used for transmission of messages (in mW)
         double bitrate @unit("bps"); // (in bits/s)
         double thermalNoise @unit("dBm") = default(-110dBm); // base noise level (dBm)
@@ -38,6 +39,7 @@ simple GenericRadio
         int headerLengthBits @unit(b); // length of physical layer framing (preamble, etc)
         double bandwidth @unit("Hz"); // signal bandwidth, used for bit error calculation
         string modulation; // "BPSK", "16-QAM", "256-QAM" or "null"; selects bit error calculation method
+        string attenuationModel = default("");
     gates:
         input uppergateIn;   // from higher layer protocol (MAC)
         output uppergateOut; // to decider (decider connects to higher layer protocol, i.e. the MAC)

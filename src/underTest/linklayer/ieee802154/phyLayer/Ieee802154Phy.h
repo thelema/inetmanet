@@ -1,4 +1,4 @@
-//****************************** 
+//******************************
 //LQI measurement not implemented
 //
 
@@ -6,6 +6,7 @@
 #define IEEE_802154_PHY_H
 
 #include "ChannelAccess.h"
+#include "ChannelAccessExtended.h"
 #include "RadioState.h"
 #include "Ieee802154Const.h"
 #include "Ieee802154Def.h"
@@ -19,14 +20,14 @@
 #include "NotifierConsts.h"
 
 
-class INET_API Ieee802154Phy : public ChannelAccess
+class INET_API Ieee802154Phy : public ChannelAccessExtended
 {
 	public:
 		Ieee802154Phy			();
 		virtual ~Ieee802154Phy		();
 
 	protected:
-    		virtual void 		initialize		(int);
+    	virtual void 		initialize		(int);
 		virtual int		numInitStages   	() const { return 3; }
 		virtual void 		finish			();
 
@@ -46,7 +47,7 @@ class INET_API Ieee802154Phy : public ChannelAccess
 		virtual IReceptionModel *createReceptionModel()	{return (IReceptionModel *)createOne("PathLossReceptionModel");}
     		virtual IRadioModel 	*createRadioModel()	{return (IRadioModel *)createOne("Ieee802154RadioModel");}
 
-    // primitives processing functions    
+    // primitives processing functions
 		void				PD_DATA_confirm		(PHYenum status);
 		void				PLME_CCA_confirm	(PHYenum status);
 		void				PLME_ED_confirm		(PHYenum status, UINT_8 energyLevel);
@@ -56,27 +57,29 @@ class INET_API Ieee802154Phy : public ChannelAccess
 		void				PLME_SET_confirm			(PHYenum status, PHYPIBenum attribute);
 
 		void				setRadioState			(RadioState::State newState);
-		int				channelNumber		() const {return rs.getChannelNumber();}
-		void				addNewSnr			();	
+		int					getChannelNumber		() const {return rs.getChannelNumber();}
+		void				addNewSnr			();
 		void				changeChannel		(int newChannel);
 		bool				channelSupported		(int channel);
-		UINT_8			calculateEnergyLevel	();
-		double			getRate				(char dataOrSymbol);
-		
+		UINT_8				calculateEnergyLevel	();
+		double				getRate				(char dataOrSymbol);
+
+		bool processAirFrame (AirFrame*);
+
 	protected:
-		bool				m_debug;		// debug switch	
+		bool				m_debug;		// debug switch
 		IRadioModel*		radioModel;
 		IReceptionModel*	receptionModel;
-		
+
 		int				uppergateOut;
 		int				uppergateIn;
-				
+
 		double			transmitterPower;		// in mW
 		double			noiseLevel;
-		double			carrierFrequency; 
+		double			carrierFrequency;
 		double			sensitivity;		// in mW
 		double			thermalNoise;
-		
+
 		struct SnrStruct
 		{
 			AirFrame*	ptr;    ///< pointer to the message this information belongs to
@@ -88,7 +91,7 @@ class INET_API Ieee802154Phy : public ChannelAccess
 
 		typedef			std::map<AirFrame*,double>	RecvBuff;
 		RecvBuff			recvBuff; // A buffer to store a pointer to a message and the related receive power.
- 
+
 		AirFrame*		txPktCopy; // duplicated outgoing pkt, accessing encapsulated msg only when transmitter is forcibly turned off
     						// set a error flag into the encapsulated msg to inform all nodes rxing this pkt that the transmition is terminated and the pkt is corrupted
     						// use the new feature "Reference counting" of encapsulated messages
@@ -96,17 +99,17 @@ class INET_API Ieee802154Phy : public ChannelAccess
 		double			rxPower[27];	// accumulated received power in each channel, for ED measurement purpose
 		double			rxPeakPower;	// peak power in current channle, for ED measurement purpose
 		int				numCurrRx;
-		
+
 		RadioState		rs;				// four states model: idle, rxing, txing, sleep
 		PHYenum			phyRadioState;	// three states model, according to spec: RX_ON, TX_ON, TRX_OFF
-		PHYenum			newState; 
+		PHYenum			newState;
 		PHYenum			newState_turnaround;
 		bool				isCCAStartIdle;		// indicating wheter channel is idle at the starting of CCA
-    
+
 		// timer
 		cMessage*		CCA_timer; // timer for CCA, delay 8 symbols
 		cMessage*		ED_timer;	// timer for ED measurement
-		cMessage*		TRX_timer; // timer for Tx2Rx turnaround 
+		cMessage*		TRX_timer; // timer for Tx2Rx turnaround
 		cMessage*		TxOver_timer;  // timer for tx over
 
 };

@@ -21,12 +21,13 @@
 #define IEEE80211ARADIO_H
 
 #include "AbstractRadio.h"
+#include "AbstractRadioExtended.h"
 
 /**
  * Radio for the IEEE 802.11 model. Just a AbstractRadio with PathLossReceptionModel
  * and Ieee80211RadioModel.
  */
-class INET_API Ieee80211aRadio : public AbstractRadio
+class INET_API Ieee80211aRadio : public AbstractRadioExtended
 {
   protected:
     virtual IReceptionModel *createReceptionModel() {return (IReceptionModel *)createOne("PathLossReceptionModel");}

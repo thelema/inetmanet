@@ -34,6 +34,7 @@ simple Ieee80211gRadio
 {
     parameters:
         int channelNumber = default(0); // channel identifier
+        double carrierFrequency @unit("Hz") = default(2.4GHz);
         double transmitterPower @unit("mW") = default(20mW); // power used for transmission of messages (in mW)
         double bitrate @unit("bps"); // (in bits/s)
         double thermalNoise @unit("dBm") = default(-110dBm); // base noise level (dBm)
@@ -43,6 +44,8 @@ simple Ieee80211gRadio
         string berTableFile;
         int phyOpMode= default(2); // 1='b', 2='g'
         int channelModel = default (1); // 1=(Rayleigh) or 2= a (AWGN)
+        
+        string attenuationModel = default("");// Values "pathlost" or "tworay" 
         @display("i=block/wrxtx");
     gates:
         input uppergateIn;   // from higher layer protocol (MAC)

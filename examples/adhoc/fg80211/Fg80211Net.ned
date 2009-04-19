@@ -21,8 +21,8 @@ import inet.networklayer.autorouting.FlatNetworkConfigurator;
 import inet.nodes.adhoc.MobileHost;
 import inet.nodes.adhoc.FixManetRoutingHost;
 import inet.nodes.adhoc.MobileManetRoutingHost;
-import inet.world.ChannelControl;
-
+//import inet.world.ChannelControl;
+import inet.world.ChannelControlExtended;
 
 network Fg80211Net
 {
@@ -40,7 +40,7 @@ network Fg80211Net
             parameters:
                 @display("i=device/pocketpc_s;r=,,#707070");
         }
-        channelcontrol: ChannelControl {
+        channelcontrol: ChannelControlExtended {
             parameters:
                 playgroundSizeX = playgroundSizeX;
                 playgroundSizeY = playgroundSizeY;

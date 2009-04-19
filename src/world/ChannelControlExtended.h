@@ -42,7 +42,7 @@ class AbstractRadio;
 
 
 //class INET_API ChannelControlExtended : public ChannelControl
-class ChannelControlExtended : public ChannelControl
+class INET_API ChannelControlExtended : public ChannelControl
 {
   protected:
     class HostEntryExtended;
@@ -126,6 +126,9 @@ class ChannelControlExtended : public ChannelControl
 
     virtual void initialize();
 
+    /** @brief Throws away expired transmissions. */
+    virtual void purgeOngoingTransmissions();
+
     friend std::ostream& operator<<(std::ostream&, const HostEntryExtended&);
     friend std::ostream& operator<<(std::ostream&, const ChannelControl::TransmissionList&);
 
@@ -138,6 +141,16 @@ class ChannelControlExtended : public ChannelControl
     /** @brief Registers the given host */
     virtual HostRef registerHost(cModule *host, const Coord& initialPos);
 
+
+    /** @brief Unregisters the given host */
+    virtual void unregisterHost(cModule *host);
+
+    /** @brief Returns the "handle" of a previously registered host */
+    virtual HostRef lookupHost(cModule *host);
+
+    /** @brief Get the list of modules in range of the given host */
+    const ModuleList& getNeighbors(HostRef h);
+
     /** @brief Called when host switches channel (cModule* ca is the channel access (radio)) */
     //virtual void updateHostChannel(HostRef h, const int channel,cModule* ca);
 
@@ -148,6 +161,14 @@ class ChannelControlExtended : public ChannelControl
     /** JcM Add: Get a host reference by its radio **/
     cModule* getHostByRadio(AbstractRadio* r);
 
+    /** @brief Provides a list of transmissions currently on the air */
+    const TransmissionList& getOngoingTransmissions(const int channel);
+
+    /** @brief Notifies the channel control with an ongoing transmission */
+    virtual void addOngoingTransmission(HostRef h, AirFrame *frame);
+
+    /** @brief Returns the host's position */
+    const Coord& getHostPosition(HostRef h)  {return h->pos;}
      /** @brief Returns the number of radio channels (frequencies) simulated */
     const int getNumChannels() {return numChannels;}
 	const double getPercentage(){return percentage;}

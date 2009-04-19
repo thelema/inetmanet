@@ -188,10 +188,11 @@ ChannelControlExtended::~ChannelControlExtended()
 
 ChannelControlExtended *ChannelControlExtended::get()
 {
-	ChannelControlExtended *cc = dynamic_cast<ChannelControlExtended *>(simulation.getModuleByPath("channelcontrolextended"));
-    if (!cc)
-        cc = dynamic_cast<ChannelControlExtended *>(simulation.getModuleByPath("channelControlExtended"));
-    return cc;
+	ChannelControl * cc = ChannelControl::get();
+	if (!cc)
+		throw cRuntimeError("Could not find ChannelControl module");
+	ChannelControlExtended *ccExt = dynamic_cast<ChannelControlExtended *>(cc);
+    return ccExt;
 }
 
 /**
@@ -204,8 +205,8 @@ void ChannelControlExtended::initialize()
 {
     coreDebug = hasPar("coreDebug") ? (bool) par("coreDebug") : false;
 
-    coreEV << "initializing ChannelControl\n";
-
+    coreEV << "initializing ChannelControlExtended \n";
+    EV << "initializing ChannelControlExtended \n";
     playgroundSize.x = par("playgroundSizeX");
     playgroundSize.y = par("playgroundSizeY");
 
@@ -245,6 +246,121 @@ ChannelControl::HostRef ChannelControlExtended::registerHost(cModule * host, con
     hosts.push_back(he);
     return &hosts.back(); // last element
 }
+
+
+
+
+void ChannelControlExtended::unregisterHost(cModule *host)
+{
+    Enter_Method_Silent();
+    for (HostList::iterator it = hosts.begin(); it != hosts.end(); it++) {
+        if (it->host == host) {
+            HostRef h = &*it;
+
+            // erase host from all registered hosts' neighbor list
+            for (HostList::iterator i2 = hosts.begin(); i2 != hosts.end(); ++i2) {
+                HostRef h2 = &*i2;
+                h2->neighbors.erase(h);
+                h2->isModuleListValid = false;
+                h->isModuleListValid = false;
+            }
+
+            // erase host from registered hosts
+            hosts.erase(it);
+            return;
+        }
+    }
+    error("unregisterHost failed: no such host");
+}
+
+ChannelControl::HostRef ChannelControlExtended::lookupHost(cModule *host)
+{
+    Enter_Method_Silent();
+    for (HostList::iterator it = hosts.begin(); it != hosts.end(); it++)
+        if (it->host == host)
+            return &(*it);
+    return 0;
+}
+
+const ChannelControl::ModuleList& ChannelControlExtended::getNeighbors(HostRef haux)
+{
+    Enter_Method_Silent();
+    HostRefExtended h = dynamic_cast <ChannelControlExtended::HostRefExtended>(haux);
+    if (!h)
+    	error(" not HostRefExtended");
+    if (!h->isModuleListValid)
+    {
+        h->neighborModules.clear();
+        for (std::set<HostRefExtended>::const_iterator it = h->neighbors.begin(); it != h->neighbors.end(); it++)
+            h->neighborModules.push_back((*it)->host);
+        h->isModuleListValid = true;
+    }
+    return h->neighborModules;
+}
+
+const ChannelControlExtended::TransmissionList& ChannelControlExtended::getOngoingTransmissions(const int channel)
+{
+    Enter_Method_Silent();
+
+    checkChannel(channel);
+    purgeOngoingTransmissions();
+    return transmissions[channel];
+}
+
+void ChannelControlExtended::addOngoingTransmission(HostRef h, AirFrame *frame)
+{
+    Enter_Method_Silent();
+
+    // we only keep track of ongoing transmissions so that we can support
+    // NICs switching channels -- so there's no point doing it if there's only
+    // one channel
+    if (numChannels==1)
+    {
+        delete frame;
+        return;
+    }
+
+    // purge old transmissions from time to time
+    if (simTime() - lastOngoingTransmissionsUpdate > TRANSMISSION_PURGE_INTERVAL)
+    {
+        purgeOngoingTransmissions();
+        lastOngoingTransmissionsUpdate = simTime();
+    }
+
+    // register ongoing transmission
+    take(frame);
+    frame->setTimestamp(); // store time of transmission start
+    AirFrameExtended * frameExtended = dynamic_cast<AirFrameExtended*>(frame);
+    if (!frameExtended)
+    {
+    	frameExtended = new AirFrameExtended();
+    	AirFrame * faux = frameExtended;
+    	*faux = (*frame);
+    	delete frame;
+    }
+
+    transmissions[frame->getChannelNumber()].push_back(frameExtended);
+}
+
+void ChannelControlExtended::purgeOngoingTransmissions()
+{
+    for (int i = 0; i < numChannels; i++)
+    {
+        for (TransmissionList::iterator it = transmissions[i].begin(); it != transmissions[i].end();)
+        {
+            TransmissionList::iterator curr = it;
+            AirFrame *frame = *it;
+            it++;
+
+            if (frame->getTimestamp() + frame->getDuration() + TRANSMISSION_PURGE_INTERVAL < simTime())
+            {
+                delete frame;
+                transmissions[i].erase(curr);
+            }
+        }
+    }
+}
+
 
 /**
  * Calculation of the interference distance based on the transmitter

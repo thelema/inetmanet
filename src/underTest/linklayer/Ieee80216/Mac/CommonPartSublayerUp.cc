@@ -60,8 +60,17 @@ void CommonPartSublayerUp::handleLowerMsg(cPacket *msg)
     ev << "received message from physical layer: " << msg << endl;
 
     Ieee80216MacHeader *MacFrame = dynamic_cast<Ieee80216MacHeader *>(msg); // Empfangendes Paket ist eine IEEE802.16e Frame
-    if (!MacFrame)								    // Wenn nicht Fehlermeldung ausgeben
+
+    if (!MacFrame)// Wenn nicht Fehlermeldung ausgeben
+    {
+#ifdef FRAMETYPESTOP
         error("message from physical layer is not a IEEE 802.16e MAC frame",msg->getClassName(), msg->getName(), msg->getByteLength());
+#endif
+    	EV << "message from physical layer (%s)%s is not a subclass of Ieee80216MacHeader " << msg->getClassName() << " " << msg->getName() <<  endl;
+    	delete msg;
+    	return;
+
+    }
 
 	ev << "CID: " << MacFrame->getCID() << endl;
 

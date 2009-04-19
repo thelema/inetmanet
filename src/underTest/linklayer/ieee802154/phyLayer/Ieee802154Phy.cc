@@ -34,7 +34,7 @@ Ieee802154Phy::~Ieee802154Phy()
 
 void Ieee802154Phy::initialize(int stage)
 {
-    ChannelAccess::initialize(stage);
+	ChannelAccessExtended::initialize(stage);
 
      EV << getParentModule()->getParentModule()->getFullName() << ": initializing Ieee802154Phy, stage=" << stage << endl;
 
@@ -44,14 +44,23 @@ void Ieee802154Phy::initialize(int stage)
         uppergateOut = findGate("uppergateOut");
 
         // The following parameters to be specified in omnetpp.ini
-	m_debug				= par("debug");
-	rs.setChannelNumber(par("channelNumber")); // default: 11, 2.4G
-        carrierFrequency		= cc->par("carrierFrequency");  // taken from ChannelControl
+        m_debug				= par("debug");
+        rs.setChannelNumber(par("channelNumber")); // default: 11, 2.4G
+        // carrierFrequency		= cc->par("carrierFrequency");  // taken from ChannelControl
+        carrierFrequency = par("carrierFrequency");
         sensitivity				= FWMath::dBm2mW(par("sensitivity")); // -85 dBm for 2450 MHz, -92 dBm for 868/915 MHz
         thermalNoise			= FWMath::dBm2mW(par("thermalNoise"));
-	transmitterPower		= par("transmitterPower");	// in mW
-	if (transmitterPower > (double) (cc->par("pMax")))
-            error("[PHY]: transmitterPower cannot be bigger than pMax in ChannelControl!");
+        transmitterPower		= par("transmitterPower");	// in mW
+        if (ccExt)
+        {
+        	if (transmitterPower > (double) (ccExt->par("pMax")))
+        	            error("[PHY]: transmitterPower cannot be bigger than pMax in ChannelControl!");
+        }
+        else
+        {
+        	if (transmitterPower > (double) (cc->par("pMax")))
+        		error("[PHY]: transmitterPower cannot be bigger than pMax in ChannelControl!");
+        }
 
         // initialize noiseLevel
         noiseLevel = thermalNoise;
@@ -65,23 +74,23 @@ void Ieee802154Phy::initialize(int stage)
         rxPeakPower = 0;
         numCurrRx = 0;
 
-	phyRadioState = phy_RX_ON;
-	rs.setState(RadioState::IDLE);
+        phyRadioState = phy_RX_ON;
+        rs.setState(RadioState::IDLE);
         //rs.setChannelNumber((int)def_phyCurrentChannel); // default: 11, 2.4G
         rs.setBitrate(getRate('b'));
 
         newState = phy_IDLE;
-	newState_turnaround = phy_IDLE;
-	isCCAStartIdle = false;
+        newState_turnaround = phy_IDLE;
+        isCCAStartIdle = false;
 
 	// initalize self messages (timer)
-	CCA_timer 	= new cMessage("CCA_timer", 	PHY_CCA_TIMER);
-	ED_timer 	= new cMessage("ED_timer",	PHY_ED_TIMER);
-	TRX_timer 	= new cMessage("TRX_timer",	PHY_TRX_TIMER);
-	TxOver_timer 	= new cMessage("TxOver_timer",	PHY_TX_OVER_TIMER);
+        CCA_timer 	= new cMessage("CCA_timer", 	PHY_CCA_TIMER);
+        ED_timer 	= new cMessage("ED_timer",	PHY_ED_TIMER);
+        TRX_timer 	= new cMessage("TRX_timer",	PHY_TRX_TIMER);
+        TxOver_timer 	= new cMessage("TxOver_timer",	PHY_TX_OVER_TIMER);
 
 
-	receptionModel = createReceptionModel();
+        receptionModel = createReceptionModel();
         receptionModel->initializeFrom(this);
 
         radioModel = createRadioModel();
@@ -92,18 +101,47 @@ void Ieee802154Phy::initialize(int stage)
         // tell initial values to MAC; must be done in stage 1, because they
         // subscribe in stage 0
         nb->fireChangeNotification(NF_RADIOSTATE_CHANGED, &rs);
-	nb->fireChangeNotification(NF_RADIO_CHANNEL_CHANGED, &rs);
+        nb->fireChangeNotification(NF_RADIO_CHANNEL_CHANGED, &rs);
     }
     else if (stage == 2)
     {
         // tell initial channel number to ChannelControl; should be done in
         // stage==2 or later, because base class initializes myHostRef in that stage
-        cc->updateHostChannel(myHostRef, channelNumber());
+        if (ccExt)
+        {
+       		((ChannelControlExtended::HostRefExtended)myHostRef)->registerRadio(this);
+       		ccExt->updateHostChannel(myHostRef, rs.getChannelNumber(),this,carrierFrequency);
+        }
+        else
+        	cc->updateHostChannel(myHostRef, getChannelNumber());
     }
 }
 
 void Ieee802154Phy::finish()
 {
+}
+
+bool Ieee802154Phy::processAirFrame(AirFrame *airframe)
+{
+
+	int chnum = airframe->getChannelNumber();
+	AirFrameExtended *airframeext = dynamic_cast<AirFrameExtended *>(airframe);
+	if (ccExt && airframeext)
+	{
+		double perc = ccExt->getPercentage();
+		double fqFrame = airframeext->getCarrierFrequency();
+		if (chnum == getChannelNumber() && (abs((fqFrame - carrierFrequency)/carrierFrequency)<=perc))
+			return true;
+		else
+			return false;
+	}
+	else
+	{
+		if (chnum == getChannelNumber())
+			return true;
+		else
+			return false;
+	}
 }
 
 void Ieee802154Phy::handleMessage(cMessage *msg)
@@ -130,8 +168,7 @@ void Ieee802154Phy::handleMessage(cMessage *msg)
     {
         handleSelfMsg(msg);
     }
-    else if (check_and_cast<AirFrame *>(msg)->getChannelNumber() == channelNumber())
-    {
+    else if (processAirFrame (check_and_cast<AirFrame*>(msg)))  {
         if (phyRadioState == phy_RX_ON)
         {
         	// must be an AirFrame
@@ -159,68 +196,70 @@ void Ieee802154Phy::handlePrimitive(int msgkind, cMessage *msg)
 	{
 		case PLME_CCA_REQUEST:
 			EV <<"[PHY]: this is a PLME_CCA_REQUEST" << endl;
-    			if (phyRadioState == phy_RX_ON)
-    			{
-    					// perform CCA, delay 8 symbols
-    					if(CCA_timer->isScheduled())
-								error("[CCA]: received a PLME_CCA_REQUEST from MAC layer while CCA is running");
-					// check if it's idle at start
-					isCCAStartIdle = (rs.getState() == RadioState::IDLE);
-					EV <<"[CCA]: performing CCA ..., lasting 8 symbols" << endl;
-    					scheduleAt(simTime() + 8.0/getRate('s'), CCA_timer);
-    			}
-    			else
+			if (phyRadioState == phy_RX_ON)
 			{
-					EV <<"[CCA]: received a PLME_CCA_REQUEST from MAC layer while receiver is off, reporting to MAC layer" << endl;
-    					PLME_CCA_confirm(phyRadioState);
+				// perform CCA, delay 8 symbols
+				if(CCA_timer->isScheduled())
+					error("[CCA]: received a PLME_CCA_REQUEST from MAC layer while CCA is running");
+					// check if it's idle at start
+				isCCAStartIdle = (rs.getState() == RadioState::IDLE);
+				EV <<"[CCA]: performing CCA ..., lasting 8 symbols" << endl;
+				scheduleAt(simTime() + 8.0/getRate('s'), CCA_timer);
 			}
-    			delete primitive;
-    			break;
+			else
+    		{
+				EV <<"[CCA]: received a PLME_CCA_REQUEST from MAC layer while receiver is off, reporting to MAC layer" << endl;
+				PLME_CCA_confirm(phyRadioState);
+			}
+			delete primitive;
+			break;
 
 		case PLME_ED_REQUEST:
 			EV <<"[PHY]: this is a PLME_ED_REQUEST" << endl;
-    			if (phyRadioState == phy_RX_ON)
-    			{
-    					rxPeakPower = rxPower[channelNumber()];
-    					ASSERT(!ED_timer->isScheduled());
-    					scheduleAt(simTime() + 8.0/getRate('s'), ED_timer);
-    			}
-    			else
-    					PLME_ED_confirm(phyRadioState, 0);
-    			delete primitive;
-    			break;
+			if (phyRadioState == phy_RX_ON)
+			{
+				rxPeakPower = rxPower[getChannelNumber()];
+				ASSERT(!ED_timer->isScheduled());
+				scheduleAt(simTime() + 8.0/getRate('s'), ED_timer);
+			}
+			else
+				PLME_ED_confirm(phyRadioState, 0);
+			delete primitive;
+			break;
 
 		case PLME_SET_TRX_STATE_REQUEST:
 			EV <<"[PHY]: this is a PLME_SET_TRX_STATE_REQUEST" << endl;
-    			handle_PLME_SET_TRX_STATE_request(PHYenum(primitive->getStatus()));
-    			delete primitive;
-    			break;
+			handle_PLME_SET_TRX_STATE_request(PHYenum(primitive->getStatus()));
+			delete primitive;
+			break;
 
 		case PLME_SET_REQUEST:
 			EV <<"[PHY]: this is a PLME_SET_REQUEST" << endl;
-    			handle_PLME_SET_request(primitive);
-    			break;
+			handle_PLME_SET_request(primitive);
+			break;
 
     	default:
-    			error("[PHY]: unknown primitive received (msgkind=%d)", msgkind);
-    			break;
+    		error("[PHY]: unknown primitive received (msgkind=%d)", msgkind);
+    		break;
     }
 }
 
 AirFrame* Ieee802154Phy::encapsulatePacket(cMessage *frame)
 {
     //PhyControlInfo *ctrl = dynamic_cast<PhyControlInfo *>(frame->removeControlInfo());
-    //ASSERT(!ctrl || ctrl->channelNumber()==-1); // per-packet channel switching not supported
+    //ASSERT(!ctrl || ctrl->getChannelNumber()==-1); // per-packet channel switching not supported
 
     // Note: we don't set length() of the AirFrame, because duration will be used everywhere instead
-    AirFrame*	airframe = new AirFrame();
+    AirFrameExtended*	airframe = new AirFrameExtended();
     airframe->setName(frame->getName());
     airframe->setPSend(transmitterPower);
-    airframe->setChannelNumber(channelNumber());
+    airframe->setChannelNumber(getChannelNumber());
     airframe->encapsulate(PK(frame));
     airframe->setBitrate(rs.getBitrate());
     airframe->setDuration(radioModel->calculateDuration(airframe));
     airframe->setSenderPos(getMyPosition());
+    airframe->setCarrierFrequency(carrierFrequency);
+
     //delete ctrl;
     EV << "[PHY]: encapsulating " << frame->getName()  << " into an airframe" << endl;
     return airframe;
@@ -233,14 +272,14 @@ void Ieee802154Phy::handleUpperMsg(AirFrame *airframe)
 		ASSERT(rs.getState() != RadioState::TRANSMIT);
 		EV << "[PHY]: transmitter is on, start sending message ..." << endl;
 		setRadioState(RadioState::TRANSMIT);
-    		ASSERT(txPktCopy == NULL);
-    		txPktCopy = (AirFrame *) airframe->dup();
+		ASSERT(txPktCopy == NULL);
+		txPktCopy = (AirFrame *) airframe->dup();
 
-    		if(TxOver_timer->isScheduled())
+		if(TxOver_timer->isScheduled())
 			error("[PHY]: try to transmit a pkt whihe radio is Txing");
     		scheduleAt(simTime() + airframe->getDuration(), TxOver_timer);
 		EV << "[PHY]: the transmission needs " << airframe->getDuration() << " s" << endl;
-    		sendDown(airframe);
+		sendDown(airframe);
 	}
 	else
 	{
@@ -278,7 +317,6 @@ AirFrame* Ieee802154Phy::unbufferMsg(cMessage *msg)
     AirFrame* airframe = (AirFrame *) msg->getContextPointer();
     //delete the self message
     delete msg;
-
     return airframe;
 }
 
@@ -292,17 +330,27 @@ void Ieee802154Phy::handleLowerMsgStart(AirFrame * airframe)
     double distance = myPos.distance(framePos);
 
     // calculate receive power
-    double rcvdPower = receptionModel->calculateReceivedPower(airframe->getPSend(), carrierFrequency, distance);
 
-		// accumulate receive power for each pkt received in current channel, no matter real pkt or noise
-		rxPower[channelNumber()] += rcvdPower;
+    AirFrameExtended * airframeExt = dynamic_cast<AirFrameExtended * >(airframe);
+    double frequency = carrierFrequency;
+    if (airframeExt)
+    {
+    	if (airframeExt->getCarrierFrequency()>0.0)
+    		frequency = airframeExt->getCarrierFrequency();
+
+    }
+
+    double rcvdPower = receptionModel->calculateReceivedPower(airframe->getPSend(), frequency, distance);
+
+    // accumulate receive power for each pkt received in current channel, no matter real pkt or noise
+	rxPower[getChannelNumber()] += rcvdPower;
 
     // store the receive power in the recvBuff
     recvBuff[airframe] = rcvdPower;
 
-		if (ED_timer->isScheduled()) // all packets received during ED measurement will be discarded by MAC layer, not here
-			if (rxPeakPower < rxPower[channelNumber()])
-				rxPeakPower = rxPower[channelNumber()];
+	if (ED_timer->isScheduled()) // all packets received during ED measurement will be discarded by MAC layer, not here
+		if (rxPeakPower < rxPower[getChannelNumber()])
+			rxPeakPower = rxPower[getChannelNumber()];
 
     // if receive power is bigger than sensitivity and if not sending
     // and currently not receiving another message and the message has
@@ -352,7 +400,7 @@ void Ieee802154Phy::handleLowerMsgEnd(AirFrame * airframe)
 {
 	bool isCorrupt = false;
 	bool isCollision = false;
-	rxPower[channelNumber()] -= recvBuff[airframe];
+	rxPower[getChannelNumber()] -= recvBuff[airframe];
 
 	if (snrInfo.ptr == airframe)
 	{
@@ -377,19 +425,19 @@ void Ieee802154Phy::handleLowerMsgEnd(AirFrame * airframe)
 			list = snrInfo.sList;
 
 			if (!radioModel->isReceivedCorrectly(airframe, list))
-        		{
+        	{
 				isCollision = true;
 				// we cannot do this before decapsulation, because we only detect this packet collided, not all, refer to encapsulation msg
 				//airframe->getEncapsulatedMsg()->setKind(COLLISION);
-        		}
+        	}
 
         		// we decapsulate here to set some flag
-        		cMessage *frame = airframe->decapsulate();
-        		delete airframe;
-        		if (isCollision)
-        			frame->setKind(COLLISION);
-        		else if (CCA_timer->isScheduled())	// during CCA, tell MAC layer to discard this pkt
-        			frame->setKind(RX_DURING_CCA);
+        	cMessage *frame = airframe->decapsulate();
+        	delete airframe;
+        	if (isCollision)
+        		frame->setKind(COLLISION);
+        	else if (CCA_timer->isScheduled())	// during CCA, tell MAC layer to discard this pkt
+        		frame->setKind(RX_DURING_CCA);
 
 			sendUp(frame);
 		}
@@ -686,7 +734,7 @@ void Ieee802154Phy::handle_PLME_SET_request(Ieee802154MacPhyPrimitives *primitiv
 				break;
 			}
 
-			if (primitive->getChannelNumber() != channelNumber())
+			if (primitive->getChannelNumber() != getChannelNumber())
 			{
 				changeChannel(primitive->getChannelNumber());
 				nb->fireChangeNotification(NF_RADIO_CHANNEL_CHANGED, &rs);
@@ -756,7 +804,7 @@ void Ieee802154Phy::changeChannel(int newChannel)
 		error("[PHY]: changing channel while txing is not supported");
 
 	setRadioState(RadioState::IDLE);
-	rxPower[channelNumber()] = 0; // clear power accumulator on current channel
+	rxPower[getChannelNumber()] = 0; // clear power accumulator on current channel
 	rxPower[newChannel] = 0; // clear power accumulator on new channel
 	noiseLevel = thermalNoise; // reset noise level
 
@@ -820,21 +868,21 @@ double Ieee802154Phy::getRate(char bitOrSymbol)
 {
 	double rate;
 
-	if (channelNumber() == 0)
+	if (getChannelNumber() == 0)
 	{
 		if (bitOrSymbol == 'b')
 			rate = BR_868M;
 		else
 			rate = SR_868M;
 	}
-	else if (channelNumber() <= 10)
+	else if (getChannelNumber() <= 10)
 	{
 		if (bitOrSymbol == 'b')
 			rate = BR_915M;
 		else
 			rate = SR_915M;
 	}
-	else if (channelNumber() <= 26)
+	else if (getChannelNumber() <= 26)
 	{
 		if (bitOrSymbol == 'b')
 			rate = BR_2_4G;
@@ -842,7 +890,7 @@ double Ieee802154Phy::getRate(char bitOrSymbol)
 			rate = SR_2_4G;
 	}
 	else
-		error("[PHY]: channel number ", channelNumber(), " is not supported");
+		error("[PHY]: channel number ", getChannelNumber(), " is not supported");
 	return (rate*1000);		// return bit/s
 }
 
