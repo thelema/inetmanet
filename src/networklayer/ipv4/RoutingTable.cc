@@ -303,6 +303,28 @@ bool RoutingTable::isLocalAddress(const IPAddress& dest) const
     return it!=localAddresses.end();
 }
 
+// JcM add: check if the dest addr is local network broadcast
+bool RoutingTable::isLocalBroadcastAddress(const IPAddress& dest) const
+{
+    Enter_Method("isLocalBroadcastAddress(%x)", dest.getInt()); // note: str().c_str() too slow here
+
+    if (localBroadcastAddresses.empty())
+    {
+        // collect interface addresses if not yet done
+        for (int i=0; i<ift->getNumInterfaces(); i++)
+        {
+        	IPAddress interfaceAddr = ift->getInterface(i)->ipv4Data()->getIPAddress();
+			IPAddress broadcastAddr = interfaceAddr.getBroadcastAddress(ift->getInterface(i)->ipv4Data()->getNetmask());
+			if (!broadcastAddr.isUnspecified()) {
+				localBroadcastAddresses.insert(broadcastAddr);
+			}
+        }
+    }
+
+    AddressSet::iterator it = localBroadcastAddresses.find(dest);
+    return it!=localBroadcastAddresses.end();
+}
+
 bool RoutingTable::isLocalMulticastAddress(const IPAddress& dest) const
 {
     Enter_Method("isLocalMulticastAddress(%x)", dest.getInt()); // note: str().c_str() too slow here

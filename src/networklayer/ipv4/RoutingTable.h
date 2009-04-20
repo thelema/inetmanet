@@ -94,6 +94,8 @@ class INET_API RoutingTable: public cSimpleModule, public IRoutingTable, protect
     // local addresses cache (to speed up isLocalAddress())
     typedef std::set<IPAddress> AddressSet;
     mutable AddressSet localAddresses;
+    // JcM add: to handle the local broadcast address
+    mutable AddressSet localBroadcastAddresses;
 
   protected:
     // set IP address etc on local loopback
@@ -177,6 +179,12 @@ class INET_API RoutingTable: public cSimpleModule, public IRoutingTable, protect
      * Checks if the address is a local one, i.e. one of the host's.
      */
     virtual bool isLocalAddress(const IPAddress& dest) const;
+    /** @name Routing functions (query the route table) */
+	//@{
+	/**
+	 * Checks if the address is a local broadcast one, i.e. 192.168.0.255/24
+	 */
+	virtual bool isLocalBroadcastAddress(const IPAddress& dest) const;
 
     /**
      * The routing function.
