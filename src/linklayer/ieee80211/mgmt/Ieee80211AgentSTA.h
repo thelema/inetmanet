@@ -32,6 +32,13 @@
  * See corresponding NED file for a detailed description.
  *
  * @author Andras Varga
+ *
+ * Modified by Juan-Carlos Maureira. INRIA 2009
+ * - correct the dissasociation and back to scanning behavior
+ * - add a fixed ssid to connect with.
+ * - Agent status logging vector.
+ * - Agent starting time random. (avoid all the STAs starts to scan at the same time)
+ *
  */
 class INET_API Ieee80211AgentSTA : public cSimpleModule, public INotifiable
 {
@@ -43,6 +50,11 @@ class INET_API Ieee80211AgentSTA : public cSimpleModule, public INotifiable
     simtime_t maxChannelTime;
     simtime_t authenticationTimeout;
     simtime_t associationTimeout;
+    // JcM add: agent starting time
+    simtime_t startingTime;
+
+    // JcM add: default ssid to connect with.
+    std::string default_ssid;
 
   protected:
     virtual int numInitStages() const {return 2;}
