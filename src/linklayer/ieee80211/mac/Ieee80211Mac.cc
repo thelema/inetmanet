@@ -944,16 +944,18 @@ void Ieee80211Mac::giveUpCurrentTransmission()
     Ieee80211DataOrMgmtFrame *temp = (Ieee80211DataOrMgmtFrame*) transmissionQueue.front();
     cMessage *pkt = temp->decapsulate();
 
-    ControlInfoBreakLink *add = new ControlInfoBreakLink;
-    add->setDest(temp->getTransmitterAddress());
-    pkt->setControlInfo(add);
+    if (pkt!=NULL)
+    {
+       ControlInfoBreakLink *add = new ControlInfoBreakLink;
+       add->setDest(temp->getTransmitterAddress());
+       pkt->setControlInfo(add);
+       nb->fireChangeNotification(NF_LINK_BREAK, pkt);
+       delete pkt;
+    }
 
     popTransmissionQueue();
     resetStateVariables();
 
-    nb->fireChangeNotification(NF_LINK_BREAK, pkt);
-    if (pkt!=NULL)
-       delete pkt;
     numGivenUp++;
 }
 
