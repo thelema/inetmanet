@@ -9,7 +9,9 @@
 *.exe
 *.o
 *.obj
+*.dll
 .tkenvrc
 
 # ignore project specific files
 src/Makefile
+out
