@@ -144,17 +144,19 @@ bool AbstractRadioExtended::processAirFrame(AirFrame *airframe)
 	{
 		double perc = ccExt->getPercentage();
 		double fqFrame = airframeext->getCarrierFrequency();
-		if (chnum == getChannelNumber() && (abs((fqFrame - carrierFrequency)/carrierFrequency)<=perc))
-			return true;
+		if (fqFrame > 0.0 && carrierFrequency>0.0)
+		{
+			if (chnum == getChannelNumber() && (fabs((fqFrame - carrierFrequency)/carrierFrequency)<=perc))
+				return true;
+			else
+				return false;
+		}
 		else
-			return false;
+			return (chnum == getChannelNumber());
 	}
 	else
 	{
-		if (chnum == getChannelNumber())
-			return true;
-		else
-			return false;
+		return (chnum == getChannelNumber());
 	}
 }
 /**
