@@ -189,7 +189,9 @@ void ARP::processOutboundPacket(cMessage *msg)
 
 
     //    if (nextHopAddr.isMulticast())
-    if (nextHopAddr.isMulticast() || nextHopAddr == IPAddress::ALLONES_ADDRESS) // also include all nodes
+    // if (nextHopAddr.isMulticast() || nextHopAddr == IPAddress::ALLONES_ADDRESS) // also include all nodes
+	if (nextHopAddr.isMulticast() || nextHopAddr == IPAddress::ALLONES_ADDRESS ||
+			nextHopAddr == ie->ipv4Data()->getIPAddress().getBroadcastAddress(ie->ipv4Data()->getNetmask())) // also include the network broadcast
     {
         // FIXME: we do a simpler solution right now: send to the Broadcast MAC address
         EV << "destination address is multicast, sending packet to broadcast MAC address\n";

@@ -25,17 +25,26 @@ package inet.linklayer.ieee80211.mgmt;
 //
 // @author Andras Varga
 //
+// Modified by Juan-Carlos Maureira. INRIA 2009
+// - correct the dissasociation and back to scanning behavior
+// - add a fixed ssid to connect with.
+// - Agent status logging vector.
+// - Agent starting time random. (avoid all the STAs starts to scan at the same time)
+//
+//
 simple Ieee80211AgentSTA
 {
     parameters:
         bool activeScan = default(true);  // selects between active and passive scanning
         string channelsToScan = default("");  // list of channel numbers to scan (space delimited); empty means all channels
-        double probeDelay @unit("s"); // delay before sending a probe request during active scanning
-        double minChannelTime @unit("s"); // min interval to spend on a channel during active scanning
-        double maxChannelTime @unit("s"); // channel time for passive scanning, and max channel time for active scanning
+        double probeDelay @unit("s") = default(0.1s); // delay before sending a probe request during active scanning
+        double minChannelTime @unit("s") = default(0.15s); // min interval to spend on a channel during active scanning
+        double maxChannelTime @unit("s") = default(0.3s); // channel time for passive scanning, and max channel time for active scanning
         double authenticationTimeout @unit("s") = default(5s); // timeout for the authentication procedure
         double associationTimeout @unit("s") = default(5s); // timeout for the association procedure
-        @display("i=block/control");
+        double startingTime @unit("s") = default(uniform(0s,5s)); // agent starting time.
+        string default_ssid            = default(""); // default ssid
+ 		@display("i=block/control");
     gates:
         input mgmtIn;
         output mgmtOut;

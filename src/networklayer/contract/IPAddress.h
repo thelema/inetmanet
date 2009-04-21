@@ -225,6 +225,12 @@ class INET_API IPAddress
                                    const IPAddress& netmask);
 
     /**
+      * Returns the broadcast address for the given netmask
+      * JcM Fix
+      */
+	IPAddress getBroadcastAddress(IPAddress netmask);
+
+    /**
      * Returns equals(addr).
      */
     bool operator==(const IPAddress& addr1) const {return equals(addr1);}

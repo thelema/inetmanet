@@ -26,6 +26,8 @@
 #include "ICMPMessage_m.h"
 #include "IPv4InterfaceData.h"
 #include "ARPPacket_m.h"
+#include "Ieee802Ctrl_m.h"
+#include "UDPPacket_m.h"
 
 Define_Module(IP);
 
@@ -132,6 +134,26 @@ void IP::handlePacketFromNetwork(IPDatagram *datagram)
             return;
         }
     }
+
+    // JcM add: IP UDP Helper: allow to route UDP packets when the hwd dest address is broadcast
+	// and the interface is not configured
+
+	//  Extract the control info
+	cPolymorphic* p_ctrl = datagram->getControlInfo();
+	Ieee802Ctrl* eth_ci = NULL;
+	if (p_ctrl!=NULL) {
+		eth_ci= check_and_cast<Ieee802Ctrl*>(p_ctrl);
+	}
+
+	if (eth_ci!=NULL && eth_ci->getDest().isBroadcast()) {
+		if (dynamic_cast<UDPPacket*>(datagram->getEncapsulatedMsg())) {
+			EV << "IP UDP Helper. Allowing local delivery" << endl;
+			numLocalDeliver++;
+			reassembleAndDeliver(datagram);
+
+			return;
+		}
+	}
 
     // remove control info
     if (datagram->getTransportProtocol()!=IP_PROT_DSR && datagram->getTransportProtocol()!=IP_PROT_MANET)
@@ -260,8 +282,8 @@ void IP::routePacket(IPDatagram *datagram, InterfaceEntry *destIE, bool fromHL,I
         return;
     }
 
-// broadcast limited address 255.255.255.255
-    if (destAddr == IPAddress::ALLONES_ADDRESS)
+    // JcM Fix: broadcast limited address 255.255.255.255 or network broadcast, i.e. 192.168.0.255/24
+    if (destAddr == IPAddress::ALLONES_ADDRESS || rt->isLocalBroadcastAddress(destAddr))
     {
         // check if local
         if (!fromHL)
@@ -506,8 +528,16 @@ void IP::reassembleAndDeliver(IPDatagram *datagram)
     }
     else
     {
-        int gateindex = mapping.getOutputGateForProtocol(protocol);
-        send(packet, "transportOut", gateindex);
+    	// JcM Fix: check if the transportOut port are connected, otherwise
+    	// discard the packet
+    	int gateindex = mapping.getOutputGateForProtocol(protocol);
+
+    	if (gate("transportOut",gateindex)->isPathOK()) {
+    		send(packet, "transportOut", gateindex);
+		} else {
+			EV << "L3 Protocol not connected. discarding packet" << endl;
+			delete(packet);
+    	}
     }
 }
 
