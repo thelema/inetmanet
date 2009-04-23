@@ -28,10 +28,9 @@
  *
  *
 **/
- 
-class SCTPAssociation; 
- 
-class SCTPClient : public cSimpleModule, public SCTPSocket::CallbackInterface
+class SCTPAssociation;
+
+class INET_API SCTPClient : public cSimpleModule, public SCTPSocket::CallbackInterface
 {
 	protected:
 		SCTPSocket socket;
@@ -54,6 +53,7 @@ class SCTPClient : public cSimpleModule, public SCTPSocket::CallbackInterface
 		bool timer;
 		cMessage *timeMsg;
 		cMessage* stopTimer;
+        cMessage* primaryChangeTimer;
 		/** Utility: sends a request to the server */
 		void sendRequest(bool last=true);
 	public:

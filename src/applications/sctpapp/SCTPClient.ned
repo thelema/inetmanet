@@ -11,6 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
+
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
@@ -18,13 +19,13 @@
 package inet.applications.sctpapp;
 
 simple SCTPClient like SCTPApp
+
 {
 	parameters:
 		string address = default(""); // may be left empty ("")
 		int port = default(0); // port number to listen on
-		string connectAddress = default("");  // server address (may be symbolic)
-		string primaryPath = default("");
-		int connectPort = default(0); // port number to connect to
+		string connectAddress;  // server address (may be symbolic)
+		int connectPort; // port number to connect to
 		double startTime @unit(s) = default(1s); // time first session begins
 		int numRequestsPerSession = default(1);  // number of requests sent per session
 		int numPacketsToReceive = default(0);

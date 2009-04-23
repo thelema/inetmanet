@@ -178,4 +178,10 @@ class SCTPInfo extends SCTPCommand
     int text = 0;
 }
 
+class SCTPRcvCommand extends SCTPCommand
+{
+	uint32 ppid;
+	uint32 tsn; 
+	uint32 cumTsn;
+}
 

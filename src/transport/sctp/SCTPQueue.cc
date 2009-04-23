@@ -188,10 +188,12 @@ SCTPDataVariables* SCTPQueue::dequeueVarBySsn(uint16 ssn)
 	SCTPDataVariables* datVar;
 	for (PayloadQueue::iterator i=payloadQueue.begin();i!=payloadQueue.end(); i++)
 	{
-		if (i->second->ssn==ssn)
+		//sctpEV3<<"dequeueVarBySsn: looking for ssn "<<ssn<<" found tsn "<<i->first<<" with ssn "<<i->second->ssn<<"\n";
+		if (i->second->ssn==ssn && i->second->bbit && i->second->ebit)
 		{
 			datVar = i->second;
 			payloadQueue.erase(i);
+			//sctpEV3<<"found data with ssn = "<<ssn<<"\n";
 			return datVar;
 		}
 	}

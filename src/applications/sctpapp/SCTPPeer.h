@@ -23,7 +23,7 @@
 #include "SCTPSocket.h"
 
 
-class SCTPPeer : public cSimpleModule, public SCTPSocket::CallbackInterface
+class INET_API SCTPPeer : public cSimpleModule, public SCTPSocket::CallbackInterface
 {
 	protected:
 		int32 notifications;

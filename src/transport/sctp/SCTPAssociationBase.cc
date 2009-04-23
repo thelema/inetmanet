@@ -24,12 +24,15 @@
 #include "IPControlInfo_m.h"
 #include "SCTPQueue.h"
 #include "SCTPAlgorithm.h"
+#include "IPv4InterfaceData.h"
 
 #include <sstream>
 
 
 SCTPPathVariables:: SCTPPathVariables(IPvXAddress addr, SCTPAssociation* assoc)
 {
+   InterfaceTableAccess interfaceTableAccess;
+
 	association = assoc;
 	remoteAddress = addr;
 	activePath = true;
@@ -54,7 +57,6 @@ SCTPPathVariables:: SCTPPathVariables(IPvXAddress addr, SCTPAssociation* assoc)
 	RoutingTableAccess routingTableAccess;
     	InterfaceEntry *rtie = routingTableAccess.get()->getInterfaceForDestAddr(remoteAddress.get4());
 	pmtu = rtie->getMTU();
-	hbWasAcked = false;
 	rttvar = 0.0;
 
 	cwndTimeout = pathRto;
@@ -98,7 +100,6 @@ SCTPPathVariables:: SCTPPathVariables(IPvXAddress addr, SCTPAssociation* assoc)
 
 SCTPPathVariables::~SCTPPathVariables()
 {
-
 }
 
 SCTPDataVariables::SCTPDataVariables()
@@ -130,7 +131,6 @@ SCTPDataVariables::SCTPDataVariables()
 
 SCTPDataVariables::~SCTPDataVariables()
 {
-
 }
 
 SCTPStateVariables::SCTPStateVariables()
@@ -152,7 +152,6 @@ uint32 i;
 	newChunkReceived 	= false;
 	dataChunkReceived 	= false;
 	sackAllowed 		= false;
-	fragment		= false;
 	resetPending		= false;
 	stopReceiving		= false;
 	stopOldData		= false;
@@ -220,8 +219,10 @@ uint32 i;
 
 SCTPStateVariables::~SCTPStateVariables()
 {
-
+	if (shutdownChunk)
+		delete shutdownChunk;
 }
+
 
 //
 // FSM framework, SCTP FSM
@@ -229,10 +230,11 @@ SCTPStateVariables::~SCTPStateVariables()
 
 SCTPAssociation::SCTPAssociation(SCTP *_mod, int32 _appGateIndex, int32 _assocId)
 {
+   char str[10];
 	sctpMain = _mod;
 	appGateIndex = _appGateIndex;
 	assocId = _assocId;
-
+	sprintf(str, "assoc %d",assocId);
 	ev<<"SCTPAssociationBase:SCTPAssociation new assocId="<<assocId<<"\n";
 
 	localPort = remotePort = 0;
@@ -304,6 +306,7 @@ SCTPAssociation::SCTPAssociation(SCTP *_mod, int32 _appGateIndex, int32 _assocId
 			ssFunctions.ssInitStreams = &SCTPAssociation::initStreams;
 			ssFunctions.ssGetNextSid = &SCTPAssociation::streamScheduler;
 			ssFunctions.ssUsableStreams = &SCTPAssociation::numUsableStreams;
+			break;
 		}
 	}
 }
@@ -599,9 +602,6 @@ void SCTPAssociation::stateEntered(int32 status)
 				state->header = 0;
 			state->swsLimit = (uint32)sctpMain->par("swsLimit");
 			state->reactivatePrimaryPath = (bool)sctpMain->par("reactivatePrimaryPath");
-			state->fragment = (bool)sctpMain->par("fragment");
-			if (!state->fragment)
-				state->fragment = false;
 			sackPeriod = (double)sctpMain->par("sackPeriod");
 			sackFrequency = sctpMain->par("sackFrequency");
 			SCTP::AssocStat stat;
@@ -654,7 +654,8 @@ void SCTPAssociation::stateEntered(int32 status)
 		}
 		case SCTP_S_SHUTDOWN_PENDING:
 		{
-			if (getOutstandingBytes()==0 && transmissionQ->getQueueSize()==0 && qCounter.roomSumSendStreams==0 && fsm->getState() == SCTP_S_SHUTDOWN_PENDING) sendShutdown();
+			if (getOutstandingBytes()==0 && transmissionQ->getQueueSize()==0 && qCounter.roomSumSendStreams==0)
+				sendShutdown();
 			break;
 		}
 	}

@@ -30,7 +30,7 @@
  * retransmit/recovery, selective acknowledgement etc. Subclasses
  * may implement various sets and flavours of the above algorithms.
  */
-class SCTPAlgorithm : public cPolymorphic
+class INET_API SCTPAlgorithm : public cPolymorphic
 {
   protected:
     SCTPAssociation *assoc; // we belong to this association

@@ -103,7 +103,7 @@ uint32 numBytes;
 
 	cPacket* cmsg = new cPacket("CMSG");
 	SCTPSimpleMessage* msg=new SCTPSimpleMessage("Server");
-	numBytes=(uint32)par("requestLength");
+	numBytes=(long uint32)par("requestLength");
 	msg->setDataArraySize(numBytes);
 	for (uint32 i=0; i<numBytes; i++)
 	{
@@ -522,6 +522,7 @@ void SCTPServer::finish()
 		ev << "\treceived bytes:" << l->second.rcvdBytes << "\n";
 		ev << "\tthroughput: "<<(l->second.rcvdBytes / l->second.lifeTime.dbl())*8 <<" bit/sec\n";
 		recordScalar("bytes rcvd", l->second.rcvdBytes);
+      recordScalar("throughput", (l->second.rcvdBytes / l->second.lifeTime.dbl())*8);
 
 	}
 	ev << getFullPath() << "Over all " << packetsRcvd << " packets received\n ";

@@ -27,7 +27,7 @@ class SCTPCommand;
 class SCTPQueue;
 
 
-class SCTPReceiveStream : public cPolymorphic
+class INET_API SCTPReceiveStream : public cPolymorphic
 {
   protected:
 	uint16 streamId;
@@ -35,6 +35,7 @@ class SCTPReceiveStream : public cPolymorphic
 	SCTPQueue* deliveryQ;
 	SCTPQueue* orderedQ;
 	SCTPQueue* unorderedQ;
+	uint32 reassemble(SCTPQueue* queue, uint32 tsn);
   public:	
   uint32 enqueueNewDataChunk(SCTPDataVariables* dchunk);
     /**

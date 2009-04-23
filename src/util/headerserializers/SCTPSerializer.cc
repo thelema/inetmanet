@@ -74,22 +74,26 @@ int32 SCTPSerializer::serialize(SCTPMessage *msg, unsigned char *buf, uint32 buf
 					//sctpEV3<<simulation.simTime()<<" SCTPAssociation:: Data sent \n";
 					SCTPDataChunk *dataChunk = check_and_cast<SCTPDataChunk *>(chunk);
 					struct data_chunk *dc = (struct data_chunk*) (buf + writtenbytes); // append data to buffer
-					writtenbytes += SCTP_DATA_CHUNK_LENGTH;
+					unsigned char flags = 0;
+
 					// fill buffer with data from SCTP data chunk structure
 					dc->type = dataChunk->getChunkType();
-					unsigned char flags = 0;
-					if(dataChunk->getUBit())
+					// fill buffer with data from SCTP data chunk structure
+					dc->type = dataChunk->getChunkType();
+					if (dataChunk->getUBit())
 						flags |= UNORDERED_BIT;
 					if(dataChunk->getBBit())
 						flags |= BEGIN_BIT;
 					if(dataChunk->getEBit())
 						flags |= END_BIT;
 					dc->flags = flags;
-					//dc->length = htons(ADD_PADDING(dataChunk->getBitLength() / 8));
+					dc->length = htons(dataChunk->getByteLength());
 					dc->tsn = htonl(dataChunk->getTsn());
 					dc->sid = htons(dataChunk->getSid());
 					dc->ssn = htons(dataChunk->getSsn());
 					dc->ppi = htonl(dataChunk->getPpid());
+					writtenbytes += SCTP_DATA_CHUNK_LENGTH;
+
 					SCTPSimpleMessage *smsg = check_and_cast<SCTPSimpleMessage *>(dataChunk->getEncapsulatedMsg());
 						int32 datalen = smsg->getDataArraySize();
 						//dc->length = htons(SCTP_DATA_CHUNK_LENGTH+datalen);

@@ -17,15 +17,15 @@
 
 package inet.transport.sctp;
 
-simple SCTP //
+simple SCTP
 {
         parameters:
         int numGapReports = default(3);
         double rtoMin @unit(s) = default(1s);
         double rtoMax @unit(s) = default(60s);
         double rtoInitial @unit(s) = default(3s);
-        double rtoAlpha @unit(s) = default(125ms);
-        double rtoBeta @unit(s) = default(250ms);
+        double rtoAlpha = default(0.125);
+        double rtoBeta = default(0.250);
         int maxBurst = default(4);
         double validCookieLifetime @unit(s) = default(10s);
         int assocMaxRetrans = default(10);
@@ -38,13 +38,11 @@ simple SCTP //
         bool nagleEnabled = default(true);
         int naglePoint = default(1468);
         bool reactivatePrimaryPath = default(false);
-        int fragPoint = default(1400);
-        bool fragment = default(false);
         int sendQueueLimit = default(0);
         int ccModule = default(0); // RFC4960=0
-	int ssModule = default(0); //ROUND_ROBIN=0
+		int ssModule = default(0); //ROUND_ROBIN=0
         int arwnd = default(65535);
-	int swsLimit = default(3000); //Limit for SWS
+		int swsLimit = default(3000); //Limit for SWS
     gates:
         input from_appl[];
         input from_ip;

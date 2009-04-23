@@ -30,7 +30,7 @@ class SCTPQueue;
 class SCTPDataVariables;
 
 
-class SCTPSendStream : public cPolymorphic
+class INET_API SCTPSendStream : public cPolymorphic
 {
 	protected:
 		uint16 streamId;
