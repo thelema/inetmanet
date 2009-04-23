@@ -27,11 +27,12 @@
 
 
 class SCTPStatusInfo;
-class SCTPMain;
-
+class SCTP;
 
  
-class SCTPSocket
+ 
+ 
+class  INET_API SCTPSocket
 {
   public:
     /**
@@ -44,7 +45,7 @@ class SCTPSocket
      */
     class CallbackInterface
     {
-      	public:
+      public:
         virtual ~CallbackInterface() {}
         virtual void socketDataArrived(int assocId, void *yourPtr, cPacket *msg, bool urgent) = 0;
 	virtual void socketDataNotificationArrived(int assocId, void *yourPtr, cPacket *msg) = 0;
@@ -59,68 +60,72 @@ class SCTPSocket
 	virtual void addressAddedArrived(int assocId, IPvXAddress localAddr, IPvXAddress remoteAddr) {}
     };
 
-    	enum State {NOT_BOUND, CLOSED, LISTENING, CONNECTING, CONNECTED, PEER_CLOSED, LOCALLY_CLOSED, SOCKERROR};
+	enum State {NOT_BOUND, CLOSED, LISTENING, CONNECTING, CONNECTED, PEER_CLOSED, LOCALLY_CLOSED, SOCKERROR};
 
-  	protected:
-	int assocId;
-	int sockstate;
-	
-	IPvXAddress localAddr;
-	AddressVector localAddresses;
+	protected:
+		int assocId;
+		int sockId;
+		int sockstate;
+		bool oneToOne;
 		
-	int localPrt;
-	IPvXAddress remoteAddr;
-	AddressVector remoteAddresses;
-	int remotePrt;
-	int fsmStatus;
-	int inboundStreams;
-	int outboundStreams;
-	int lastStream;
+		IPvXAddress localAddr;
+		AddressVector localAddresses;
+		
+		int localPrt;
+		IPvXAddress remoteAddr;
+		AddressVector remoteAddresses;
+		int remotePrt;
+		int fsmStatus;
+		int inboundStreams;
+		int outboundStreams;
+		int lastStream;
 	
 	
 	CallbackInterface *cb;
 	void *yourPtr;
 
-	void sendToSCTP(cPacket *msg);
-	
-	public:
-	cGate *gateToSctp;
+  protected:
+    void sendToSCTP(cPacket *msg);
+
+  public:
+  cGate *gateToSctp;
     /**
      * Constructor. The connectionId() method returns a valid Id right after
      * constructor call.
      */
-    	SCTPSocket();
+   // SCTPSocket();
+	SCTPSocket(bool type = true);
 
     /**
      * Constructor, to be used with forked sockets (see listen()).
      * The assocId will be picked up from the message: it should have arrived
      * from SCTPMain and contain SCTPCommmand control info.
      */
-    	SCTPSocket(cPacket *msg);
+    SCTPSocket(cPacket *msg);
 
     /**
      * Destructor
      */
-   	~SCTPSocket();
+    ~SCTPSocket();
 
     /**
      * Returns the internal connection Id. SCTP uses the (gate index, assocId) pair
      * to identify the connection when it receives a command from the application
      * (or SCTPSocket).
      */
-    	int getConnectionId() const  {return assocId;}
+    int getConnectionId() const  {return assocId;}
 
     /**
      * Returns the socket state, one of NOT_BOUND, CLOSED, LISTENING, CONNECTING,
      * CONNECTED, etc. Messages received from SCTP must be routed through
      * processMessage() in order to keep socket state up-to-date.
      */
-    	int getState()   {return sockstate;}
+    int getState()   {return sockstate;}
 
     /**
      * Returns name of socket state code returned by state().
      */
-    	static const char *stateName(int state);
+    static const char *stateName(int state);
 
     /** @name Getter functions */
     //@{
@@ -139,7 +144,7 @@ class SCTPSocket
      * Sets the gate on which to send to SCTP. Must be invoked before socket
      * can be used. Example: <tt>socket.setOutputGate(gate("sctpOut"));</tt>
      */
-    	void setOutputGate(cGate *toSctp)  {gateToSctp = toSctp;};
+    void setOutputGate(cGate *toSctp)  {gateToSctp = toSctp;};
 	void setOutboundStreams(int streams) {outboundStreams = streams;};
 	void setInboundStreams(int streams) {inboundStreams = streams;};
 	int getOutboundStreams() {return outboundStreams;};
@@ -153,7 +158,7 @@ class SCTPSocket
      * Bind the socket to a local port number and IP address (useful with
      * multi-homing).
      */
-	void bind(IPvXAddress localAddr, int localPort);
+   void bind(IPvXAddress localAddr, int localPort);
    
 	void bindx(AddressVector localAddr, int localPort);
 
@@ -259,8 +264,11 @@ class SCTPSocket
      * the message belongs to this socket, i.e. belongsToSocket(msg) would
      * return true!
      */
-    	void processMessage(cPacket *msg);
+    void processMessage(cPacket *msg);
     //@}
+
+
+	void setState(int state) {sockstate = state; };
 };
 
 #endif

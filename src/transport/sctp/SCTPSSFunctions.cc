@@ -18,10 +18,10 @@
 
 /************************************************************
 
-To add new streamSchedulers 
-- the appropriate functions have to be implemented, preferably 
-	in this file. 
-- in SCTPAssociation.h an entry has to be added to 
+To add new streamSchedulers
+- the appropriate functions have to be implemented, preferably
+	in this file.
+- in SCTPAssociation.h an entry has to be added to
 	enum SCTPStreamSchedulers.
 - in SCTPAssociationBase.cc in the contructor for SCTPAssociation 
 	the new functions have to be assigned. Compare the entries
@@ -46,12 +46,11 @@ uint32 i;
 				
 			this->receiveStreams[i]=rcvStream;
 			rcvStream->setStreamId(i);
-			
 			this->state->numMsgsReq[i]=0;
 		}
 		for (i=0; i<outStreams; i++)
 		{
-			SCTPSendStream* sendStream = new SCTPSendStream(i);		
+			SCTPSendStream* sendStream = new SCTPSendStream(i);
 			this->sendStreams[i]=sendStream;
 			sendStream->setStreamId(i);
 		}

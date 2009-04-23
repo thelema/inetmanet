@@ -41,6 +41,3 @@ network ExtClient {
        }
     connections allowunconnected:
 }
-
-
-

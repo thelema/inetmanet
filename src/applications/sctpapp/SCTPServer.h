@@ -15,7 +15,7 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef __SCTPECHOAPP_H_
+#ifndef __SCTPSERVER_H_
 #define __SCTPSERVER_H_
 
 #include <omnetpp.h>
@@ -23,7 +23,7 @@
 #include "SCTPSocket.h"
 
 
-class SCTPServer : public cSimpleModule
+class INET_API SCTPServer : public cSimpleModule
 {
 	protected:
 		int32 notifications;

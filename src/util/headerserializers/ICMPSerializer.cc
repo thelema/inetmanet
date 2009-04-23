@@ -55,9 +55,9 @@ int ICMPSerializer::serialize(ICMPMessage *pkt, unsigned char *buf, unsigned int
             unsigned int datalen = (pp->getByteLength() - 4);
             for (unsigned int i=0; i < datalen; i++)
                 if (i < pp->getDataArraySize()) {
-                  icmp->icmp_data[i] = pp->getData(i);
+                	icmp->icmp_data[i] = pp->getData(i);
                 } else {
-                  icmp->icmp_data[i] = 'a';
+                	icmp->icmp_data[i] = 'a';
                 }
             packetLength += datalen;
             break;
@@ -142,8 +142,8 @@ void ICMPSerializer::parse(unsigned char *buf, unsigned int bufsize, ICMPMessage
             pp->setSeqNo(ntohs(icmp->icmp_seq));
             pp->setByteLength(bufsize - 4);
             pp->setDataArraySize(bufsize - ICMP_MINLEN);
-                 for (unsigned int i=0; i<bufsize - ICMP_MINLEN; i++)
-                     pp->setData(i, icmp->icmp_data[i]);
+            for (unsigned int i=0; i<bufsize - ICMP_MINLEN; i++)
+                pp->setData(i, icmp->icmp_data[i]);
             pkt->encapsulate(pp);
             pkt->setName(pp->getName());
             break;

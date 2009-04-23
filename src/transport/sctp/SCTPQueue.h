@@ -43,7 +43,7 @@ class SCTPDataVariables;
  *
  * @see SCTPSendQueue
  */
-class SCTPQueue : public cPolymorphic
+class INET_API SCTPQueue : public cPolymorphic
 {
   protected:
     SCTPAssociation *assoc; // SCTP connection object

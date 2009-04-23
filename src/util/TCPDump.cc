@@ -379,26 +379,26 @@ void TCPDumper::udpDump(bool l2r, const char *label, IPDatagram *dgram, const ch
     {
         std::ostream& out = *outp;
 
-    // seq and time (not part of the tcpdump format)
-    char buf[30];
-    sprintf(buf,"[%.3f%s] ", simulation.getSimTime().dbl(), label);
-    out << buf;
-    UDPPacket* udppkt = check_and_cast<UDPPacket*>(encapmsg);
+	// seq and time (not part of the tcpdump format)
+	char buf[30];
+	sprintf(buf,"[%.3f%s] ", simulation.getSimTime().dbl(), label);
+	out << buf;
+	UDPPacket* udppkt = check_and_cast<UDPPacket*>(encapmsg);
 
-    // src/dest
-    if (l2r)
-    {
-        out << dgram->getSrcAddress().str() << "." << udppkt->getSourcePort() << " > ";
-        out << dgram->getDestAddress().str() << "." << udppkt->getDestinationPort() << ": ";
-    }
-    else
-    {
-        out << dgram->getDestAddress().str() << "." << udppkt->getDestinationPort() << " < ";
-        out << dgram->getSrcAddress().str() << "." << udppkt->getSourcePort() << ": ";
-    }
-
-     out << endl;
-    out << "UDP: Payload length=" << udppkt->getByteLength()-8 << endl;
+	// src/dest
+	if (l2r)
+	{
+		out << dgram->getSrcAddress().str() << "." << udppkt->getSourcePort() << " > ";
+		out << dgram->getDestAddress().str() << "." << udppkt->getDestinationPort() << ": ";
+	}
+	else
+	{
+		out << dgram->getDestAddress().str() << "." << udppkt->getDestinationPort() << " < ";
+		out << dgram->getSrcAddress().str() << "." << udppkt->getSourcePort() << ": ";
+	}
+	
+	 out << endl;
+	out << "UDP: Payload length=" << udppkt->getByteLength()-8 << endl;
     }
 }
 

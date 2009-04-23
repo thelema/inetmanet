@@ -79,7 +79,7 @@ class SCTPMessage;
  * The concrete SCTPAlgorithm class to use can be chosen per connection (in OPEN)
  * or in a module parameter.
  */
-class SCTP : public cSimpleModule
+class INET_API SCTP : public cSimpleModule
 {
 	public:
 		struct AppConnKey
@@ -153,14 +153,14 @@ class SCTP : public cSimpleModule
 		typedef std::map<VTagPair,int32> SctpVTagMap;
 		SctpVTagMap sctpVTagMap;
 		
-	protected:
 		typedef std::map<AppConnKey,SCTPAssociation*> SctpAppConnMap;
 		typedef std::map<SockPair,SCTPAssociation*> SctpConnMap;
 	
 
 		SctpAppConnMap sctpAppConnMap;
 		SctpConnMap sctpConnMap;
-		
+		std::list<SCTPAssociation*>assocList;
+	protected:	
 		int32 sizeConnMap;
 		static int32 nextConnId;
 	

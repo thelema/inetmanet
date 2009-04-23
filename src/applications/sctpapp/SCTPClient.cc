@@ -93,10 +93,14 @@ void SCTPClient::initialize()
 	}
 	if ((simtime_t)par("primaryTime")!=0)
 	{
-		cMessage* cmsg = new cMessage("PrimaryTime");
-		cmsg->setKind(MSGKIND_PRIMARY);
-		scheduleAt((simtime_t)par("primaryTime"), cmsg);
+		primaryChangeTimer = new cMessage("PrimaryTime");
+		primaryChangeTimer->setKind(MSGKIND_PRIMARY);
+		scheduleAt((simtime_t)par("primaryTime"), primaryChangeTimer);
 	}
+   else
+   {
+      primaryChangeTimer = NULL;
+   }
 }
 
 void SCTPClient::handleMessage(cMessage *msg)
@@ -177,12 +181,12 @@ void SCTPClient::socketEstablished(int32, void *)
 					}
 
 				}
-				if ((!timer && numRequestsToSend>0 || timer) && sendAllowed)
+				if (((!timer && numRequestsToSend>0) || timer) && sendAllowed)
 					sendQueueRequest();
 			}
 			else
 			{
-				while ((!timer && numRequestsToSend>0 || timer) && sendAllowed)
+				while (((!timer && numRequestsToSend>0) || timer) && sendAllowed)
 				{
 					if (!timer && numRequestsToSend==1)
 						sendRequest(true);
@@ -226,7 +230,7 @@ void SCTPClient::sendRequestArrived()
 int32 count = 0;
 
 	sctpEV3<<"sendRequestArrived numRequestsToSend="<<numRequestsToSend<<"\n";
-	while ((!timer && numRequestsToSend > 0 || timer) && count++ < queueSize && sendAllowed)
+	while (((!timer && numRequestsToSend > 0) || timer) && count++ < queueSize && sendAllowed)
 	{
 		if (count == queueSize)
 			sendRequest();
@@ -320,8 +324,7 @@ void SCTPClient::handleTimer(cMessage *msg)
 			break;
 	
 		case MSGKIND_SEND:
-			
-			if ((!timer && numRequestsToSend>0 || timer))
+			if (((!timer && numRequestsToSend>0) || timer))
 			{
 				if (sendAllowed)
 				{
@@ -409,6 +412,12 @@ void SCTPClient::socketClosed(int32, void *)
 	// *redefine* to start another session etc.
 	ev << "connection closed\n";
 	setStatusString("closed");
+   if (primaryChangeTimer)
+   {
+      cancelEvent(primaryChangeTimer);
+      delete primaryChangeTimer;
+      primaryChangeTimer = NULL;
+   }
 }
 
 void SCTPClient::socketFailure(int32, void *, int32 code)
@@ -453,9 +462,14 @@ void SCTPClient::setPrimaryPath (const char* str)
 	}
 	else
 	{
-		str = (const char*)par("primaryPath");
+		str = (const char*)par("newPrimary");
 		if (strcmp(str, "")!=0)
 			pinfo->setRemoteAddress(IPvXAddress(str));
+		else
+		{
+			str = (const char*)par("connectAddress");
+			pinfo->setRemoteAddress(IPvXAddress(str));
+		}
 	}
 
 	pinfo->setAssocId(socket.getConnectionId());
@@ -486,6 +500,12 @@ void SCTPClient::finish()
 		cancelEvent(stopTimer);
 		delete stopTimer;
 	}
+   if (primaryChangeTimer)
+   {
+      cancelEvent(primaryChangeTimer);
+      delete primaryChangeTimer;
+      primaryChangeTimer = NULL;
+   }
 	ev << getFullPath() << ": opened " << numSessions << " sessions\n";
 	ev << getFullPath() << ": sent " << bytesSent << " bytes in " << packetsSent << " packets\n";
 	ev << getFullPath() << ": received " << bytesRcvd << " bytes in " << packetsRcvd << " packets\n";

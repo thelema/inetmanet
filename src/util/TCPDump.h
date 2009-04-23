@@ -87,7 +87,7 @@ class TCPDumper
 /**
  * Dumps every packet using the TCPDumper class
  */
-class TCPDump : public cSimpleModule
+class INET_API TCPDump : public cSimpleModule
 {
     protected:
         TCPDumper tcpdump;

@@ -25,14 +25,14 @@
 /**
  * State variables for SCTPAlg.
  */
-class SCTPAlgStateVariables : public SCTPStateVariables
+class INET_API SCTPAlgStateVariables : public SCTPStateVariables
 {
   public:
     //...
 };
 
 
-class SCTPAlg : public SCTPAlgorithm
+class INET_API SCTPAlg : public SCTPAlgorithm
 {
   protected:
     SCTPAlgStateVariables *state;

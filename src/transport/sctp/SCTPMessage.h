@@ -27,7 +27,7 @@
  * Represents a SCTP Message. More info in the SCTPMessage.msg file
  * (and the documentation generated from it).
  */
-class SCTPMessage : public SCTPMessage_Base
+class INET_API SCTPMessage : public SCTPMessage_Base
 {
 	protected:
 		std::list<cPacket*> chunkList;

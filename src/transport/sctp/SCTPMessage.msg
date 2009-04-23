@@ -120,6 +120,8 @@ message SCTPCookieAckChunk extends SCTPChunk
 
 message SCTPDataMsg extends cPacket
 {
+	bool eBit = 0;
+	bool bBit = 0;
     simtime_t enqueuingTime;
     simtime_t expiryTime;
     uint32 ppid;
@@ -129,6 +131,7 @@ message SCTPDataMsg extends cPacket
     bool ordered;
     uint32 booksize;
     uint32 rtx;
+	bool fragment;
 }
 
 message SCTPDataChunk extends SCTPChunk
