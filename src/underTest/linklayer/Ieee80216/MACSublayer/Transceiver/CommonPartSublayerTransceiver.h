@@ -24,8 +24,8 @@
 
 #include "Ieee80216MacHeader_m.h"
 #include "NotificationBoard.h"
-#include "RadioState.h"// Beinhlatet die für die Statusabfrage des Radio Modules nötigen Variablen
-#include "PhyControlInfo_m.h"// Beinhlatet die Kommandobefehle für die Steuerung des RadioModuls
+#include "RadioState.h"// Beinhaltet die für die Statusabfrage des Radio Modules nötigen Variablen
+#include "PhyControlInfo_m.h"// Beinhaltet die Kommandobefehle für die Steuerung des RadioModuls
 #include "Ieee80216Primitives_m.h"
 #include "FSMA.h"
 #include "global_enums.h"
@@ -72,7 +72,7 @@ class CommonPartSublayerTransceiver: public cSimpleModule, public INotifiable
      * Wenn die Radio Kontrol Nachricht nicht an das Radio Modul senden kann, weil es im Transmit/Receive Modus ist
      * wird die nachricht hier zwischengespeichert und erst wenn das Module bereit ist weitergeleitet.
      */
-  cPacket *pendingRadioConfigMsg;
+  cMessage *pendingRadioConfigMsg;
 
   cMessage *stopTransmision;
 
@@ -96,7 +96,7 @@ class CommonPartSublayerTransceiver: public cSimpleModule, public INotifiable
 	cFSM fsmb;
 
 
-    RadioState::State radioState;  // Kopie des Zusatand (state) des Physical Radio (IDLE,SLEEP,TRANSMIT,RECEIVE)
+    RadioState::State radioState;  // Kopie des Zustands (state) des Physical Radio (IDLE,SLEEP,TRANSMIT,RECEIVE)
     RadioState *newRadioState;
 
 protected:
@@ -150,7 +150,7 @@ protected:
     /**
     * @brief Wird immer dann aufgerufen wenn eine Nachricht das Modul erreicht
     */
-    void handleMessage(cPacket *msg);
+    void handleMessage(cMessage *msg);
     /**
     * @brief Wird von handleMessage aufgerufen wenn die Nachricht von der oberen Ebene kommt
     */
@@ -158,7 +158,7 @@ protected:
     /**
     * @brief Wird von handleMessage aufgerufen wenn die Nachricht von dem ControlPlane Module kommt
     */
-    void handleControlPlaneMsg(cPacket *msg);
+    void handleControlPlaneMsg(cMessage *msg);
 
     void handleControlRequest(cMessage *msg);
 
@@ -166,7 +166,7 @@ protected:
     /**
     * @brief Wird von ControlPlaneMsg aufgerufen wenn die Nachricht von der ControlPlane eine Radio Cofig Message ist
     */
-    void handleCommand(cPacket *msg);
+    void handleCommand(cMessage *msg);
     /**
     * @brief Bearbeitet alle Nachrichten und �derungen die mit der State Maschine in Verbindung stehen
     */
@@ -178,7 +178,7 @@ protected:
     /**
     * @brief Wird aufgerufen wenn die Nachricht an das Radio Modul gesendet werden soll
     */
-    void sendDown(cPacket *msg);
+    void sendDown(cMessage *msg);
 
   private:
     /**

@@ -25,17 +25,17 @@
 
 class ControlPlaneMobilestation: public ControlPlaneBase
 {
-	
-public:
-
-
-    
 
 public:
 
 
-    
-    //MobileSubStationInfo	
+
+
+public:
+
+
+
+    //MobileSubStationInfo
     structMobilestationInfo localMobilestationInfo;// MobileSubStation
     structMobilestationInfo activeMobilestationInfo;// MobileSubStation
     structMobilestationInfo targetMobilestationInfo;// MobileSubStation
@@ -44,7 +44,7 @@ public:
      * @name BasestationList
      * Die Liste enthälte Parameter von allen gescänten Basisstationen
      */
-    
+
     BasestationList bsList;
 
 //Liste zum abspeichern der Signalstärke empfangener Pakete
@@ -57,7 +57,7 @@ public:
 	// in Byte/s
 	//int granted_bandwidth;
 
-	
+
     /**
      * @name Vector
      * Vectoren zum abspeichern von Messwerten
@@ -76,7 +76,7 @@ public:
     //cOutVector BS1abstandVector;
     //cOutVector BS1x_posVector;
     //cOutVector BS1y_posVector;
- 
+
     cOutVector BS2SNR;
     //cOutVector BS2abstandVector;
     //cOutVector BS2x_posVector;
@@ -118,28 +118,28 @@ public:
     cStdDev scanBStrue;
     cStdDev scanBSFrameCounter;
 private:
-	
+
 //	enum msManagementCIDState {
 //		MCID_ACTIVE,
 //		MCID_INACTIVE
 //	};
-	
+
 	CommonPartSublayerServiceFlows_MS *cpsSF_MS;
 	CommonPartSublayerScheduling *cps_scheduling; // pointer to the scheduling module
-	
+
 
 	CommonPartSublayerReceiver *cps_Receiver_MS;//Für die Übertragung der CID-MAP
 
 	//UplinkDatarateMap map_currentDatarates; // current datarates per CID
-	
+
 	bool isPrimaryConnectionActive;
-	
+
 	int cur_floor, last_floor;
 	double uplink_rate, downlink_rate;
 	int grants_per_second;
-	
+
 	bool scan_request_sent;
-	
+
 protected:
     /** @name Timer messages */
 
@@ -160,14 +160,14 @@ protected:
 
     cMessage *startScanBasestation;
     cMessage *startRangingRequest;
-    
+
     //scanmodus Timer
     cMessage *scanDurationTimer;// for x frame go to scan modus
-    cMessage *interleavingIntervalTimer;//for x frame back to  
+    cMessage *interleavingIntervalTimer;//for x frame back to
     cMessage *scanIterationTimer;// wiederhole den scanmodus
     cMessage *startFrameTimer;// after x frame start scan
-    cMessage *startScanTimer;// 
-    cMessage *startHandoverScan;// 
+    cMessage *startScanTimer;//
+    cMessage *startHandoverScan;//
     cMessage *startHandover;
 
     cMessage *MSHO_REQ_Fail;
@@ -196,7 +196,7 @@ protected:
     int ScanCounter;
     int ScanDlMapCounter;
 //Varibalen dür scalar record
-    double startHoTime;	
+    double startHoTime;
     double stopHoTime;
     double HO_minMarginTime;
     double HO_endScanningTime;
@@ -204,14 +204,14 @@ protected:
     double HO_NetEntryTime;
     double HO_StartSendDataTime;
 
-    //double ScnRspTime;	
+    //double ScnRspTime;
     //double startScnTime;
     //double stopScnTime;
-    //double IndRspTime;	
+    //double IndRspTime;
     //double startEntryTime;
     //double HO_get_SCN_RSP_Time;
     //double HO_start_Scn_Time;
-    //double HO_ScnTime;	
+    //double HO_ScnTime;
     //double HO_HoTime;
 
 
@@ -228,8 +228,8 @@ protected:
 private:
 	ConnectionMap *getConnectionMap();
     int getBitsPerSecond( int duration );
-    
-	
+
+
 
 /**
 * @brief mainfunction
@@ -237,10 +237,10 @@ private:
 public:
     ControlPlaneMobilestation();
     virtual ~ControlPlaneMobilestation();
-    
+
     void addToDownlinkRate( double bits );
     void addToUplinkRate( double bits );
-    
+
     /** die 80216 ControlPlane state machine */
 	 enum State {
 	    WAITDLMAP,
@@ -257,36 +257,36 @@ public:
 	    };
 
     cFSM fsm;
-    
+
     State getFsmState();
 
-    
+
 protected:
     void initialize(int);
     void finish();
 
     virtual void handleClassificationCommand(Ieee80216ClassificationCommand *command);
     virtual void handleServiceFlowMessage(cMessage *msg);
-    
+
     virtual void handleHigherLayerMsg(cMessage *msg);
     //Bearbeitet die Managementnachrichten die von den Mobilsationen kommen
     virtual void handleLowerLayerMsg(cMessage *msg);
-    
+
     void handleManagementFrame(Ieee80216GenericMacHeader *genericFrame);
     //Bearbeitet die Managementnachrichten die von den Mobilsationen kommen
     virtual void handleSelfMsg(cMessage *msg);
     //state machine
     void handleWithFSM(cMessage *msg);
-    
-    
+
+
     virtual void registerInterface();
 
     void createInitialServiceFlows();
-    
+
     virtual void setDataMsgQueue( Ieee80216MacHeaderFrameList *data_queue);
-    
+
     void resetStation();
-    	
+
 
 /**
 * @brief helpfunction
@@ -302,7 +302,7 @@ protected:
 
     void build_MOB_SCN_REQ();
     void build_MOB_MSHO_REQ();
-    
+
     void buildDSA_RSP( Ieee80216_DSA_REQ *mframe );
     /**
     * @brief Funktionen zum verarbeiten von empfangenen Managementnachrichten
@@ -318,23 +318,23 @@ protected:
     void handle_MOB_SCN_RSP_Frame(cMessage *msg);
     void handle_MOB_BSHO_RSP_Frame(cMessage *msg);
     void build_MOB_HO_IND();
-    
+
     void handleScan();
 
     void handleBS_DSA_REQ( Ieee80216_DSA_REQ *mframe );
     void handleDSA_ACK( Ieee80216_DSA_ACK *mframe );
-    
+
     void handleScanDL_MAPFrame(cMessage *msg);
     void handleCorrectDLMAP(cMessage *msg);
     void getCalculateSNR(cMessage *msg);
-    void makeHandover();    
+    void makeHandover();
     bool isHoRspMsg(cMessage *msg);
-    
-    
+
+
     /**
     * @brief Funktionen
     */
-    
+
     void UplinkChannelBS( MACAddress& BasestationID, const int UpChannel);
     //void storeBSInfo(const MACAddress& BasestationID);
     void storeBSInfo(MACAddress *BasestationID, double frameSNR);
@@ -363,12 +363,12 @@ protected:
     void rangingStart();
     int getTransmissionOpportunitySlot(int transmissionOpportunitySize, int versuche);
     void updateDisplay();
-    
+
     bool isCorrectDLMAP(cMessage *msg);
-    
+
     void startScanmodus();
     void stopScanmodus();
-    
+
     void sendData();
     void stopData();
     void sendControl(Ieee80216Prim_sendControlRequest *control_info );//Send Management Control message
@@ -381,16 +381,16 @@ public:
     //int findMatchingServiceFlow( ip_traffic_types traffic_type );
     virtual management_type getManagementType( int CID );
     virtual station_type getStationType();
-    
+
     bool hasUplinkGrants();
-    
+
     virtual int getBasicCID();
-    virtual int getPrimaryCID(); 
+    virtual int getPrimaryCID();
 
     bool isHandoverDone();
     void setHandoverDone();
     void recordData(cMessage *msg);
-    
+
 };
 
 #endif

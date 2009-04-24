@@ -65,18 +65,19 @@ void CommonPartSublayerReceiver::initialize()
 }
 
 
-void CommonPartSublayerReceiver::handleMessage(cPacket *msg)
+void CommonPartSublayerReceiver::handleMessage(cMessage *msg)
 {
 
-
   if (msg->getArrivalGateId() == fragmentationGateIn) { // Nachricht vom physikal Layer empfangen
-	handleLowerMsg(msg);
+	  ev << "(in handleMessage) sende Nachricht an handleLowerMsg-Funktion.\n";
+	  handleLowerMsg(msg);
   }
   else if (msg->getArrivalGateId() == controlPlaneGateIn) { // handle commands
+	  ev << "(in handleMessage) sende Nachricht an das Gate fragmentationGateOut.\n";
 	send(msg, fragmentationGateOut);
   }
   else {
-    ev << "nothing" << endl;
+    ev << "(handleMessage) nothing to do in function CommonPartSublayerReceiver::handleMessage" << endl;
   }
 
   updateDisplay();
@@ -86,22 +87,24 @@ void CommonPartSublayerReceiver::handleMessage(cPacket *msg)
 * gesendet wurde.
 *
 ****************************************************************************/
-void CommonPartSublayerReceiver::handleControlPlaneMsg(cPacket *msg)
+void CommonPartSublayerReceiver::handleControlPlaneMsg(cMessage *msg)
 {
 
-    if (msg->getByteLength()==0 && msg->getKind()!=0) // Überprüfe ob Nachricht ein Befehl ist
+    if (!msg->isPacket() && msg->getKind()!=0) // Ueberpruefe ob Nachricht ein Befehl ist
     {
+    	ev << "(in handleControlPlaneMsg) Message " <<msg->getName() << " ist ein Befehl, also sende an die Funktion handleCommand().\n";
         handleCommand(msg);
 	return;
     }
     else
     {
-        ev << "nothing" << endl;
+        ev << "(in handleControlPlaneMsg) nothing to do in function CommonPartSublayerReceiver::handleControlPlaneMsg" << endl;
     }
 }
 
 void CommonPartSublayerReceiver::handleCommand(cMessage *msg)
 {
+	ev << "(in handleCommand) sende Nachricht an das Gate fragmentationGateOut.\n";
 send(msg, fragmentationGateOut);
 }
 
@@ -109,9 +112,9 @@ send(msg, fragmentationGateOut);
 //Handelt Pakete aus dem physikal Layer ab
 //Überprüft Pakettyp und CID
 //
-void CommonPartSublayerReceiver::handleLowerMsg(cPacket *msg)
+void CommonPartSublayerReceiver::handleLowerMsg(cMessage *msg)
 {
-    ev << "received message from physical layer: " << msg << endl;
+    ev << "(in handleLowerMsg) received message from physical layer: " << msg << endl;
 
     Ieee80216MacHeader *macFrame = dynamic_cast<Ieee80216MacHeader *>(msg); // Empfangendes Paket ist eine IEEE802.16e Frame
     if (!macFrame)// Wenn nicht Fehlermeldung ausgeben
@@ -142,7 +145,7 @@ void CommonPartSublayerReceiver::handleLowerMsg(cPacket *msg)
 		break;
 
 		default:
-			ev << "Ueberpruefe�fe die PDU:" << macFrame->getName() << " ob ihre CID: " << macFrame->getCID() <<" in der MAP Conection enthalten ist." << endl;
+			ev << "Ueberpruefe die PDU:" << macFrame->getName() << " ob ihre CID: " << macFrame->getCID() <<" in der MAP Conection enthalten ist." << endl;
 			//Ueberprueft ob CID in der Connection Map enthalten ist
 			if (CIDInConnectionMap(macFrame->getCID()))
 			{
@@ -159,7 +162,7 @@ void CommonPartSublayerReceiver::handleLowerMsg(cPacket *msg)
 }
 
 //
-//Überprüft ob MAC Paket eine Bandbreitenanvorderung oder ein Generic Mac paket ist
+//Ueberprueft ob MAC Paket eine Bandbreitenanvorderung oder ein Generic Mac paket ist
 //Wenn es ein Generic Mac Paket ist, ob Daten oder Managementnachricht
 //
 void CommonPartSublayerReceiver::handleMacFrameType(Ieee80216MacHeader *macFrame)
@@ -254,6 +257,7 @@ void CommonPartSublayerReceiver::handleMacFrameType(Ieee80216MacHeader *macFrame
 }
 bool CommonPartSublayerReceiver::CIDInConnectionMap(int mac_pdu_CID)
 {
+	ev << "(in CIDInConnectionMap) "<< endl;
 
 	if(map_connections)
 	{
@@ -276,7 +280,7 @@ bool CommonPartSublayerReceiver::CIDInConnectionMap(int mac_pdu_CID)
 
 bool CommonPartSublayerReceiver::isManagementCID( int mac_pdu_CID ) {
 	MobileSubscriberStationList::iterator mslist_it;
-
+	ev << "(in isManagementCID) "<< endl;
 	// if the list is still empty, every message has to be forwarded to the ControlPlane
 	// because re
 	if ( msslist ) {
@@ -301,19 +305,22 @@ bool CommonPartSublayerReceiver::isManagementCID( int mac_pdu_CID ) {
 
 void CommonPartSublayerReceiver::setConnectionMap(ConnectionMap *pointer_ConnectionsMap)
 {
+	ev << "(in setConnectionMap) "<< endl;
 	Enter_Method("setConnectionMap()");
-	ev << "Pointer zur MAP-Connection wurde gesetzt!\n";
+	ev << "Pointer "<<pointer_ConnectionsMap << "zur MAP-Connection wurde gesetzt!\n";
 	map_connections = pointer_ConnectionsMap; //Kopiert Zeiger der ConnectionMap
 }
 
 void CommonPartSublayerReceiver::setSubscriberList(MobileSubscriberStationList *pointer_msslist)
 {
+	ev << "(in setSubscriberList(MobileSubscriberStationList)) "<< endl;
 	Enter_Method("setSubscriberList( MobileSubscriberStationList )");
 	msslist = pointer_msslist;
 }
 
 void CommonPartSublayerReceiver::setSubscriberList(structMobilestationInfo *mssinfo )
 {
+	ev << "(in setSubscriberList(structMobilestationInfo)) "<< endl;
 	Enter_Method("setSubscriberList()");
 
 	MobileSubscriberStationList *pointer_msslist = new MobileSubscriberStationList();
@@ -335,7 +342,7 @@ void CommonPartSublayerReceiver::updateDisplay() {
 	 * Update the displayed string every second -> datarate per second
 	 */
 
-	ev << "\n\ndownlink: " << downlink_rate << "  " << cur_floor << last_floor <<"\n\n";
+	ev << "\n\ndownlink: " << "downlink_rate: "<<downlink_rate << ", cur_floor:  " << cur_floor <<", last_floor: "<< last_floor <<"\n\n";
 	cur_floor = floor(simTime().dbl());
 	if ( (cur_floor - last_floor) == 1 ) {
 		char rates_buf[50];

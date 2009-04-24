@@ -54,14 +54,14 @@ class CommonPartSublayerReceiver: public cSimpleModule
   protected:
     void initialize();
 
-    void handleMessage(cPacket *msg);
+    void handleMessage(cMessage *msg);
     /**
     * @brief Wird von handleMessage aufgerufen wenn die Nachricht von dem ControlPlane Module kommt
     */
-    void handleControlPlaneMsg(cPacket *msg);
+    void handleControlPlaneMsg(cMessage *msg);
     void handleCommand(cMessage *msg);
 
-    void handleLowerMsg(cPacket *msg);
+    void handleLowerMsg(cMessage *msg);
     void handleMacFrameType(Ieee80216MacHeader *MacFrame);
 
     bool CIDInConnectionMap(int mac_pdu_CID);

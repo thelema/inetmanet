@@ -64,24 +64,26 @@ void Aki::handleMessage(cMessage *msg) {
 			scheduleAt(simTime() + messtimer, timer);
 		}
 
-	else if (msg == akiPacketTimer) {                                           //Wenn msg = Timer um AkiPacket zu schicken
-		if (this->isSender == true) {                                 //wenn ich akiPacketTimer bekomme und ich bin sender
+	else if (msg == akiPacketTimer) {               //Wenn msg = Timer um AkiPacket zu schicken
+		if (this->isSender == true) {                 //wenn ich akiPacketTimer bekomme und ich bin sender
 
 			IPvXAddress src;
 			IPvXAddress dest;
 
-			std::string srcAddress = "akansel[";                     //dynamische "src"-Auswahl
+			std::string srcAddress = this->getParentModule()->getName(); //  "vita[";  //dynamische "src"-Auswahl
+			//ev << "VITALI: " << this->getParentModule()->getName()<< endl;;
 			char numClientschar[5];
 			sprintf(numClientschar, "%i",(this->getParentModule()->getIndex()));
+			srcAddress.append("[");
 			srcAddress.append(numClientschar);
 			srcAddress.append("]");
 			src = myResolver->resolve(srcAddress.c_str());
 
-				std::string connectAddress = "akansel[";            //dynamische "dest"-Auswahl
-				char receiverIdchar[5];
-				sprintf(receiverIdchar, "%i",receiverId);
-				connectAddress.append(receiverIdchar);
-				connectAddress.append("]");
+				std::string connectAddress =  "vita[0]";            //dynamische "dest"-Auswahl
+//				char receiverIdchar[5];
+//				sprintf(receiverIdchar, "%i",receiverId);
+//				connectAddress.append(receiverIdchar);
+//				connectAddress.append("]");
 				dest = myResolver->resolve(connectAddress.c_str());
 
 				AkiPacket* myAkiMessage = createPacket();
@@ -135,7 +137,7 @@ void Aki::returnPacket(cMessage *msg){
 
 AkiPacket *Aki::createPacket(){
 char msgName[32];
-sprintf(msgName, "AkanselPacket");
+sprintf(msgName, "VITAPacket");
 AkiPacket *payload = new AkiPacket(msgName);
 payload->setByteLength(msgByteLength);
 return payload;

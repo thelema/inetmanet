@@ -110,7 +110,7 @@ void CommonPartSublayerTransceiver::initialize()
 
 /**
 * Nachrichten (Messages) die das Module erreichen, loesen als erstes die handleMessage() Funktion aus.
-* Die handleMessage() Funktion ist teil des cSimpleModule. In dieser Funltion wird ueberprueft an welchem Gate Eingang die
+* Die handleMessage() Funktion ist teil des cSimpleModule. In dieser Funktion wird ueberprueft an welchem Gate Eingang die
 * Nachricht das Module erreicht hat.
 *
 * Das Module "CommonPartSublayerTransceiver" besitzt folgende Eingaenge:
@@ -120,23 +120,27 @@ void CommonPartSublayerTransceiver::initialize()
 * Als Letztes koenne die Nachrichten von diesem Module an selbst gesendet worden sein (selfMessage)
 *
 */
-void CommonPartSublayerTransceiver::handleMessage(cPacket *msg)
+void CommonPartSublayerTransceiver::handleMessage(cMessage *msg)
 {
 	//if (dataMsgQueue.size() == 20)
 	//	breakpoint("Danger: Queue overflow!");
 
-    ev <<"HandleMessage Funktion Message Name: " << msg->getName() <<", Laenge der Nachricht: " << msg->getByteLength() << endl;
+
+    ev <<"(in handleMessage) Message  " << msg->getName()<< " empfangen." <<endl;// <<", Laenge der Nachricht: " << tempPtr->getByteLength() << endl;
 
     if (msg->getArrivalGateId() == controlPlaneGateIn)//Nachricht vom Conrol Plane
     {
-        handleControlPlaneMsg(msg);
+    	ev << "von controlPlaneGateIn "<<msg<<" an die Funktion handleControlPlaneMsg() gesendet.\n";
+    	handleControlPlaneMsg(msg);
     }
     else if(msg->getArrivalGateId() == schedulingGateIn)// Nachricht vom CS
     {
+    	ev << "von schedulingGateIn "<<msg<<" an die Funktion handleUpperSublayerMsg() gesendet.\n";
     	handleUpperSublayerMsg(msg);
     }
     else if(msg->isSelfMessage())
     {
+    	ev << "is Selfmessage: "<< msg->getName()<<endl;
     	if ( msg == per_second_timer ) {
     		recordDatarates();
     		scheduleAt(simTime()+1, per_second_timer);
@@ -170,6 +174,7 @@ void CommonPartSublayerTransceiver::handleMessage(cPacket *msg)
 ****************************************************************************/
 void CommonPartSublayerTransceiver::handleUpperSublayerMsg(cMessage *msg)
 {
+	ev<<"(in handleUpperSublayerMsg) Message "<<msg->getName()<< " eingetroffen"<< endl;
 	Ieee80216GenericMacHeader *frame = check_and_cast<Ieee80216GenericMacHeader *>(msg);
 //	if ( frame->controlInfo() != NULL )
 //		breakpoint("control info noch da");
@@ -186,35 +191,41 @@ void CommonPartSublayerTransceiver::handleUpperSublayerMsg(cMessage *msg)
 * gesendet wurde. Bei diesen Nachrichten kann es sich um zwei Typen von Nachrichten Handeln.
 * Es koennen einerseits Managementnachrichten des IEEE802.16e Standart sein die in Richtung
 * Funkkanal versand werden.
-* Oder es handelt sich um Befehle (Kontrol-Nachrichten) fuer das Transceiver Raio Module.
-* Diese sind nicht bestandteil des Ieee802.16e Standarts.
+* Oder es handelt sich um Befehle (Kontrol-Nachrichten) fuer das Transceiver Radio Module.
+* Diese sind nicht Bestandteil des Ieee802.16e Standards.
 *
 *********************************************************************************************/
-void CommonPartSublayerTransceiver::handleControlPlaneMsg(cPacket *msg)
+void CommonPartSublayerTransceiver::handleControlPlaneMsg(cMessage *msg)
 {
  // Kontrol-Nachrichten haben keine Laenge aber ein "kind()"
-	if (msg->getByteLength() == 0 && msg->getKind() != 0)
+	if ( !msg->isPacket()  && msg->getKind() != 0)  //statt !msg->isPacket() war zuvor msg->getByteLength
 	{
+		ev << "(in handleControlPlaneMsg) eingegangene Nachricht is eine Kontroll-Nachricht. Sende an handleCommand().\n";
         handleCommand(msg);
         return;
 	}
-	else if (msg->getByteLength() != 0)
+	else if (msg->isPacket())
 	{
+		ev << "(in handleControlPlaneMsg) eingegangene Nachricht is ein Paket. Sende an handleCommand().\n";
 		Ieee80216MacHeader *frame = check_and_cast<Ieee80216MacHeader *>(msg);
-		//ev << "\n\n\nCONTROLPLANE VON: " << controlplane->getStationType() << "\n\n\n";
+		// ev << "\n\n\nCONTROLPLANE VON: " << controlplane->getStationType() << "\n\n";
 		// mk: hier entsprechend nach der management CID in die entsprechenden queues leiten
 		if ( controlplane->getStationType() == MOBILESTATION ) {
-
-			// TODO BW-REQ über normales interval verschicken, wenn vorhanden, sonst request-interval
+			ev << "\n\n\nCONTROLPLANE VON: " << controlplane->getStationType() << "MOBILESTATION.\n\n";
+			// TODO BW-REQ ueber normales interval verschicken, wenn vorhanden, sonst request-interval
 			if (dynamic_cast<Ieee80216BandwidthMacHeader*>(msg)) {
-
+				ev << "ist ein Ieee80216BandwidthMacHeader";
 				//primaryCIDQueue.push_back(frame);
 				// FIXME: should not be in primaryCIDQueue. is a workaround until
 				// broadcast contention really works...
-				if ( !controlplane->stationHasUplinkGrants )
+				if ( !controlplane->stationHasUplinkGrants ){
+					ev << " , keine UplinkGrants -> in die Warteschlange requestMsgQueue.\n";
 					requestMsgQueue.push_back(frame);
-				else
+				}
+				else{
+					ev << " , UplinkGrants vorhanden -> in die Warteschlange basicCIDQueue.\n";
 					basicCIDQueue.push_back(frame);
+				}
 			}
 			else {
 				switch (controlplane->getManagementType( frame->getCID() ) ) {
@@ -232,14 +243,14 @@ void CommonPartSublayerTransceiver::handleControlPlaneMsg(cPacket *msg)
 						break;
 
 					default:
-						//für alles andere (ranging nachrichten)
+						//fuer alles andere (ranging nachrichten)
 						controlMsgQueue.push_back(frame);
 						break;
 				}
 			}
 		}
 		else if ( controlplane->getStationType() == BASESTATION ){
-
+			ev << "\n\n\nCONTROLPLANE VON: " << controlplane->getStationType() << "BASESTATION.\n\n";
 			if ( dynamic_cast<Ieee80216DL_MAP*>(frame) || dynamic_cast<Ieee80216UL_MAP*>(frame) ||
 				 dynamic_cast<Ieee80216_DCD*>(frame) || dynamic_cast<Ieee80216_UCD*>(frame) ) {
 				requestMsgQueue.push_back(frame);
@@ -250,11 +261,12 @@ void CommonPartSublayerTransceiver::handleControlPlaneMsg(cPacket *msg)
 
 		updateDisplay();
 	}
-	else if (msg->getByteLength() == 0 && msg->getKind() == 0)
+	else if ( !msg->isPacket() && msg->getKind() == 0)
 	{
+		ev << "Message " <<msg->getName()<< " mit Kind=0 an die Funktion handleControlRequest() gesendet.\n";
 		handleControlRequest(msg);
 	}
-	else{error("handleControlPlaneMsg: Nicht erkannte Nach richt erhalten: (%s)%s msgkind=%d", msg->getClassName(), msg->getName(), msg->getKind());}
+	else{error("handleControlPlaneMsg: Nicht erkannte Nachricht erhalten: (%s)%s msgkind=%d", msg->getClassName(), msg->getName(), msg->getKind());}
 
 }
 /**
@@ -265,7 +277,7 @@ void CommonPartSublayerTransceiver::handleControlPlaneMsg(cPacket *msg)
 void CommonPartSublayerTransceiver::handleControlRequest(cMessage *msg)
 {
 	//int msgkind = msg->kind();
-
+	ev << "(in handleControlRequest) message " << msg->getName() << " eingetroffen" << endl;
     cPolymorphic *ctrl = msg->removeControlInfo();
     delete msg;
 
@@ -287,7 +299,7 @@ void CommonPartSublayerTransceiver::handleControlRequest(cMessage *msg)
         // end debug
 
         nextControlQueueElement->setControlInfo(send_ctrl);
-        ev << "nextControlQueueElement für CID: "<< send_ctrl->getPduCID() <<"("<< send_ctrl->getRealCID() << ") scheduled at "<< simTime() <<"\n";
+        ev << "nextControlQueueElement fuer CID: "<< send_ctrl->getPduCID() <<"("<< send_ctrl->getRealCID() << ") scheduled at "<< simTime() <<"\n";
 
         if ( nextControlQueueElement->isScheduled() )
         	cancelEvent( nextControlQueueElement );
@@ -330,14 +342,16 @@ void CommonPartSublayerTransceiver::handleControlRequest(cMessage *msg)
 * Mit dieser Funktion werden Kontrol-Nachrichten an das Radio Transceiver Module bearbeitet.
 *
 *********************************************************************************************/
-void CommonPartSublayerTransceiver::handleCommand(cPacket *msg)
+void CommonPartSublayerTransceiver::handleCommand(cMessage *msg)
 {
+	ev << "(in handleCommand) message " << msg->getName() << " eingetroffen.\n";
     if (msg->getKind()==PHY_C_CONFIGURERADIO)
     {
         EV << "Empfange Kontrolnachricht " << msg->getName() << " fuer das Transceiver-Radio-Modul.\n";
         if (pendingRadioConfigMsg != NULL)
         {
-            // wenn es alte Befehle fuer das Radio Module gibt die nicht versendet werden konten. Werden die mit den neuen Werten abgeglichen
+        	ev << "pendingRadioConfigMsg != NULL, d.h. es gibt noch alte Kommands f�r das RadioModul.\n";
+            // wenn es alte Befehle fuer das Radio Module gibt die nicht versendet werden konnten. Werden die mit den neuen Werten abgeglichen
             PhyControlInfo *pOld = check_and_cast<PhyControlInfo *>(pendingRadioConfigMsg->getControlInfo());
             PhyControlInfo *pNew = check_and_cast<PhyControlInfo *>(msg->getControlInfo());
             if (pNew->getChannelNumber()==-1 && pOld->getChannelNumber()!=-1)
@@ -350,7 +364,7 @@ void CommonPartSublayerTransceiver::handleCommand(cPacket *msg)
 
         if (fsmb.getState() == START)
         {
-            EV << "Sende Kontrolnachricht sofort an das Radio-Moule\n";
+            EV << "Sende Kontrolnachricht sofort an das Radio-Module\n";
 
             	send(msg, "fragmentationGateOut");
         }
@@ -372,7 +386,7 @@ void CommonPartSublayerTransceiver::handleCommand(cPacket *msg)
 *
 * Anmerkung MK:  die state machine flushed die queues gnadenlos,
 * daher muss im scheduling modul ein puffer eingebaut sein, der immer genau
-* so viele pakete zum transceiver schiebt, wie im nächsten DL-Burst platz ist.
+* so viele pakete zum transceiver schiebt, wie im naechsten DL-Burst platz ist.
 */
 
 void CommonPartSublayerTransceiver::handleWithFSM( cMessage *msg ) {
@@ -535,16 +549,17 @@ void CommonPartSublayerTransceiver::handleWithFSM(cMessage *msg)
 
 /**
 *
-* Diese Funktion wird aufgerufen, wenn sich der zustand eines Modules innerhalb des Uebergeordneten Modules
+* Diese Funktion wird aufgerufen, wenn sich der Zustand eines Modules innerhalb des uebergeordneten Modules
 * aendert.
 *
 ****************************************************************************/
 void CommonPartSublayerTransceiver::receiveChangeNotification(int category, const cPolymorphic *details)
 {
+	ev << "(in receiveChangeNotification)" << endl;
     Enter_Method_Silent();
     printNotificationBanner(category, details);
 
-    if (category == NF_RADIOSTATE_CHANGED)// Hiermit werden nur Ãnderungen des Radio Modules beruecksichtigt
+    if (category == NF_RADIOSTATE_CHANGED)// Hiermit werden nur Aenderungen des Radio Modules beruecksichtigt
     {
 	//RadioState
         RadioState::State newRadioState = check_and_cast<RadioState *>(details)->getState();
@@ -561,10 +576,12 @@ void CommonPartSublayerTransceiver::receiveChangeNotification(int category, cons
     }
 }
 
-void CommonPartSublayerTransceiver::sendDown(cPacket *msg)
+void CommonPartSublayerTransceiver::sendDown(cMessage *msg)
 {
-	if (msg != NULL) {
-		uplink_rate += msg->getByteLength();
+	ev << "(in sendDown)" << endl;
+	cPacket *tempPtr=PK(msg);
+	if (tempPtr != NULL) {
+		uplink_rate += tempPtr->getByteLength();
 
 		//double guard_time = msg->length()/8*4E6 ;  //0.000005;	// if messages are not sent slightly delayed, sooner or later a collision will occur on the remote side
 		double guard_time = 0.000005;
@@ -662,6 +679,7 @@ Ieee80216MacHeader *CommonPartSublayerTransceiver::currentManagementMsgQueue() {
 
 void CommonPartSublayerTransceiver::popManagementMsgQueue()
 {
+	ev << "(in popManagementMsgQueue) " << endl;
 	switch (queue_to_pop) {
 		case qREQUEST:
 			if (!requestMsgQueue.empty())
@@ -669,7 +687,7 @@ void CommonPartSublayerTransceiver::popManagementMsgQueue()
 
 		case qCONTROL:
 			if (!controlMsgQueue.empty())
-				controlMsgQueue.pop_front();// Das vordere Element der Warteschlange wird gelöscht
+				controlMsgQueue.pop_front();// Das vordere Element der Warteschlange wird geloescht
 			break;
 
 		case qBASIC:
@@ -702,16 +720,19 @@ void CommonPartSublayerTransceiver::popManagementMsgQueue()
 
 bool CommonPartSublayerTransceiver::isUpperSublayerMsg(cMessage *msg)
 {
+	ev << "(in isUpperSublayerMsg)" << endl;
  return msg->getArrivalGateId() == schedulingGateIn;
 }
 
 bool CommonPartSublayerTransceiver::isControlPlaneMsg(cMessage *msg)
 {
+	ev << "(in isControlPlaneMsg)" << endl;
   return msg->getArrivalGateId() == controlPlaneGateIn;
 }
 
 bool CommonPartSublayerTransceiver::isMediumStateChange(cMessage *msg)
 {
+	ev << "(in isMediumStateChange)" << endl;
     return msg == mediumStateChange;
 }
 
@@ -786,7 +807,7 @@ void CommonPartSublayerTransceiver::updateDisplay()
 {
 
 	/**
-	 * Diplay the current queue sizes beside the transceiver module, seperated by the station type
+	 * Displays the current queue sizes beside the transceiver module, separated by the station type
 	 */
 	char buf[90];
 	if (controlplane->getStationType() == BASESTATION ) {

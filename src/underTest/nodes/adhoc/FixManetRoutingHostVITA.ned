@@ -55,8 +55,8 @@ module FixManetRoutingHostVITA
         @display("i=device/pocketpc_s");
 
     gates:
-        input radioIn_WLAN @directIn;
-        input radioIn_WiMAX @directIn;
+        input radioIn[2] @directIn;
+       // input radioIn_WiMAX @directIn;
 
     submodules:
         notificationBoard: NotificationBoard {
@@ -109,12 +109,9 @@ module FixManetRoutingHostVITA
             parameters:
                 @display("p=294,350;q=queue;i=block/ifcard");
         }
-        //        wlan: Nic80211;
-        //            display: "p=248,349;q=queue;i=block/ifcard";
+        
         mobility: NullMobility {
             parameters:
-                //   x = x;
-                //                y = y;
                 @display("p=362,286;i=block/cogwheel");
         }
         aki: Aki {
@@ -145,13 +142,14 @@ module FixManetRoutingHostVITA
         networkLayer.MANETIn <-- manetrouting.to_ip;
 
         // connections to network outside
-        radioIn_WLAN --> wlan.radioIn;
+        radioIn[0] --> wlan.radioIn;
         wlan.uppergateOut --> networkLayer.ifIn[0];
         wlan.uppergateIn <-- networkLayer.ifOut[0];
 
 
         udp.appOut++ --> aki.udpIn;
         aki.udpOut --> udp.appIn++;
-        ieee80216NicBS.macUpperGateOut --> networkLayer.ifIn[0];
-        radioIn_WiMAX --> ieee80216NicBS.radioIn;
+        ieee80216NicBS.macUpperGateOut --> networkLayer.ifIn[1];
+        radioIn[1] --> ieee80216NicBS.radioIn;
+        networkLayer.ifOut[1] --> ieee80216NicBS.macUpperGateIn++;
 }

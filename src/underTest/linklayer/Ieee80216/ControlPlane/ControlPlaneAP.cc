@@ -113,7 +113,7 @@ void ControlPlaneAP::setRadioDownlink(BaseStationInfo BSInfo)
     ev << "Setze Downlink Kanal:"<< BSInfo.DownlinkChannel<< endl;
     PhyControlInfo *phyCtrl = new PhyControlInfo();
     phyCtrl->setChannelNumber(BSInfo.DownlinkChannel);
-    cMessage *msg = new cMessage("changeChannel", PHY_C_CONFIGURERADIO);
+    cMessage *msg = new cMessage("changeChannel", PHY_C_CONFIGURERADIO); //VITA geaendert, davor war cMessage
     msg->setControlInfo(phyCtrl);
     sendLowerMessage(msg);
 
@@ -124,7 +124,7 @@ void ControlPlaneAP::setRadioUplink(BaseStationInfo BSInfo)
     ev << "Setze Uplink Kanal:"<< BSInfo.UplinkChannel<< endl;
     PhyControlInfo *phyCtrl = new PhyControlInfo();
     phyCtrl->setChannelNumber(BSInfo.UplinkChannel);
-    cMessage *msg = new cMessage("changeChannel", PHY_C_CONFIGURERADIO);
+    cMessage *msg = new cMessage("changeChannel", PHY_C_CONFIGURERADIO); //VITA geaendert, davor war cMessage
     msg->setControlInfo(phyCtrl);
     sendRadioUpOut(msg);
 }

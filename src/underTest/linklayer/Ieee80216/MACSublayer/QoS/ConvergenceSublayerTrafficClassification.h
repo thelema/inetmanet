@@ -61,7 +61,7 @@ class ConvergenceSublayerTrafficClassification : public cSimpleModule
 
   protected:
 	void initialize();
-    void handleMessage(cPacket *msg);
+    void handleMessage(cMessage *msg);
     void handleUpperMessage( cMessage *msg );
     void handleUnclassifiedMessage( cMessage *msg );
     void handleSelfMessage( cMessage *msg );

@@ -40,7 +40,7 @@ struct structMobilestationInfo;
 
 
 // ControlInfo for WiMAXQoSTrafficGenerator
-class Ieee80216TGControlInformation
+message Ieee80216TGControlInformation
 {
     int traffic_type enum(ip_traffic_types);
     int bitrate;
@@ -90,21 +90,21 @@ enum Ieee80216PrimResultCode
     PRC_SUCCESS = 0;
 }
 
-class Ieee80216_FCH_Preambel
+message Ieee80216_FCH_Preambel
 {
 }
 
 //
 // Base class for request primitives
 //
-class Ieee80216PrimRequest
+message Ieee80216PrimRequest
 {
 }
 
 //
 // Base class for confirm primitives
 //
-class Ieee80216PrimConfirm
+message Ieee80216PrimConfirm
 {
     int resultCode enum(Ieee80216PrimResultCode);
 }
@@ -112,7 +112,7 @@ class Ieee80216PrimConfirm
 // 
 // Losely based on MLME-SCAN.request.
 //
-class Ieee80216Prim_ScanRequest extends Ieee80216PrimRequest
+message Ieee80216Prim_ScanRequest extends Ieee80216PrimRequest
 {
     MACAddress BSSID; // specific BSSID to scan for (default: any)
     int channelList[]; // list of channels to scan (default: all channels)
@@ -120,7 +120,7 @@ class Ieee80216Prim_ScanRequest extends Ieee80216PrimRequest
     double maxChannelTime; // maximum time to spend on each channel when scanning
 }
 
-class Ieee80216Prim_BSSDescription
+message Ieee80216Prim_BSSDescription
 {
     int channelNumber;
     MACAddress BSSID;
@@ -130,7 +130,7 @@ class Ieee80216Prim_BSSDescription
 
 
 //
-class Ieee80216Prim_sendControlRequest extends Ieee80216PrimRequest
+message Ieee80216Prim_sendControlRequest extends Ieee80216PrimRequest
 {
     //bool is_broadcast;
     int pduCID;		// CID for uplink grant (according to standard)
@@ -139,7 +139,7 @@ class Ieee80216Prim_sendControlRequest extends Ieee80216PrimRequest
     int realCID;	// helper variable for packing mechanism (non-standard)
 }
 
-class Ieee80216Prim_stopControlRequest extends Ieee80216PrimRequest
+message Ieee80216Prim_stopControlRequest extends Ieee80216PrimRequest
 {
     //bool is_broadcast;
     int pduCID = -1;
@@ -148,13 +148,13 @@ class Ieee80216Prim_stopControlRequest extends Ieee80216PrimRequest
 //
 // 
 //
-class Ieee80216Prim_sendDataRequest extends Ieee80216PrimRequest
+message Ieee80216Prim_sendDataRequest extends Ieee80216PrimRequest
 {
     int pduCID;
     double timeInterval;
 }
 
-class Ieee80216Prim_stopDataRequest extends Ieee80216PrimRequest
+message Ieee80216Prim_stopDataRequest extends Ieee80216PrimRequest
 {
     int pduCID;
     double timeInterval;
@@ -163,12 +163,12 @@ class Ieee80216Prim_stopDataRequest extends Ieee80216PrimRequest
 //
 // 
 //
-class Ieee80216Prim_BasicCID extends Ieee80216PrimRequest
+message Ieee80216Prim_BasicCID extends Ieee80216PrimRequest
 {
     int BasicCID; // BasicCID
 }
 
-packet Ieee80216Prim_ScanMS
+message Ieee80216Prim_ScanMS
 {
     MACAddress scanMobilestationAddress;
     	//structMobilestationInfo scanMobilestationInfo;

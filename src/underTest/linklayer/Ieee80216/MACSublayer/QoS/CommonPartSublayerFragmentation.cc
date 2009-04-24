@@ -16,7 +16,7 @@ CommonPartSublayerFragmentation::~CommonPartSublayerFragmentation() {
 
 /**
  * WICHTIG:
- * Nachrichten auf Basic, Broadcast und Initial Ranging Connections dürfen NIE gepackt oder fragmentiert werden!!
+ * Nachrichten auf Basic, Broadcast und Initial Ranging Connections duerfen NIE gepackt oder fragmentiert werden!!
  * (siehe Standard --> Management-Messages
  *
  */
@@ -30,19 +30,20 @@ void CommonPartSublayerFragmentation::initialize() {
 }
 
 void CommonPartSublayerFragmentation::handleMessage( cMessage *msg ) {
-	//ev << "message eingetroffen an ";
+	ev << "(in handleMessage) message "<<msg->getName()<<" eingetroffen an fragmentation.\n";
 	//higher layer message in transceiver
 	if ( msg->getArrivalGateId() == commonPartGateIn ) {
+		ev << "von commonPartGateIn "<<msg<<" an securityGateOut gesendet.\n";
 		send(msg, securityGateOut);
 	}
 	//lower layer message in receiver
 	else if ( msg->getArrivalGateId() == securityGateIn ) {
-		ev << "securityGateIn\n";
+		ev << "von securityGateIn "<<msg<<" an commonPartGateOut gesendet.\n";
 		send(msg, commonPartGateOut);
 	}
 	//higher layer message in receiver
 	else if ( msg->getArrivalGateId() == commonPartGateIn ) {
-		ev << "commonPartGateIn\n";
+		ev << "von commonPartGateIn "<<msg<<" an securityGateOut gesendet.\n";
 		send(msg, securityGateOut);
 	}
 

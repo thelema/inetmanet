@@ -62,8 +62,8 @@ module MobileManetRoutingHostVITA
         string mobilityType = default("RandomWPMobility");
         @display("i=device/pocketpc_s");
     gates:
-        input radioIn_WLAN @directIn;
-        input radioIn_WiMAX @directIn;
+        input radioIn[2] @directIn;
+        //input radioIn_WiMAX @directIn;
     submodules:
         notificationBoard: NotificationBoard {
             parameters:
@@ -144,13 +144,14 @@ module MobileManetRoutingHostVITA
         networkLayer.MANETIn <-- manetrouting.to_ip;
 
         // connections to network outside
-        radioIn_WLAN --> wlan.radioIn;
+        radioIn[0] --> wlan.radioIn;
         wlan.uppergateOut --> networkLayer.ifIn[0];
         wlan.uppergateIn <-- networkLayer.ifOut[0];
 
         udp.appOut++ --> aki.udpIn;
         aki.udpOut --> udp.appIn++;
         ieee80216NicMS.macUpperGateOut --> networkLayer.ifIn[1];
-        radioIn_WiMAX --> ieee80216NicMS.radioIn;
+        radioIn[1] --> ieee80216NicMS.radioIn;
+        networkLayer.ifOut[1] --> ieee80216NicMS.macUpperGateIn++;
 }
 

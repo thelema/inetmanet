@@ -228,12 +228,12 @@ void ControlPlaneMobilestation::initialize(int stage)
 	//get the pointer to the common part sublayer
 		cModule *module_cps_receiver = getParentModule()->getParentModule()->getSubmodule("msReceiver")->getSubmodule("cpsReceiver")->getSubmodule("cps_receiver");
 		cps_Receiver_MS = dynamic_cast<CommonPartSublayerReceiver *>(module_cps_receiver);
-		ev << "Verbindung zum Module" <<module_cps_receiver->getName() <<" wurde aufgebaud!\n";
+		ev << "Verbindung zum Module " <<module_cps_receiver->getName() <<" wurde aufgebaut!\n";
 
-	// initialize the local connection to the connectio map
+	// initialize the local connection to the connection map
 		if (cps_Receiver_MS) {
 			cps_Receiver_MS->setConnectionMap(map_connections);
-			ev << "Setze MAP.\n";
+			ev << "Setze MAP in cps_Receiver_MS mit dem Wert: "<<map_connections<< ".\n";
 		}
 
 		clearBSList();//Die List der gescanten Basisstationen
@@ -244,7 +244,7 @@ void ControlPlaneMobilestation::initialize(int stage)
 
 
 
-		ev << "Inizilisierung von ControlPlaneMS abgeschlossen, beginne mit dem Kanal-Scan.\n";
+		ev << "Initialisierung von ControlPlaneMS abgeschlossen, beginne mit dem Kanal-Scan.\n";
 		scheduleAt(simTime()+localMobilestationInfo.ScanTimeInterval, ScanChannelTimer);
 
 		// Timer for initial ServiceFlow creation after successfull connect
@@ -388,7 +388,7 @@ void ControlPlaneMobilestation::handleManagementFrame(Ieee80216GenericMacHeader 
 {
 	if (!(dynamic_cast<Ieee80216ManagementFrame *>(genericFrame)))
 	{
-		error("Handle Manegement Frame keine Kontrolnachricht!");
+		error("Handle Management Frame keine Kontrolnachricht!");
 	}
 
 	if (dynamic_cast<Ieee80216ServiceFlowFrame*>(genericFrame)) {
@@ -1037,7 +1037,7 @@ void ControlPlaneMobilestation::changeDownlinkChannel(int channelNum)//Einstelle
     //breakpoint("changeDownlink");
     PhyControlInfo *phyCtrl = new PhyControlInfo();
     phyCtrl->setChannelNumber(channelNum);
-    cMessage *msg = new cMessage("changeChannel",PHY_C_CONFIGURERADIO);
+    cMessage *msg = new cMessage("changeChannel",PHY_C_CONFIGURERADIO);  //VITA geaendert, davor war cMessage
     msg->setControlInfo(phyCtrl);
     sendtoHigherLayer(msg);
 
@@ -1052,7 +1052,7 @@ void ControlPlaneMobilestation::changeUplinkChannel(int channelNum)
 {
     PhyControlInfo *phyCtrl = new PhyControlInfo();
     phyCtrl->setChannelNumber(channelNum);
-    cMessage *msg = new cMessage("changeChannel", PHY_C_CONFIGURERADIO);
+    cMessage *msg = new cMessage("changeChannel", PHY_C_CONFIGURERADIO);  //VITA geaendert, davor war cMessage
     msg->setControlInfo(phyCtrl);
     sendtoLowerLayer(msg);
 }
@@ -1331,7 +1331,7 @@ void ControlPlaneMobilestation::getRangingUL_MAP_IE(Ieee80216UL_MAP *frame)
 
 
 
-			scheduleAt(frame->getAllocation_start_time()+Initial_Ranging_Interval_Slot*48/4E6, start_msg);
+			scheduleAt(simTime()+Initial_Ranging_Interval_Slot*48/4E6, start_msg);  // war davor statt simtime : frame->getAllocation_start_time()
 			scheduleAt(frame->getAllocation_start_time()+(Initial_Ranging_Interval_Slot+1)*48/4E6, stop_msg);
 
 			isRangingIntervall = false;

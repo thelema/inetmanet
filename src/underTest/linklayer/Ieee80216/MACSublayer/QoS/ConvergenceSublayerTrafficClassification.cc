@@ -57,31 +57,34 @@ void ConvergenceSublayerTrafficClassification::initialize() {
 	//scheduleAt( 0.002, test_timer );
 }
 
-void ConvergenceSublayerTrafficClassification::handleMessage( cPacket *msg ) {
+void ConvergenceSublayerTrafficClassification::handleMessage( cMessage *msg ) {
 
 	if ( msg->isSelfMessage() ) {
 //		if ( this->parentModule()->parentModule()->parentModule()->parentModule()->name().compare(ms) == 0 ) {
-
+		ev << "(in handleMessage) Message " << msg->getName() << " ist eine SelfMessage und wird an die Funktion handleSelfMessage() weitergeleitet.\n";
 
 			handleSelfMessage(msg);
 //		}
 	}
-
-	// || -> XOR, alternative ist eine Switch-Konstruktion dazu.
-	if ( msg->getArrivalGateId() == higherLayerGateIn_ftp ||
-		 msg->getArrivalGateId() == higherLayerGateIn_voice_no_supr ||
-		 msg->getArrivalGateId() == higherLayerGateIn_voice_supr ||
-		 msg->getArrivalGateId() == higherLayerGateIn_video_stream ||
-		 msg->getArrivalGateId() == higherLayerGateIn_guaranteed_minbw_web_access ) {
-		if ( msg->getByteLength() != 0  ) {
-			if( dynamic_cast<IPDatagram*>(msg) ) {
-				ev << "Incoming packet: " << msg->getName() << "(" << msg->getByteLength() <<" byte(s))\n";
-				handleUnclassifiedMessage(msg);
-			} // Da ist was vom TG reingekommen -> Debug-Output mit ev auf der Konsole.
-		}
-		else {
-			ev << "Incoming message has length 0\n";
-		}
+	if (msg->isPacket()){
+		ev << "(in handleMessage) Message " << msg->getName() << " ist ein Paket.\n";
+			// || -> XOR, alternative ist eine Switch-Konstruktion dazu.
+			if ( msg->getArrivalGateId() == higherLayerGateIn_ftp ||
+				 msg->getArrivalGateId() == higherLayerGateIn_voice_no_supr ||
+				 msg->getArrivalGateId() == higherLayerGateIn_voice_supr ||
+				 msg->getArrivalGateId() == higherLayerGateIn_video_stream ||
+				 msg->getArrivalGateId() == higherLayerGateIn_guaranteed_minbw_web_access ) {
+				cPacket *tempPtr = PK(msg);
+				if ( tempPtr->getByteLength() != 0  ) {
+					if( dynamic_cast<IPDatagram*>(tempPtr) ) {
+						ev << "Incoming packet: " << tempPtr->getName() << "(" << tempPtr->getByteLength() <<" byte(s))\n";
+						handleUnclassifiedMessage(tempPtr);
+					} // Da ist was vom TG reingekommen -> Debug-Output mit ev auf der Konsole.
+				}
+				else {
+					ev << "Incoming message has length 0\n";
+				}
+			}
 	}
 }
 //requesttimeout: startNewRetryTimer: Wird also aufgerufen, wenn Timer abgelaufen ist.

@@ -3,18 +3,19 @@ package inet.underTest.linklayer.radio;
 simple Ieee80216Radio
 {
     parameters:
-        double channelNumber_WiMAX; // channel identifier
-        double transmitterPower; // power used for transmission of messages (in mW)
-        double bitrate; // (in bits/s)
-        double thermalNoise; // base noise level (dBm)
+        double channelNumber = default(0); 								// channel identifier
+        double carrierFrequency @unit("Hz") = default(3.5GHz);
+        double transmitterPower @unit("mW") = default(20mW); 		// power used for transmission of messages (in mW)
+        double bitrate @unit("bps"); 						   // (in bits/s)
+        double thermalNoise @unit("dBm") = default(-105dBm); 	// base noise level (dBm)
         double standardabweichung;
-        double snirThreshold; // if signal-noise ratio is below this threshold, frame is considered noise (in dB)
-        double sensitivity; // received signals with power below sensitivity are ignored
-        double carrierFrequency @unit("Hz") = default(3.1GHz);
-        string attenuationModel = default("");// Values "pathlost" or "tworay" 
+        double snirThreshold @unit("dB") = default(4dB);		// if signal-noise ratio is below this threshold, frame is considered noise (in dB)
+        double sensitivity @unit("dBm") = default(-85dBm); 		// received signals with power below sensitivity are ignored
+        string attenuationModel = default("WiMAXPathLossReceptionModel");
     gates:
         input uppergateIn;   // from higher layer protocol (MAC)
         output uppergateOut; // to decider (decider connects to higher layer protocol, i.e. the MAC)
         input radioIn; // to receive frames (AirFrame) on the radio channel
 }
+
 

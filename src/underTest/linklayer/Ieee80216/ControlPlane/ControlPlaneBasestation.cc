@@ -148,13 +148,13 @@ void ControlPlaneBasestation::initialize(int stage) {
 	ev << "Achtung RS: Name des Radio Moduls: "
 			<<module_radio_Transceiver->getName() <<"\n";
 	if (transceiverRadio = check_and_cast<Ieee80216Radio *>(module_radio_Transceiver))
-		ev <<"Achtung RS. Name des Radio Modul:" <<"\n";
+		ev <<"check erfolgreich: transceiverRadio = "<<module_radio_Transceiver->getName() <<"\n";
 
 	cModule *module_radio_Receiver = getParentModule()->getParentModule()->getSubmodule("bsReceiver")->getSubmodule("radioReceiver");
 	ev << "Achtung RS: Name des Radio Moduls: " <<module_radio_Receiver->getName()
 			<<"\n";
 	if (receiverRadio = dynamic_cast<Ieee80216Radio *>(module_radio_Receiver))
-		ev <<"Achtung RS. Name des Radio Modul:" << receiverRadio->getName()
+		ev <<"check erfolgreich: receiverRadio = " << module_radio_Receiver->getName()
 				<<"\n";
 
 	/**
@@ -705,10 +705,10 @@ void ControlPlaneBasestation::buildUL_MAP()//create DL_MAP frame
 	//ManagementMessage->setAllocation_start_time(simTime()+localBasestationInfo.DLMAP_interval);
 	//ManagementMessage->setAllocation_start_time( simTime() + localBasestationInfo.DLMAP_interval
 	//													   + uplink_grant_starttime + localBasestationInfo.ul_dl_ttg );
-	//ManagementMessage->setBS_ID(BSInfo.BasestationID);//Ueberträgt die BSID der Basisstation in die Nachricht
+	//ManagementMessage->setBS_ID(BSInfo.BasestationID);//Uebertraegt die BSID der Basisstation in die Nachricht
 	ManagementMessage->setAllocation_start_time(uplink_subframe_starttime);
 
-	/** Füge Informationselemente in die UL-Map ein
+	/** Fuege Informationselemente in die UL-Map ein
 	 */
 	ev << "BS: #UL-MAP_IE in UL-MAP: " << ul_map_ie_List.size() << "\n";
 

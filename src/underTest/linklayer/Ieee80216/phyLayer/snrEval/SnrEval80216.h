@@ -60,7 +60,7 @@ class INET_API SnrEval80216 : public BasicSnrEval
     virtual ~SnrEval80216();
 
   protected:
-    void handleMessage(cPacket *msg);
+    void handleMessage(cMessage *msg);
 
     virtual void handleUpperMsg(AirFrame*);
 

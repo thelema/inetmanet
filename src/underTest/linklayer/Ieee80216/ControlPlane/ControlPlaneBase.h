@@ -42,7 +42,7 @@ public:
 
 /**
 * @name Burst Profile List
-* Die Liste enthälte Burst Parameter aller Verbindungen
+* Die Liste enthaelt Burst Parameter aller Verbindungen
 */
     //typedef std::list<RadioBurstStruct> RadioBurstList;
     //RadioBurstList burstList;
@@ -80,7 +80,7 @@ public:
 
 
     /**
-	*  Informationselemente der DL- und UL-MAp, enhalten Informationen über die Bursr-Pofile
+	*  Informationselemente der DL- und UL-MAp, enhalten Informationen ueber die Burst-Pofile
 	*******************/
 
 	typedef std::list<Ieee80216DL_MAP_IE> DL_MAP_InformationselementList;
@@ -135,7 +135,7 @@ public:
 
 
 public:
-	typedef std::list<Ieee80216MacHeader*> Ieee80216MacHeaderFrameList; //Warteschlange fr MAC-Pakete
+	typedef std::list<Ieee80216MacHeader*> Ieee80216MacHeaderFrameList; //Warteschlange fuer MAC-Pakete
 
     void storeBSInfo(double rcvdPower);
     void setSNR(double rcvdPower);
