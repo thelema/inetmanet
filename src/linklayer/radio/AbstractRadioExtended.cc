@@ -658,7 +658,8 @@ void AbstractRadioExtended::changeChannel(int channel)
     }
 
     cModule *myHost = findHost();
-    cGate *radioGate = myHost->gate("radioIn");
+    //cGate *radioGate = myHost->gate("radioIn");
+    cGate* radioGate = this->gate("radioIn")->getPathStartGate();
 
     // pick up ongoing transmissions on the new channel
     EV << "Picking up ongoing transmissions on new channel:\n";
