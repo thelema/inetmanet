@@ -470,13 +470,6 @@ void ChannelControlExtended::updateHostChannel(HostRef h, const int channel)
         hExt->radioList.push_back(ra);
     }
 
-    if (hExt->percentage <=0 || hExt->carrierFrequency)
-    {
-    	hExt->percentage = percentage;
-    	hExt->carrierFrequency = carrierFrequency;
-    }
-
-
     hExt->radioList.front().channel= channel;
 }
 
