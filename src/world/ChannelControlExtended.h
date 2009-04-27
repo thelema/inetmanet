@@ -101,12 +101,14 @@ class INET_API ChannelControlExtended : public ChannelControl
 
 		 double carrierFrequency;
 		 double percentage;
+		 HostEntryExtended (){percentage=carrierFrequency=-1;}
 
 		 //radioGatesList getHostGatesOnChannel(int);
 		 radioGatesList getHostGatesOnChannel(int,double);
 
 		 bool isReceivingInChannel(int,double);
 		 void registerRadio(cModule*);
+		 void unregisterRadio(cModule*);
 		 // bool updateRadioChannel(cModule*,int);
 		 bool updateRadioChannel(cModule*,int,double);
 		 bool isRadioRegistered(cModule*);

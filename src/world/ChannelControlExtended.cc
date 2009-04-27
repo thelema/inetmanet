@@ -79,7 +79,9 @@ ChannelControlExtended::radioGatesList ChannelControlExtended::HostEntryExtended
 	   freq=carrierFrequency;
 
    for(ChannelControlExtended::RadioList::const_iterator it = radioList.begin();it!=radioList.end();it++) {
-	   if (((*it).channel==channel) && (fabs(((*it).radioCarrier - freq)/freq)<=percentage)) {
+	   int channelGate = it->channel;
+	   double freqGate = it->radioCarrier;
+	   if ((channelGate==channel) && (fabs((freqGate - freq)/freqGate)<=percentage)) {
          cGate* radioGate = NULL;
          if ((*it).hostGateId!=-1) {
             radioGate = (this->host)->gate((*it).hostGateId);
@@ -104,7 +106,7 @@ void ChannelControlExtended::HostEntryExtended::registerRadio(cModule* ar) {
 
     for(ChannelControlExtended::RadioList::iterator it = radioList.begin();it!=radioList.end();it++)
     {
-    	if (ra.hostGateId == radioIn->getId())
+    	if (it->hostGateId == radioIn->getId())
           return; // Is register
     }
 
@@ -122,6 +124,20 @@ void ChannelControlExtended::HostEntryExtended::registerRadio(cModule* ar) {
     }
 
     ChannelControlExtended::HostEntryExtended::radioList.push_back(ra);
+}
+
+
+void ChannelControlExtended::HostEntryExtended::unregisterRadio(cModule* ar) {
+
+    for(ChannelControlExtended::RadioList::iterator it = radioList.begin();it!=radioList.end();it++)
+    {
+    	ChannelControlExtended::RadioEntry ra = (*it);
+    	if (ra.radioModule == ar)
+    	{
+    		ChannelControlExtended::HostEntryExtended::radioList.erase(it);
+    		return;
+    	}
+    }
 }
 
 /*
@@ -216,15 +232,13 @@ void ChannelControlExtended::initialize()
 
     lastOngoingTransmissionsUpdate = 0;
 
+	carrierFrequency = par("carrierFrequency");
     maxInterferenceDistance = calcInterfDist();
 
     WATCH(maxInterferenceDistance);
     WATCH_LIST(hosts);
     WATCH_VECTOR(transmissions);
-
     updateDisplayString(getParentModule());
-	carrierFrequency = par("carrierFrequency");
-	percentage = 0.1;
 }
 
 
@@ -238,8 +252,8 @@ ChannelControl::HostRef ChannelControlExtended::registerHost(cModule * host, con
     HostEntryExtended he;
     he.host = host;
     he.pos = initialPos;
-    he.carrierFrequency=carrierFrequency;
-    he.percentage=percentage;
+    he.carrierFrequency=par("carrierFrequency");;
+    he.percentage=par ("percentage");
     he.isModuleListValid = false;
     // TODO: get it from caller
     he.channel = 0;
@@ -455,6 +469,14 @@ void ChannelControlExtended::updateHostChannel(HostRef h, const int channel)
         ra.radioCarrier = carrierFrequency;
         hExt->radioList.push_back(ra);
     }
+
+    if (hExt->percentage <=0 || hExt->carrierFrequency)
+    {
+    	hExt->percentage = percentage;
+    	hExt->carrierFrequency = carrierFrequency;
+    }
+
+
     hExt->radioList.front().channel= channel;
 }
 
