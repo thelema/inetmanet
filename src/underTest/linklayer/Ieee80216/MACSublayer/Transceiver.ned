@@ -41,6 +41,7 @@ module Transceiver
         }
         radioTransceiver: Ieee80216Radio {
             parameters:
+                isInput=false;
                 @display("p=288,472;i=block/wrxtx");
 
         }

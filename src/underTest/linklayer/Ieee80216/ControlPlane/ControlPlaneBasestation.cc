@@ -67,8 +67,10 @@ void ControlPlaneBasestation::initialize(int stage) {
 		 * Uebernahme von Paramtern fuer die Basisstation
 		 *
 		 */
-		DlMapInterval = &cMsgPar("DLMapInterval");
-		localBasestationInfo.DLMAP_interval = DlMapInterval->doubleValue();// festlegen der DL-MAP Intervall und länge des Donlink Rahmen
+		/// ERROR
+		DlMapInterval = &cMsgPar("DLMapInterval"); // ERROR SEE cPar
+		/// ERROR
+		localBasestationInfo.DLMAP_interval = par("DLMapInterval"); //DlMapInterval->doubleValue();// festlegen der DL-MAP Intervall und länge des Donlink Rahmen
 		localBasestationInfo.DownlinkChannel = par("DownlinkChannel");
 		localBasestationInfo.UplinkChannel = par("UplinkChannel");
 

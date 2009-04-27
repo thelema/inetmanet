@@ -40,6 +40,7 @@ module Receiver
         }
         radioReceiver: Ieee80216Radio {
             parameters:
+                isInput=true;
                 @display("p=124,486;i=prot3");
         }
     connections:

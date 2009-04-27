@@ -9,6 +9,14 @@ void Ieee80216Radio::initialize(int stage)
 {
 	//AbstractRadio::initialize(stage);
 	AbstractRadioExtended::initialize(stage);
+	if (stage==2 && !par("isInput").boolValue())
+	{
+		if (ccExt)
+	   	{
+	   		((ChannelControlExtended::HostRefExtended)myHostRef)->unregisterRadio(this);
+	   	}
+	}
+
 	if (stage == 0)
 	{
 		rs.setRadioId(this->getId());//Änderung am 6 Dezember neue FUnktion in RadioState eingefügt
