@@ -18,7 +18,7 @@
 
 #include "Ieee80211MgmtBase.h"
 #include "Ieee802Ctrl_m.h"
-
+#include "InterfaceTableAccess.h"
 
 static std::ostream& operator<< (std::ostream& out, cMessage *msg)
 {
@@ -56,6 +56,16 @@ void Ieee80211MgmtBase::initialize(int stage)
         if (!mac)
             error("MAC module not found; it is expected to be next to this submodule and called 'mac'");
         myAddress.setAddress(mac->par("address").stringValue());
+        myEntry = NULL;
+        IInterfaceTable *ift = InterfaceTableAccess().getIfExists();
+        if (ift)
+        {
+        	for (int i = 0; i < ift->getNumInterfaces(); i++)
+        	{
+        		if (ift->getInterface(i)->getMacAddress()==myAddress)
+        			myEntry = ift->getInterface(i);
+        	}
+    	}
     }
 }
 

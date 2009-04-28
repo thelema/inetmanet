@@ -24,6 +24,7 @@
 #include "NotificationBoard.h"
 #include "Ieee80211Frame_m.h"
 #include "Ieee80211MgmtFrames_m.h"
+#include "IInterfaceTable.h"
 
 
 /**
@@ -39,6 +40,7 @@ class INET_API Ieee80211MgmtBase : public PassiveQueueBase, public INotifiable
     // configuration
     int frameCapacity;
     MACAddress myAddress;
+    InterfaceEntry * myEntry;
 
     // state
     cQueue dataQueue; // queue for data frames
