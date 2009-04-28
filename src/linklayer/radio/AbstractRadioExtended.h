@@ -138,11 +138,22 @@ class INET_API AbstractRadioExtended : public ChannelAccessExtended
 
     /** @brief updates the sensitivity value if the bitrate varies */
     virtual void updateSensitivity(double bitrate);
+    /*
+     *  check if the packet must be processes
+     */
+    virtual bool processAirFrame(AirFrame *airframe);
+    /*
+     * Routines to connect or disconnect the transmission and reception  of packets
+     */
 
-    bool processAirFrame(AirFrame *airframe);
+    virtual void disconnectTransceiver() {transceiverConnect=false;}
+    virtual void connectTransceiver(){transceiverConnect=true;}
+    virtual void disconnectReceiver();
+    virtual void connectReceiver();
 
 
   protected:
+
     IRadioModel *radioModel;
     IReceptionModel *receptionModel;
 
@@ -223,6 +234,10 @@ class INET_API AbstractRadioExtended : public ChannelAccessExtended
      * -85 dBm
      */
     double sensitivity;
+    /*
+     * this variable is used to disconnect the possibility of sent packets to the ChannelControl
+     */
+    bool transceiverConnect;
 };
 
 #endif

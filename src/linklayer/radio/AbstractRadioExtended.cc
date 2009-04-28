@@ -33,6 +33,7 @@ AbstractRadioExtended::AbstractRadioExtended() : rs(this->getId())
 {
     radioModel = NULL;
     receptionModel = NULL;
+    transceiverConnect = true;
 }
 
 void AbstractRadioExtended::initialize(int stage)
@@ -268,7 +269,10 @@ void AbstractRadioExtended::sendUp(AirFrameExtended *airframe)
 
 void AbstractRadioExtended::sendDown(AirFrameExtended *airframe)
 {
-    sendToChannel(airframe);
+	if (transceiverConnect)
+		sendToChannel(airframe);
+	else
+		delete airframe;
 }
 
 /**
@@ -809,4 +813,19 @@ void AbstractRadioExtended::updateSensitivity(double rate)
     EV <<" sensitivity after updateSensitivity: "<<sensitivity<<endl;
 }
 
+void AbstractRadioExtended::disconnectReceiver()
+{
+	if (ccExt)
+   	{
+   		((ChannelControlExtended::HostRefExtended)myHostRef)->unregisterRadio(this);
+   	}
+}
 
+void AbstractRadioExtended::connectReceiver()
+{
+  	if (ccExt)
+    {
+  		((ChannelControlExtended::HostRefExtended)myHostRef)->registerRadio(this);
+  		ccExt->updateHostChannel(myHostRef, rs.getChannelNumber(),this,carrierFrequency);
+    }
+}
