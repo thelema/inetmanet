@@ -299,8 +299,17 @@ void DHCPClient::receiveChangeNotification(int category, const cPolymorphic *det
 
     // host associated. Link is up. Change the state to init.
     if (category == NF_L2_ASSOCIATED) {
-    	EV << "Interface Associated, starting DHCP" << endl;
-    	this->changeFSMState(INIT);
+    	InterfaceEntry * ie = NULL;
+        if (details)
+        {
+        	cPolymorphic *detailsAux = const_cast<cPolymorphic*>(details);
+        	ie = dynamic_cast<InterfaceEntry*>(detailsAux);
+        }
+    	if (!ie || (ie && (ie==this->ie)))
+        {
+        	EV << "Interface Associated, starting DHCP" << endl;
+        	this->changeFSMState(INIT);
+        }
     }
 }
 
