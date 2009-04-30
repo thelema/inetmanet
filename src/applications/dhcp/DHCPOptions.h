@@ -43,7 +43,7 @@ class DHCPOption {
     }
 
     void add(op_code code,int data) {
-       if (this->options.find(code) == this->options.end() ) { 
+       if (this->options.find(code) == this->options.end() ) {
          this->options[code] = Byte(data);
        } else {
          this->options[code].concat(Byte(data));
@@ -54,10 +54,10 @@ class DHCPOption {
        DHCPOptionsMap::iterator it = this->options.find(code);
        if (it!=this->options.end()) {
           return it->second;
-       } 
-       return NULL;
+       }
+       return 0;
     }
- 
+
     DHCPOptionsMap::iterator begin() {
       return(this->options.begin());
     }
@@ -65,12 +65,12 @@ class DHCPOption {
     DHCPOptionsMap::iterator end() {
       return(this->options.end());
     }
- 
+
     friend std::ostream& operator << (std::ostream& os, DHCPOption& obj) {
        for(DHCPOptionsMap::iterator it=obj.begin();it!=obj.end();it++) {
           os << "        " << it->first << " = " << it->second << endl;
        }
        return os;
-    } 
+    }
 };
 #endif
