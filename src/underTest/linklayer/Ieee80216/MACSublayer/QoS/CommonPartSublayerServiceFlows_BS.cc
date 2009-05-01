@@ -286,11 +286,14 @@ int CommonPartSublayerServiceFlows_BS::getFreeSFID() {
 	 * from a list of removed ServiceFlows during runtime
 	 */
 	if ( list_removed_SFIDs.size() > 0 ) {
-		list<int>::iterator list_it = list_removed_SFIDs.begin();
+		sfid = list_removed_SFIDs.front();
+		list_removed_SFIDs.pop_front();
+
+		/*list<int>::iterator list_it = list_removed_SFIDs.begin();
 		if ( list_it != list_removed_SFIDs.end() ) {
 			sfid = (int)&list_it;
 			list_removed_SFIDs.pop_front();
-		}
+		}*/
 	}
 	// otherwise, simply increment the SFIDs
 	else {
@@ -356,7 +359,7 @@ int CommonPartSublayerServiceFlows_BS::getNewManagementCID( management_type mtyp
 		// *reference_id was not found in map
 		if ( cid_it == map_connections.end() ) {
 			new_cid = *reference_id;
-			//*reference_id += ++pending_requests;
+			// *reference_id += ++pending_requests;
 		}
 		// cur_max_id already exists
 		else {
@@ -431,15 +434,15 @@ bool CommonPartSublayerServiceFlows_BS::checkQoSParams( sf_QoSParamSet *req_para
 
 	int max_sustained_traffic_rate = req_params->max_sustained_traffic_rate;
 	int min_reserved_traffic_rate = req_params->min_reserved_traffic_rate;
-	int max_latency = req_params->max_latency;
-	int tolerated_jitter = req_params->tolerated_jitter;
-	int priority = req_params->traffic_priority;
+	// int max_latency = req_params->max_latency;
+	// int tolerated_jitter = req_params->tolerated_jitter;
+	// int priority = req_params->traffic_priority;
 	req_tx_policy tx_policy = req_params->request_transmission_policy;
 
 	if ( link_type == ldMANAGEMENT )
 		error("Wrong link direction given! Must be either ldUPLINK or ldDOWNLINK!");
 
-	switch ( getTypeOfServiceFlow(req_params) ) {
+	switch ( (int) getTypeOfServiceFlow(req_params) ) {
 		case UGS:
 			if ( availableDatarate[link_type] - max_sustained_traffic_rate >= 0 ) {
 				req_params->granted_traffic_rate = max_sustained_traffic_rate;
