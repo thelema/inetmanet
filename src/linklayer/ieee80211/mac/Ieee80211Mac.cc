@@ -427,20 +427,17 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
 
             );
             }
-            else
-            {
             FSMA_Event_Transition(Data-Ready,
                                       isUpperMsg(msg),
                                       DEFER,
                     ASSERT(isInvalidBackoffPeriod() || backoffPeriod == 0);
                     invalidateBackoffPeriod();
                 );
-                FSMA_No_Event_Transition(Immediate-Data-Ready,
+            FSMA_No_Event_Transition(Immediate-Data-Ready,
                                          !transmissionQueue.empty(),
     									 DEFER,
                     invalidateBackoffPeriod();
                 );
-            }
             FSMA_Event_Transition(Receive,
                                   isLowerMsg(msg),
                                   RECEIVE,
