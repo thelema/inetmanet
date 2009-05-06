@@ -286,6 +286,7 @@ class INET_API Ieee80211gMac : public WirelessMacBase, public INotifiable
     /** @brief Handle all kinds of messages and notifications with the state machine */
     virtual void handleWithFSM(cMessage *msg);
     //@}
+    virtual void finishReception();
 
   protected:
     /**

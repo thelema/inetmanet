@@ -336,7 +336,7 @@ void Ieee80211aMac::registerInterface()
     e->setInterfaceToken(address.formInterfaceIdentifier());
 
     // FIXME: MTU on 802.11 = ?
-    e->setMtu(1500);
+    e->setMtu(par("mtu"));
 
     // capabilities
     e->setBroadcast(true);
@@ -567,22 +567,28 @@ void Ieee80211aMac::handleWithFSM(cMessage *msg)
         scheduleReservePeriod(frame);
     }
 
-   // TODO: fix bug according to the message: [omnetpp] A possible bug in the Ieee80211's FSM.
+    // TODO: fixed bug according to the message: [omnetpp] A possible bug in the Ieee80211's FSM. It's necessary to check
     FSMA_Switch(fsm)
     {
         FSMA_State(IDLE)
         {
             FSMA_Enter(sendDownPendingRadioConfigMsg());
             FSMA_Event_Transition(Data-Ready,
-                                  isUpperMsg(msg),
+                                  // isUpperMsg(msg),
+                                  isUpperMsg(msg) && backoffPeriod > 0,
                                   DEFER,
-                ASSERT(isInvalidBackoffPeriod() || backoffPeriod == 0);
-                invalidateBackoffPeriod();
+                //ASSERT(isInvalidBackoffPeriod() || backoffPeriod == 0);
+                //invalidateBackoffPeriod();
+               ASSERT(false);
+
             );
             FSMA_No_Event_Transition(Immediate-Data-Ready,
-                                     !transmissionQueue.empty(),
+                                     //!transmissionQueue.empty(),
+									!transmissionQueue.empty() && backoffPeriod > 0,
                                      DEFER,
-                invalidateBackoffPeriod();
+//                invalidateBackoffPeriod();
+				ASSERT(backoff);
+
             );
             FSMA_Event_Transition(Receive,
                                   isLowerMsg(msg),
@@ -729,7 +735,7 @@ void Ieee80211aMac::handleWithFSM(cMessage *msg)
         // wait until broadcast is sent
         FSMA_State(WAITBROADCAST)
         {
-           if(!transmissionQueue.empty())
+          // if(!transmissionQueue.empty())
              FSMA_Enter(scheduleBroadcastTimeoutPeriod(getCurrentTransmission()));
 /*
             FSMA_Event_Transition(Transmit-Broadcast,
@@ -787,7 +793,9 @@ void Ieee80211aMac::handleWithFSM(cMessage *msg)
                                   msg == endSIFS && getFrameReceivedBeforeSIFS()->getType() == ST_RTS,
                                   IDLE,
                 sendCTSFrameOnEndSIFS();
-                resetStateVariables();
+               // resetStateVariables();
+                finishReception();
+
             );
             FSMA_Event_Transition(Transmit-DATA,
                                   msg == endSIFS && getFrameReceivedBeforeSIFS()->getType() == ST_CTS,
@@ -798,7 +806,9 @@ void Ieee80211aMac::handleWithFSM(cMessage *msg)
                                   msg == endSIFS && isDataOrMgmtFrame(getFrameReceivedBeforeSIFS()),
                                   IDLE,
                 sendACKFrameOnEndSIFS();
-                resetStateVariables();
+                // resetStateVariables();
+                finishReception();
+
             );
         }
         // this is not a real state
@@ -809,7 +819,8 @@ void Ieee80211aMac::handleWithFSM(cMessage *msg)
                                      IDLE,
                 EV << "received frame contains bit errors or collision, next wait period is EIFS\n";
                 numCollision++;
-                resetStateVariables();
+                // resetStateVariables();
+                finishReception();
             );
 /*
             FSMA_No_Event_Transition(Immediate-Receive-Broadcast,
@@ -859,13 +870,15 @@ void Ieee80211aMac::handleWithFSM(cMessage *msg)
                                     isLowerMsg(msg) && !isForUs(frame) && isDataOrMgmtFrame(frame),
                                     IDLE,
 				nb->fireChangeNotification(NF_LINK_PROMISCUOUS, frame);
-				resetStateVariables();
+				// resetStateVariables();
+				finishReception();
 				numReceivedOther++;
             );
             FSMA_No_Event_Transition(Immediate-Receive-Other,
                                      isLowerMsg(msg),
                                      IDLE,
-                resetStateVariables();
+               // resetStateVariables();
+                finishReception();
 				numReceivedOther++;
             );
         }
@@ -874,6 +887,18 @@ void Ieee80211aMac::handleWithFSM(cMessage *msg)
     logState();
 //     stateVector.record(fsm.getState());
 }
+
+void Ieee80211aMac::finishReception()
+{
+   if (!transmissionQueue.empty()) {
+       backoff = true;
+   }
+   else {
+       backoff = false;
+       noFrame=false;//sorin
+   }
+}
+
 
 /****************************************************************
  * Timing functions.

@@ -65,10 +65,11 @@ simple Ieee80211gMac
         int retryLimit = default(-1); // maximum number of retries per message, -1 means default
         int cwMinData = default(-1); // contention window for normal data frames, -1 means default
         int cwMinBroadcast = default(-1); // contention window for broadcast messages, -1 means default
-	int opMode=default(2);//1=b 2= g
-	double slotTime @unit("s")= default(9us);
-	double basicBitrate @unit("bps")= default(2e6bps);
-	double AIFSN= default(2.0);
+        int opMode=default(2);//1=b 2= g
+        double slotTime @unit("s")= default(9us);
+        double basicBitrate @unit("bps")= default(2e6bps);
+        double AIFSN= default(2.0);
+        int mtu = default(1500);
         @display("i=block/layer");
     gates:
         input uppergateIn;

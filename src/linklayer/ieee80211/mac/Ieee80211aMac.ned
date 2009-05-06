@@ -77,6 +77,7 @@ simple Ieee80211aMac
         double AIFSN = default(2.0); // Sorin
         int maxSuccessThreshold = default(60);// 
         int autoBitrate = default(0);// 0 no auto, 1 ARF, 2 AARF
+        int mtu = default(1500);
         @display("i=block/layer");
     gates:
         input uppergateIn;

@@ -163,6 +163,7 @@ void Ieee80211Mac::initialize(int stage)
         radioStateVector.setName("RadioState");
         radioStateVector.setEnum("RadioState");
 
+        noFrame=true;
         // initialize watches
         WATCH(fsm);
         WATCH(radioState);
@@ -374,6 +375,12 @@ void Ieee80211Mac::receiveChangeNotification(int category, const cPolymorphic *d
 void Ieee80211Mac::handleWithFSM(cMessage *msg)
 {
     // skip those cases where there's nothing to do, so the switch looks simpler
+    if(noFrame==true && isUpperMsg(msg))
+    {
+        noFrame=false;
+        EV<<"New frame arrived while backing-off with noFrame\n";
+    }
+
     if (isUpperMsg(msg) && fsm.getState() != IDLE)
     {
         EV << "deferring upper message transmission in " << fsm.getStateName() << " state\n";
@@ -392,22 +399,28 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
         scheduleReservePeriod(frame);
     }
 
-    // TODO: fix bug according to the message: [omnetpp] A possible bug in the Ieee80211's FSM.
+    // TODO: fixed bug according to the message: [omnetpp] A possible bug in the Ieee80211's FSM. It's necessary to check
     FSMA_Switch(fsm)
     {
         FSMA_State(IDLE)
         {
             FSMA_Enter(sendDownPendingRadioConfigMsg());
             FSMA_Event_Transition(Data-Ready,
-                                  isUpperMsg(msg),
+                                  // isUpperMsg(msg),
+                                  isUpperMsg(msg) && backoffPeriod > 0,
                                   DEFER,
-                ASSERT(isInvalidBackoffPeriod() || backoffPeriod == 0);
-                invalidateBackoffPeriod();
+                //ASSERT(isInvalidBackoffPeriod() || backoffPeriod == 0);
+                //invalidateBackoffPeriod();
+               ASSERT(false);
+
             );
             FSMA_No_Event_Transition(Immediate-Data-Ready,
-                                     !transmissionQueue.empty(),
+                                     //!transmissionQueue.empty(),
+									!transmissionQueue.empty() && backoffPeriod > 0,
                                      DEFER,
-                invalidateBackoffPeriod();
+//                invalidateBackoffPeriod();
+				ASSERT(backoff);
+
             );
             FSMA_Event_Transition(Receive,
                                   isLowerMsg(msg),
@@ -433,6 +446,9 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
         FSMA_State(WAITDIFS)
         {
             FSMA_Enter(scheduleDIFSPeriod());
+
+	if(!transmissionQueue.empty())
+	{
             FSMA_Event_Transition(Immediate-Transmit-RTS,
                                   msg == endDIFS && !isBroadcast(getCurrentTransmission())
                                   && getCurrentTransmission()->getByteLength() >= rtsThreshold && !backoff,
@@ -452,6 +468,7 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
                 sendDataFrame(getCurrentTransmission());
                 cancelDIFSPeriod();
             );
+	}
             FSMA_Event_Transition(DIFS-Over,
                                   msg == endDIFS,
                                   BACKOFF,
@@ -481,6 +498,8 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
         FSMA_State(BACKOFF)
         {
             FSMA_Enter(scheduleBackoffPeriod());
+        if(!transmissionQueue.empty())
+        {
             FSMA_Event_Transition(Transmit-RTS,
                                   msg == endBackoff && !isBroadcast(getCurrentTransmission())
                                   && getCurrentTransmission()->getByteLength() >= rtsThreshold,
@@ -497,6 +516,12 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
                                   WAITACK,
                 sendDataFrame(getCurrentTransmission());
             );
+        }
+            FSMA_Event_Transition(Backoff-Idle,
+                                  msg==endBackoff && transmissionQueue.empty(),
+                                  IDLE,
+                                  resetStateVariables();
+                                  );
             FSMA_Event_Transition(Backoff-Busy,
                                   isMediumStateChange(msg) && !isMediumFree(),
                                   DEFER,
@@ -529,13 +554,26 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
         // wait until broadcast is sent
         FSMA_State(WAITBROADCAST)
         {
-            FSMA_Enter(scheduleBroadcastTimeoutPeriod(getCurrentTransmission()));
-            FSMA_Event_Transition(Transmit-Broadcast,
+         //if(!transmissionQueue.empty())
+         FSMA_Enter(scheduleBroadcastTimeoutPeriod(getCurrentTransmission()));
+        /*
+	 FSMA_Event_Transition(Transmit-Broadcast,
                                   msg == endTimeout,
                                   IDLE,
                 finishCurrentTransmission();
                 numSentBroadcast++;
             );
+	*///changed
+	 FSMA_Event_Transition(Transmit-Broadcast,
+                                  msg == endTimeout,
+                                  DEFER,
+                finishCurrentTransmission();
+                numSentBroadcast++;
+		backoff=true;
+		invalidateBackoffPeriod();
+            );
+
+
         }
         // accoriding to 9.2.5.7 CTS procedure
         FSMA_State(WAITCTS)
@@ -564,7 +602,9 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
                                   msg == endSIFS && getFrameReceivedBeforeSIFS()->getType() == ST_RTS,
                                   IDLE,
                 sendCTSFrameOnEndSIFS();
-                resetStateVariables();
+               // resetStateVariables();
+                finishReception();
+
             );
             FSMA_Event_Transition(Transmit-DATA,
                                   msg == endSIFS && getFrameReceivedBeforeSIFS()->getType() == ST_CTS,
@@ -575,7 +615,9 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
                                   msg == endSIFS && isDataOrMgmtFrame(getFrameReceivedBeforeSIFS()),
                                   IDLE,
                 sendACKFrameOnEndSIFS();
-                resetStateVariables();
+                // resetStateVariables();
+                finishReception();
+
             );
         }
         // this is not a real state
@@ -586,7 +628,8 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
                                      IDLE,
                 EV << "received frame contains bit errors or collision, next wait period is EIFS\n";
                 numCollision++;
-                resetStateVariables();
+                //resetStateVariables();
+                finishReception();
             );
             FSMA_No_Event_Transition(Immediate-Receive-Broadcast,
                                      isLowerMsg(msg) && isBroadcast(frame) && isDataOrMgmtFrame(frame),
@@ -610,13 +653,15 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
                                     isLowerMsg(msg) && !isForUs(frame) && isDataOrMgmtFrame(frame),
                                     IDLE,
 				nb->fireChangeNotification(NF_LINK_PROMISCUOUS, frame);
-				resetStateVariables();
+				// resetStateVariables();
+				finishReception();
 				numReceivedOther++;
             );
             FSMA_No_Event_Transition(Immediate-Receive-Other,
                                      isLowerMsg(msg),
                                      IDLE,
-                resetStateVariables();
+               // resetStateVariables();
+                finishReception();
 				numReceivedOther++;
             );
         }
@@ -625,6 +670,18 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
     logState();
     stateVector.record(fsm.getState());
 }
+
+void Ieee80211Mac::finishReception()
+{
+   if (!transmissionQueue.empty()) {
+       backoff = true;
+   }
+   else {
+       backoff = false;
+       noFrame=false;//sorin
+   }
+}
+
 
 /****************************************************************
  * Timing functions.
@@ -1002,6 +1059,7 @@ void Ieee80211Mac::resetStateVariables()
     }
     else {
         backoff = false;
+        noFrame=false;//sorin
     }
 }
 
