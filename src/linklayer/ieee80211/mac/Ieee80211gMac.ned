@@ -70,6 +70,7 @@ simple Ieee80211gMac
         double basicBitrate @unit("bps")= default(2e6bps);
         double AIFSN= default(2.0);
         int mtu = default(1500);
+        bool fixFSM = default(false);
         @display("i=block/layer");
     gates:
         input uppergateIn;

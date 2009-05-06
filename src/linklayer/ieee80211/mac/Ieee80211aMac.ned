@@ -78,6 +78,7 @@ simple Ieee80211aMac
         int maxSuccessThreshold = default(60);// 
         int autoBitrate = default(0);// 0 no auto, 1 ARF, 2 AARF
         int mtu = default(1500);
+        bool fixFSM = default(false);
         @display("i=block/layer");
     gates:
         input uppergateIn;

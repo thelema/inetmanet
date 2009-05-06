@@ -94,6 +94,8 @@ void Ieee80211gMac::initialize(int stage)
         EV << "Initializing stage 0\n";
 
         // initialize parameters
+        // Variable to apply the fsm fix
+        fixFSM = par("fixFSM");
         opMode=par("opMode");
         if (opMode==1)
             opMode='b';
@@ -474,6 +476,8 @@ void Ieee80211gMac::handleWithFSM(cMessage *msg)
 	FSMA_State(IDLE)
         {
             FSMA_Enter(sendDownPendingRadioConfigMsg());
+            if (fixFSM)
+            {
             FSMA_Event_Transition(Data-Ready,
                                   // isUpperMsg(msg),
                                   isUpperMsg(msg) && backoffPeriod > 0,
@@ -491,6 +495,21 @@ void Ieee80211gMac::handleWithFSM(cMessage *msg)
 				ASSERT(backoff);
 
             );
+            }
+            else
+            {
+            FSMA_Event_Transition(Data-Ready,
+                                      isUpperMsg(msg),
+                                      DEFER,
+                    ASSERT(isInvalidBackoffPeriod() || backoffPeriod == 0);
+                    invalidateBackoffPeriod();
+                );
+                FSMA_No_Event_Transition(Immediate-Data-Ready,
+                                         !transmissionQueue.empty(),
+    									 DEFER,
+                    invalidateBackoffPeriod();
+                );
+            }
             FSMA_Event_Transition(Receive,
                                   isLowerMsg(msg),
                                   RECEIVE,
@@ -671,8 +690,10 @@ void Ieee80211gMac::handleWithFSM(cMessage *msg)
                                   msg == endSIFS && getFrameReceivedBeforeSIFS()->getType() == ST_RTS,
                                   IDLE,
                 sendCTSFrameOnEndSIFS();
-               // resetStateVariables();
-                finishReception();
+			    if (fixFSM)
+				   finishReception();
+			    else
+				   resetStateVariables();
 
             );
             FSMA_Event_Transition(Transmit-DATA,
@@ -684,8 +705,10 @@ void Ieee80211gMac::handleWithFSM(cMessage *msg)
                                   msg == endSIFS && isDataOrMgmtFrame(getFrameReceivedBeforeSIFS()),
                                   IDLE,
                 sendACKFrameOnEndSIFS();
-                // resetStateVariables();
-                finishReception();
+				if (fixFSM)
+					finishReception();
+				else
+					resetStateVariables();
 
             );
         }
@@ -697,8 +720,10 @@ void Ieee80211gMac::handleWithFSM(cMessage *msg)
                                      IDLE,
                 EV << "received frame contains bit errors or collision, next wait period is EIFS\n";
                 numCollision++;
-                //resetStateVariables();
-                finishReception();
+				if (fixFSM)
+					finishReception();
+				else
+					resetStateVariables();
             );//added && !isSentByUs(frame)
             FSMA_No_Event_Transition(Immediate-Receive-Broadcast,
                                      isLowerMsg(msg) && isBroadcast(frame) && !isSentByUs(frame) && isDataOrMgmtFrame(frame),
@@ -714,8 +739,10 @@ void Ieee80211gMac::handleWithFSM(cMessage *msg)
                         tCycle=0.0;
                         numReceivedBroadcast=0;
                  }
-               //  resetStateVariables();
-                finishReception();
+				if (fixFSM)
+					finishReception();
+				else
+					resetStateVariables();
 
             );
             FSMA_No_Event_Transition(Immediate-Receive-Data,
@@ -732,15 +759,19 @@ void Ieee80211gMac::handleWithFSM(cMessage *msg)
                                     isLowerMsg(msg) && !isForUs(frame) && isDataOrMgmtFrame(frame),
                                     IDLE,
 				nb->fireChangeNotification(NF_LINK_PROMISCUOUS, frame);
-				// resetStateVariables();
-				finishReception();
+				if (fixFSM)
+					finishReception();
+				else
+					resetStateVariables();
 				numReceivedOther++;
             );
             FSMA_No_Event_Transition(Immediate-Receive-Other,
                                      isLowerMsg(msg),
                                      IDLE,
-               // resetStateVariables();
-                finishReception();
+                 if (fixFSM)
+      				finishReception();
+                 else
+                     resetStateVariables();
 				numReceivedOther++;
             );
         }
@@ -757,6 +788,8 @@ void Ieee80211gMac::finishReception()
        backoff = true;
    }
    else {
+	   backoffPeriod = 0;
+	   retryCounter = 0;
        backoff = false;
        noFrame=false;//sorin
    }
@@ -809,7 +842,7 @@ simtime_t Ieee80211gMac::computeBackoffPeriod(Ieee80211Frame *msg, int r)
            cw = cwMinBroadcast;
       else
       {
-           ASSERT(0 <= r && r <= transmissionLimit);
+           ASSERT(0 <= r && r < transmissionLimit);
            cw = (cwMinData + 1) * (1 << r) - 1;
            if (cw > CW_MAX)
                cw = CW_MAX;
@@ -817,7 +850,7 @@ simtime_t Ieee80211gMac::computeBackoffPeriod(Ieee80211Frame *msg, int r)
     }
     else
     {
-        ASSERT(0 <= r && r <= transmissionLimit);
+        ASSERT(0 <= r && r < transmissionLimit);
         cw = (cwMinData + 1) * (1 << r) - 1;
         if (cw > CW_MAX)
             cw = CW_MAX;
@@ -1121,7 +1154,7 @@ void Ieee80211gMac::giveUpCurrentTransmission()
 
 void Ieee80211gMac::retryCurrentTransmission()
 {
-    ASSERT(retryCounter < transmissionLimit);
+    ASSERT(retryCounter < transmissionLimit - 1);
     getCurrentTransmission()->setRetry(true);
     retryCounter++;
     numRetry++;

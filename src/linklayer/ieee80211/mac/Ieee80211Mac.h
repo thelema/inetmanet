@@ -135,7 +135,7 @@ class INET_API Ieee80211Mac : public WirelessMacBase, public INotifiable
     };
   protected:
     cFSM fsm;
-
+    bool fixFSM;
   public:
     /** 80211 MAC operation modes */
     enum Mode {
