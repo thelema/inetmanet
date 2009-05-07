@@ -29,7 +29,7 @@
 #include <sstream>
 
 
-SCTPPathVariables:: SCTPPathVariables(IPvXAddress addr, SCTPAssociation* assoc)
+SCTPPathVariables::SCTPPathVariables(IPvXAddress addr, SCTPAssociation* assoc)
 {
    InterfaceTableAccess interfaceTableAccess;
 
@@ -642,9 +642,10 @@ void SCTPAssociation::stateEntered(int32 status)
 			state->sendQueueLimit = (uint32)sctpMain->par("sendQueueLimit");
 			SCTP::VTagPair vtagPair;
 			vtagPair.peerVTag = peerVTag;
+			vtagPair.localVTag = localVTag;
 			vtagPair.localPort = localPort;
 			vtagPair.remotePort = remotePort;
-			sctpMain->sctpVTagMap[vtagPair] = this->assocId;
+			sctpMain->sctpVTagMap[assocId] = vtagPair;
 			break;
 	}
 		case SCTP_S_CLOSED:
