@@ -1334,6 +1334,8 @@ void Ieee80211aMac::retryCurrentTransmission()
 
 Ieee80211DataOrMgmtFrame *Ieee80211aMac::getCurrentTransmission()
 {
+	if (transmissionQueue.empty())
+		return NULL;
     return (Ieee80211DataOrMgmtFrame *)transmissionQueue.front();
 }
 

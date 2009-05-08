@@ -462,9 +462,8 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
         FSMA_State(WAITDIFS)
         {
             FSMA_Enter(scheduleDIFSPeriod());
-
-	if(!transmissionQueue.empty())
-	{
+        	if(!transmissionQueue.empty())
+        	{
             FSMA_Event_Transition(Immediate-Transmit-RTS,
                                   msg == endDIFS && !isBroadcast(getCurrentTransmission())
                                   && getCurrentTransmission()->getByteLength() >= rtsThreshold && !backoff,
@@ -484,7 +483,7 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
                 sendDataFrame(getCurrentTransmission());
                 cancelDIFSPeriod();
             );
-	}
+        	}
             FSMA_Event_Transition(DIFS-Over,
                                   msg == endDIFS,
                                   BACKOFF,
@@ -514,8 +513,8 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
         FSMA_State(BACKOFF)
         {
             FSMA_Enter(scheduleBackoffPeriod());
-        if(!transmissionQueue.empty())
-        {
+        	if(!transmissionQueue.empty())
+        	{
             FSMA_Event_Transition(Transmit-RTS,
                                   msg == endBackoff && !isBroadcast(getCurrentTransmission())
                                   && getCurrentTransmission()->getByteLength() >= rtsThreshold,
@@ -532,7 +531,7 @@ void Ieee80211Mac::handleWithFSM(cMessage *msg)
                                   WAITACK,
                 sendDataFrame(getCurrentTransmission());
             );
-        }
+        	}
             FSMA_Event_Transition(Backoff-Idle,
                                   msg==endBackoff && transmissionQueue.empty(),
                                   IDLE,
@@ -1059,6 +1058,8 @@ void Ieee80211Mac::retryCurrentTransmission()
 
 Ieee80211DataOrMgmtFrame *Ieee80211Mac::getCurrentTransmission()
 {
+	if (transmissionQueue.empty())
+		return NULL;
     return (Ieee80211DataOrMgmtFrame *)transmissionQueue.front();
 }
 
