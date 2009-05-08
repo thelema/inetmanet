@@ -383,25 +383,19 @@ void SCTP::updateDisplayString()
 
 SCTPAssociation *SCTP::findAssocWithVTag(uint32 peerVTag, uint32 remotePort, uint32 localPort)
 {
-	VTagPair key;
-
-	key.peerVTag = peerVTag;
-	key.localPort = localPort;
-	key.remotePort = remotePort;
-
 	sctpEV3<<"findAssocWithVTag: peerVTag="<<peerVTag<<" srcPort="<<remotePort<<"  destPort="<<localPort<<"\n";
 	printInfoConnMap();
 
 	// try with fully qualified SockPair
-	SctpVTagMap::iterator i;
-	i = sctpVTagMap.find(key);
-	if (i!=sctpVTagMap.end())
+	for (SctpVTagMap::iterator i=sctpVTagMap.begin(); i!=sctpVTagMap.end();i++)
 	{
-		sctpEV3<<"assoc "<<i->second<<"\n";
-		return getAssoc(i->second);
+		if ((i->second.peerVTag==peerVTag && i->second.localPort==localPort 
+			&& i->second.remotePort==remotePort)
+			|| (i->second.localVTag==peerVTag && i->second.localPort==localPort 
+			&& i->second.remotePort==remotePort))
+			return getAssoc(i->first);
 	}
-	else
-		return NULL;
+	return NULL;
 }
 
 SCTPAssociation *SCTP::findAssocForMessage(IPvXAddress srcAddr, IPvXAddress destAddr, uint32 srcPort, uint32 destPort, bool findListen)

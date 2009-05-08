@@ -118,6 +118,7 @@ class INET_API SCTP : public cSimpleModule
 		struct VTagPair
 		{
 			uint32 peerVTag;
+			uint32 localVTag;
 			uint16 localPort;
 			uint16 remotePort;
 	
@@ -150,7 +151,7 @@ class INET_API SCTP : public cSimpleModule
 		
 		typedef std::map<int32,AssocStat> AssocStatMap;
 		AssocStatMap assocStatMap;
-		typedef std::map<VTagPair,int32> SctpVTagMap;
+		typedef std::map<int32, VTagPair> SctpVTagMap;
 		SctpVTagMap sctpVTagMap;
 		
 		typedef std::map<AppConnKey,SCTPAssociation*> SctpAppConnMap;
