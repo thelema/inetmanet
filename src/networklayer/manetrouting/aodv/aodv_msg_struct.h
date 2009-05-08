@@ -56,6 +56,10 @@ typedef struct {
 } RERR_udest;
 #define RERR_UDEST_SIZE sizeof(RERR_udest)
 
+#ifdef RERR
+#undef RERR
+#endif
+
 struct RERR : public AODV_msg {
 	unsigned short res1;
 	unsigned short n;

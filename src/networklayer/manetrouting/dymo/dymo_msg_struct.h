@@ -140,7 +140,12 @@ struct Dymo_UERR : public DYMO_element {
 #define RERR_BLOCK_SIZE	8U
 #define RERR_BASIC_SIZE	7U // before 8
 #define RERR_BLOCK_LENGTH	sizeof(struct rerr_block)
-#define RERR_SIZE		(8+(RERR_BLOCK_SIZE*MAX_RERR_BLOCKS))U
+#define DYMO_RERR_SIZE		(8+(RERR_BLOCK_SIZE*MAX_RERR_BLOCKS))U
+
+#ifdef RERR
+#undef RERR
+#endif
+
 #define RERR  Dymo_RERR
 
 struct Dymo_RERR : public DYMO_element {

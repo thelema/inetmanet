@@ -22,9 +22,9 @@
 #include "lwmpls_data.h"
 #include "ControlInfoBreakLink_m.h"
 #include "ControlManetRouting_m.h"
-//#include "OLSR.h"
-//#include "dymo_msg_struct.h"
-//#include "aodv_msg_struct.h"
+#include "OLSRpkt_m.h"
+#include "dymo_msg_struct.h"
+#include "aodv_msg_struct.h"
 #include "InterfaceTableAccess.h"
 #include "IPDatagram.h"
 #include <string.h>
@@ -522,6 +522,10 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 				}
 			}
 			send(msg,"routingOutReactive");
+		}
+		else if (dynamic_cast<OLSR_pkt*>(msg) || dynamic_cast <DYMO_element *>(msg) || dynamic_cast <AODV_msg *>(msg))
+		{
+			delete msg;
 		}
 		else // Normal frame test if upper layer frame in other case delete
 			sendUp(msg);
