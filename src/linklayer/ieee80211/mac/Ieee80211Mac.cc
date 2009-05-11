@@ -750,14 +750,25 @@ simtime_t Ieee80211Mac::computeBackoffPeriod(Ieee80211Frame *msg, int r)
 
     EV << "generating backoff slot number for retry: " << r << endl;
 
-    if (isBroadcast(msg))
-        cw = cwMinBroadcast;
+    if(!transmissionQueue.empty())
+    {
+    	if (isBroadcast(msg))
+    		cw = cwMinBroadcast;
+    	else
+    	{
+    		ASSERT(0 <= r && r < transmissionLimit);
+
+
+    		cw = (cwMinData + 1) * (1 << r) - 1;
+
+    		if (cw > CW_MAX)
+    			cw = CW_MAX;
+    	}
+    }
     else
     {
         ASSERT(0 <= r && r < transmissionLimit);
-
         cw = (cwMinData + 1) * (1 << r) - 1;
-
         if (cw > CW_MAX)
             cw = CW_MAX;
     }
