@@ -24,6 +24,8 @@ simple Ieee80211Mesh
     parameters:
         int frameCapacity = default(100);
         bool useProactive;
+        bool useReactive;
+        bool UseLwMpls=default(false);
  //       int Willingness = default(3); //ms
  //       int Hello_ival = default(2); // sec
  //       int Tc_ival = default(5); // sec

@@ -81,6 +81,9 @@ void Ieee80211Mesh::initialize(int stage)
 		mplsData = new LWMPLSDataStructure;
 		cModuleType *moduleType;
 		cModule *module;
+		routingModuleProactive = NULL;
+		routingModuleReactive = NULL;
+		useLwmpls = par("UseLwMpls");
 		// Proactive protocol
 		if (par("useProactive"))
 		{
@@ -96,18 +99,22 @@ void Ieee80211Mesh::initialize(int stage)
 			routingModuleProactive->buildInside();
 			routingModuleProactive->scheduleStart(simTime());
 		}
-		else
-			routingModuleProactive = NULL;
 
 		// Reactive protocol
-		moduleType = cModuleType::find("inet.networklayer.manetrouting.DYMOUM");
-		module = moduleType->create("ManetRoutingProtocolReactive", this);
-		routingModuleReactive = dynamic_cast <ManetRoutingBase*> (module);
+		if (par("useReactive"))
+		{
+			moduleType = cModuleType::find("inet.networklayer.manetrouting.DYMOUM");
+			module = moduleType->create("ManetRoutingProtocolReactive", this);
+			routingModuleReactive = dynamic_cast <ManetRoutingBase*> (module);
 
-		routingModuleReactive->gate("to_ip")->connectTo(gate("routingInReactive"));
-		gate("routingOutReactive")->connectTo(routingModuleReactive->gate("from_ip"));
-		routingModuleReactive->buildInside();
-		routingModuleReactive->scheduleStart(simTime());
+			routingModuleReactive->gate("to_ip")->connectTo(gate("routingInReactive"));
+			gate("routingOutReactive")->connectTo(routingModuleReactive->gate("from_ip"));
+			routingModuleReactive->buildInside();
+			routingModuleReactive->scheduleStart(simTime());
+		}
+
+		if (routingModuleProactive==NULL && routingModuleProactive ==NULL)
+			error("Ieee80211Mesh doesn't have active routing protocol");
 
 		mplsData->mplsMaxTime()=35;
 		active_mac_break=false;
@@ -368,7 +375,8 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg)
 
 		next=add[0];
 
-		if (dist >1)
+
+		if (dist >1 && useLwmpls)
 		{
 			lwmplspk = new LWMPLSPacket(msg->getName());
 			if (!noRoute)

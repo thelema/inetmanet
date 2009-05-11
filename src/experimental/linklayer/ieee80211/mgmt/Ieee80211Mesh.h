@@ -48,6 +48,7 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 	ManetRoutingBase *routingModuleReactive;
 
 	IInterfaceTable *ift;
+	bool useLwmpls;
 
 	LWMPLSDataStructure * mplsData;
 
@@ -73,6 +74,8 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 	void mplsPurge (LWmpls_Forwarding_Structure *forwarding_ptr,bool purge_break);
 	bool forwardMessage (Ieee80211DataFrame *);
 	bool macLabelBasedSend (Ieee80211DataFrame *);
+
+
 
   public:
 		Ieee80211Mesh();
