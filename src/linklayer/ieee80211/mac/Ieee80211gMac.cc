@@ -833,24 +833,14 @@ simtime_t Ieee80211gMac::computeBackoffPeriod(Ieee80211Frame *msg, int r)
     int cw;
 
     EV << "generating backoff slot number for retry: " << r << endl;
-   if(!transmissionQueue.empty())
-   {
-      if (isBroadcast(msg))
-           cw = cwMinBroadcast;
-      else
-      {
-           ASSERT(0 <= r && r < transmissionLimit);
-           cw = (cwMinData + 1) * (1 << r) - 1;
-           if (cw > CW_MAX)
-               cw = CW_MAX;
-       }
-    }
+    if (msg && isBroadcast(msg))
+    	cw = cwMinBroadcast;
     else
     {
-        ASSERT(0 <= r && r < transmissionLimit);
-        cw = (cwMinData + 1) * (1 << r) - 1;
-        if (cw > CW_MAX)
-            cw = CW_MAX;
+    	ASSERT(0 <= r && r < transmissionLimit);
+    	cw = (cwMinData + 1) * (1 << r) - 1;
+    	if (cw > CW_MAX)
+    		cw = CW_MAX;
     }
 
     int c = intrand(cw + 1);

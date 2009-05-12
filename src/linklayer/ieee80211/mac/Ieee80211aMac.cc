@@ -968,23 +968,15 @@ simtime_t Ieee80211aMac::getEIFS()
 simtime_t Ieee80211aMac::computeBackoffPeriod(Ieee80211Frame *msg, int r)
 {
     int cw;
-    if(!transmissionQueue.empty()){
-    	if (isBroadcast(msg))
+
+    if (msg && isBroadcast(msg))
        		cw = cwMinBroadcast;
 	else
 	{
-        	ASSERT(0 <= r && r < retryLimit);
-        	cw = (cwMinData + 1) * (1 << r) - 1;
-	        if (cw > CW_MAX)
-        		cw = CW_MAX;
-    	}
-    }
-    else
-    {
         ASSERT(0 <= r && r < retryLimit);
         cw = (cwMinData + 1) * (1 << r) - 1;
         if (cw > CW_MAX)
-            cw = CW_MAX;
+        	cw = CW_MAX;
     }
 
 
