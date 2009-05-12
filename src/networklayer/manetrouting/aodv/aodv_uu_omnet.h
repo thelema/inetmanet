@@ -109,12 +109,12 @@ class AODVUU : public ManetRoutingBase {
 
 	char nodeName[50];
 	ICMPAccess icmpAccess;
-	cMessage  messageEvent;
+	// cMessage  messageEvent;
 
  public:
 	static int  log_file_fd;
 	static bool log_file_fd_init;
-	AODVUU(){is_init =false; log_file_fd_init=false;sendMessageEvent = &messageEvent;}
+	AODVUU(){is_init =false; log_file_fd_init=false;sendMessageEvent = new cMessage();/*&messageEvent;*/}
 	~AODVUU();
 
 	void packetFailed(IPDatagram *p);
@@ -154,7 +154,7 @@ class AODVUU : public ManetRoutingBase {
 
 	int NS_DEV_NR;
 	int NS_IFINDEX;
-	cModule *ipmod;
+	// cModule *ipmod;
 
 /*
   Extract method declarations (and occasionally, variables)

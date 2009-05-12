@@ -132,7 +132,7 @@ private:
 
 	};
 
-	cMessage messageEvent;
+	// cMessage messageEvent;
 
 	typedef std::map<mac_address, unsigned int> MacToIpAddress;
 
@@ -144,7 +144,7 @@ private:
 
 
 	IPAddress *ipNodeId;
-        DYMO_element * send_buf;
+	DYMO_element * send_buf;
 	struct host_info this_host;
 	u_int32_t dev_indices[DYMO_MAX_NR_INTERFACES];
 	int ifindex2devindex(u_int32_t ifindex)
@@ -190,7 +190,7 @@ private:
 public:
 	static int  log_file_fd;
 	static bool log_file_fd_init;
-	DYMOUM(){attachPacket=false; is_init =false; log_file_fd_init=false;ipNodeId=NULL;gateWayAddress=NULL;numInterfacesActive=0;timer_elem=0;sendMessageEvent = &messageEvent;}
+	DYMOUM(){attachPacket=false; is_init =false; log_file_fd_init=false;ipNodeId=NULL;gateWayAddress=NULL;numInterfacesActive=0;timer_elem=0;sendMessageEvent = new cMessage();/*&messageEvent;*/}
 	~DYMOUM();
 	void packetFailed(IPDatagram *);
 	virtual std::string detailedInfo() const;
@@ -231,7 +231,7 @@ protected:
 	IPAddress *gateWayAddress;
 	int NS_DEV_NR;
 	uint32_t NS_IFINDEX;
-	cModule *ipmod;
+	// cModule *ipmod;
 
 // Variables from main.c
 	char	*progname;

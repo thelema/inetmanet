@@ -274,8 +274,8 @@ NS_CLASS ~ AODVUU()
 		list_detach(pos);
 		if (pos) free(pos);
 	}
-
-	// cancelAndDelete(sendMessageEvent);
+	packet_queue_destroy();
+	cancelAndDelete(sendMessageEvent);
 	log_cleanup();
 	delete gateWayAddress;
 }

@@ -201,6 +201,7 @@ DYMOUM::~ DYMOUM()
 	dlist_head_t *pos, *tmp;
 
 	pos = tmp = NULL;
+	packet_queue_destroy();
 	dlist_for_each_safe(pos, tmp, &PQ.head) {
 		struct q_pkt *qp = (struct q_pkt *)pos;
 		dlist_del(pos);
@@ -244,18 +245,25 @@ DYMOUM::~ DYMOUM()
 		free(pos);
 	}
 
-	//cancelAndDelete(sendMessageEvent);
+	cancelAndDelete(sendMessageEvent);
     //log_cleanup();
 	if (gateWayAddress)
 		delete gateWayAddress;
 	if (ipNodeId)
 		delete ipNodeId;
+	if (send_buf)
+		delete send_buf;
+	free(progname);
+
+	macToIpAdress.clear();
+	/*
 	while (!macToIpAdress.empty())
 	{
 		MacToIpAddress::iterator i = macToIpAdress.begin();
 		// delete (*i).second;
 		macToIpAdress.erase(i);
 	}
+	*/
 }
 
 /*
