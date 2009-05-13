@@ -20,7 +20,8 @@
 
 IPControlInfo::~IPControlInfo()
 {
-    delete dgram;  //FIXME this crashes on program exit all too often!
+	if (dgram)
+		delete dgram;  //FIXME this crashes on program exit all too often!
 }
 
 void IPControlInfo::setOrigDatagram(IPDatagram *d)
