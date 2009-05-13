@@ -143,7 +143,7 @@ typedef OLSR_msg OLSR_ETX_msg; // OLSR_msg defined in OLSRpkt.msg
 ///
 class OLSR_ETX : public OLSR {
 
-	
+
 	/// Address of the routing agent.
 
 	friend class OLSR_ETX_LinkQualityTimer;
@@ -159,7 +159,7 @@ class OLSR_ETX : public OLSR {
 	friend class OLSR_MsgTimer;
 	friend class OLSR_ETX_state;
 	friend class Dijkstra;
-   
+
         OLSR_ETX_parameter parameter_;
 
   /// Fish Eye State Routing...
@@ -179,7 +179,7 @@ class OLSR_ETX : public OLSR {
 
 	/// A list of pending messages which
 
- 	//are buffered awaiting for being sent. 
+ 	//are buffered awaiting for being sent.
 	//std::vector<OLSR_ETX_msg>	msgs_;
 
 protected:
@@ -191,9 +191,9 @@ protected:
   	inline long&  cap_sn() { cap_sn_++; return cap_sn_; }
 
 #define link_quality_timer_  (*linkQualityTimer)
-	
+
 	void		recv_olsr(cMessage*);
-	
+
 	// void		mpr_computation();
 	// void		rtable_computation();
 	void		olsr_mpr_computation();
@@ -209,16 +209,16 @@ protected:
 	void		process_hello(OLSR_msg&, const nsaddr_t &,const nsaddr_t &,uint16_t);
 	void		process_tc(OLSR_msg&, const nsaddr_t &);
 	// void		process_mid(OLSR_msg&, const nsaddr_t &);
-	
+
 	//void		forward_default(OLSR_msg&, OLSR_dup_tuple*, nsaddr_t,nsaddr_t);
 	void		forward_data(cMessage* p){}
-	
+
 //	void		enque_msg(OLSR_msg&, double);
 	void		send_hello();
 	void		send_tc();
 	//void		send_mid();
 	void		send_pkt();
-	
+
 	void		link_sensing(OLSR_msg&, const nsaddr_t &, const nsaddr_t &,uint16_t);
 	//void		populate_nbset(OLSR_msg&);
 	void		populate_nb2hopset(OLSR_msg&);
@@ -230,7 +230,7 @@ protected:
 
 	void		nb_loss(OLSR_link_tuple*);
 
-	
+
 	static bool	seq_num_bigger_than(uint16_t, uint16_t);
 	NotificationBoard *nb;
 	int numInitStages() const  {return 5;}

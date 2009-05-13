@@ -86,7 +86,8 @@ typedef struct OLSR_iface_assoc_tuple : public cObject {
 	nsaddr_t	main_addr_;
 	/// Time at which this tuple expires and must be removed.
 	double		time_;
-	cMessage *asocTimer;
+	cObject *asocTimer;
+	// cMessage *asocTimer;
 
 	inline nsaddr_t	& iface_addr()	{ return iface_addr_; }
 	inline nsaddr_t	& main_addr()	{ return main_addr_; }
@@ -120,7 +121,8 @@ typedef struct OLSR_link_tuple : public cObject {
 	double		lost_time_;
 	/// Time at which this tuple expires and must be removed.
 	double		time_;
-	cMessage *asocTimer;
+	//cMessage *asocTimer;
+	cObject *asocTimer;
 
 	inline nsaddr_t	& local_iface_addr()	{ return local_iface_addr_; }
 	inline nsaddr_t	& nb_iface_addr()		{ return nb_iface_addr_; }
@@ -152,7 +154,8 @@ typedef struct OLSR_nb_tuple : public cObject {
 	uint8_t status_;
 	/// A value between 0 and 7 specifying the node's willingness to carry traffic on behalf of other nodes.
 	uint8_t willingness_;
-	cMessage *asocTimer;
+	//cMessage *asocTimer;
+	cObject *asocTimer;
 
 	inline nsaddr_t	& nb_main_addr()	{ return nb_main_addr_; }
 	void	setNb_main_addr(const nsaddr_t &a)	{ nb_main_addr_=a; }
@@ -181,7 +184,8 @@ typedef struct OLSR_nb2hop_tuple : public cObject {
 	nsaddr_t	nb2hop_addr_;
 	/// Time at which this tuple expires and must be removed.
 	double		time_;
-	cMessage *asocTimer;
+	//cMessage *asocTimer;
+	cObject *asocTimer;
 
 	inline nsaddr_t	& nb_main_addr()	{ return nb_main_addr_; }
 	inline nsaddr_t	& nb2hop_addr()	{ return nb2hop_addr_; }
@@ -206,7 +210,8 @@ typedef struct OLSR_mprsel_tuple : public cObject {
 	nsaddr_t	main_addr_;
 	/// Time at which this tuple expires and must be removed.
 	double		time_;
-	cMessage *asocTimer;
+	// cMessage *asocTimer;
+	cObject *asocTimer;
 
 	inline nsaddr_t & main_addr()	{ return main_addr_; }
 	void	setMain_addr(const nsaddr_t &a)	{main_addr_=a; }
@@ -238,7 +243,8 @@ typedef struct OLSR_dup_tuple : public cObject {
 	addr_list_t	iface_list_;
 	/// Time at which this tuple expires and must be removed.
 	double		time_;
-	cMessage *asocTimer;
+	// cMessage *asocTimer;
+	cObject *asocTimer;
 
 	inline nsaddr_t	& getAddr()		{ return addr_; }
 	void	setAddr(const nsaddr_t &a)	{addr_=a; }
@@ -268,7 +274,8 @@ typedef struct OLSR_topology_tuple : public cObject {
 	uint16_t	seq_;
 	/// Time at which this tuple expires and must be removed.
 	double		time_;
-	cMessage *asocTimer;
+	// cMessage *asocTimer;
+	cObject *asocTimer;
 
 
 	inline nsaddr_t	& dest_addr()	{ return dest_addr_; }

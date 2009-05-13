@@ -181,14 +181,20 @@ class OLSR;			// forward declaration
 
 /// Basic timer class
 
-class OLSR_Timer :  public cMessage  {
+class OLSR_Timer :  public cOwnedObject /*cMessage*/  {
 protected:
 	OLSR*		agent_;	///< OLSR agent which created the timer.
+	cObject* tuple_;
 public:
+
+	virtual void removeTimer();
 	OLSR_Timer(OLSR* agent);
 	OLSR_Timer();
+	~OLSR_Timer();
 	virtual void expire()=0;
+	virtual void removeQueueTimer();
 	virtual void resched(double time);
+	virtual void setTuple(cObject *tuple){tuple_ = tuple;}
 };
 
 
@@ -230,13 +236,13 @@ public:
 
 /// Timer for removing duplicate tuples: OLSR_dup_tuple.
 class OLSR_DupTupleTimer : public OLSR_Timer {
-protected:
-	OLSR_dup_tuple* tuple_;
+//protected:
+//	OLSR_dup_tuple* tuple_;
 public:
 	OLSR_DupTupleTimer(OLSR* agent, OLSR_dup_tuple* tuple) : OLSR_Timer(agent) {
 		tuple_ = tuple;
 	}
-	void setTuple(OLSR_dup_tuple* tuple) {tuple_=tuple; tuple_->asocTimer = this;}
+	void setTuple(OLSR_dup_tuple* tuple) {tuple_=tuple; tuple->asocTimer = this;}
 	~OLSR_DupTupleTimer();
 	virtual void expire();
 };
@@ -246,11 +252,11 @@ class OLSR_LinkTupleTimer : public OLSR_Timer {
 public:
 	OLSR_LinkTupleTimer(OLSR* agent, OLSR_link_tuple* tuple);
 
-	void setTuple(OLSR_link_tuple* tuple) {tuple_=tuple; tuple_->asocTimer = this;}
+	void setTuple(OLSR_link_tuple* tuple) {tuple_=tuple; tuple->asocTimer = this;}
 	~OLSR_LinkTupleTimer();
 	virtual void expire();
 protected:
-	OLSR_link_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
+	//OLSR_link_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
 	bool			first_time_;
 
 };
@@ -264,11 +270,11 @@ public:
 		tuple_		= tuple;
 	}
 
-	void setTuple(OLSR_nb2hop_tuple* tuple) {tuple_=tuple; tuple_->asocTimer = this;}
+	void setTuple(OLSR_nb2hop_tuple* tuple) {tuple_=tuple; tuple->asocTimer = this;}
 	~OLSR_Nb2hopTupleTimer();
 	virtual void expire();
-protected:
-	OLSR_nb2hop_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
+//protected:
+//	OLSR_nb2hop_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
 
 };
 
@@ -282,12 +288,12 @@ public:
 		tuple_		= tuple;
 	}
 
-	void setTuple(OLSR_mprsel_tuple* tuple) {tuple_=tuple;tuple_->asocTimer = this;}
+	void setTuple(OLSR_mprsel_tuple* tuple) {tuple_=tuple;tuple->asocTimer = this;}
 	~OLSR_MprSelTupleTimer();
 	virtual void expire();
 
-protected:
-	OLSR_mprsel_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
+//protected:
+//	OLSR_mprsel_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
 
 };
 
@@ -300,11 +306,11 @@ public:
 		tuple_		= tuple;
 	}
 
-	void setTuple(OLSR_topology_tuple* tuple) {tuple_=tuple; tuple_->asocTimer = this;}
+	void setTuple(OLSR_topology_tuple* tuple) {tuple_=tuple; tuple->asocTimer = this;}
 	~OLSR_TopologyTupleTimer();
 	virtual void expire();
-protected:
-	OLSR_topology_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
+//protected:
+//	OLSR_topology_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
 
 };
 
@@ -315,11 +321,11 @@ public:
 		tuple_		= tuple;
 	}
 
-	void setTuple(OLSR_iface_assoc_tuple* tuple) {tuple_=tuple; tuple_->asocTimer = this;}
+	void setTuple(OLSR_iface_assoc_tuple* tuple) {tuple_=tuple; tuple->asocTimer = this;}
 	~OLSR_IfaceAssocTupleTimer();
 	virtual void expire();
-protected:
-	OLSR_iface_assoc_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
+//protected:
+//	OLSR_iface_assoc_tuple*	tuple_;	///< OLSR_link_tuple which must be removed.
 
 };
 
@@ -333,6 +339,11 @@ protected:
 /// functionalities related to sending and receiving packets and managing
 /// internal state.
 ///
+
+typedef std::set<OLSR_Timer *> TimerPendingList;
+typedef std::multimap <simtime_t, OLSR_Timer *> TimerQueue;
+
+
 class OLSR : public ManetRoutingBase {
 private:
 	friend class OLSR_HelloTimer;
@@ -345,8 +356,14 @@ private:
 	friend class OLSR_TopologyTupleTimer;
 	friend class OLSR_IfaceAssocTupleTimer;
 	friend class OLSR_MsgTimer;
-
+	friend class OLSR_Timer;
 protected:
+
+	//std::priority_queue<TimerQueueElem> *timerQueuePtr;
+	TimerQueue *timerQueuePtr;
+
+	cMessage *timerMessage;
+
 // must be protected and used for dereved class OLSR_ETX
 	/// A list of pending messages which are buffered awaiting for being sent.
 	std::vector<OLSR_msg>	msgs_;
@@ -383,7 +400,7 @@ protected:
 	char nodeName[50];
 
 
-	OLSR_pkt * check_packet(cPacket* ,nsaddr_t &);
+	virtual OLSR_pkt * check_packet(cPacket* ,nsaddr_t &);
 
 	// PortClassifier*	dmux_;		///< For passing packets up to agents.
 	// Trace*		logtarget_;	///< For logging.
@@ -481,10 +498,13 @@ protected:
 	virtual void finish();
 	//virtual void processPromiscuous(const cPolymorphic *details){};
 	virtual void processLinkBreak(const cPolymorphic *details);
+	virtual void scheduleNextEvent();
 
 public:
 	OLSR(){}
 	~OLSR();
+
+
 	static double		emf_to_seconds(uint8_t);
 	static uint8_t		seconds_to_emf(double);
 	static int		node_id(const nsaddr_t&);

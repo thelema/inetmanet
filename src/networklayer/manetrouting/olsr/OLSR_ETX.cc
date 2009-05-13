@@ -75,7 +75,8 @@ void OLSR_ETX_LinkQualityTimer::expire()
 {
 	OLSR_ETX *agentaux = check_and_cast<OLSR_ETX *>(agent_);
 	agentaux->OLSR_ETX::link_quality();
-	agentaux->scheduleAt(simTime()+agentaux->hello_ival_,this);
+	// agentaux->scheduleAt(simTime()+agentaux->hello_ival_,this);
+	agentaux->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+agentaux->hello_ival_,this));
 }
 
 
@@ -94,6 +95,7 @@ OLSR_ETX::initialize(int stage) {
 		tc_ival_=par("Tc_ival");
 		mid_ival_=par("Mid_ival");
 		use_mac_=par("use_mac");
+
 
 
   		parameter_.mpr_algorithm() = par("Mpr_algorithm");
@@ -131,6 +133,9 @@ OLSR_ETX::initialize(int stage) {
 
 		registerRoutingModule();
 		ra_addr_ = getAddress();
+
+		timerMessage = new cMessage();
+		timerQueuePtr = new TimerQueue;
 
 		// Starts all timers
 
@@ -2234,10 +2239,10 @@ void OLSR_ETX::finish()
 	msgs_.clear();
 	delete state_etx_ptr;
 	state_ptr = state_etx_ptr=NULL;
-	cancelAndDelete(&hello_timer_);
-	cancelAndDelete(&tc_timer_);
-	cancelAndDelete(&mid_timer_);
-	cancelAndDelete(&link_quality_timer_);
+	//cancelAndDelete(&hello_timer_);
+	//cancelAndDelete(&tc_timer_);
+	//cancelAndDelete(&mid_timer_);
+	//cancelAndDelete(&link_quality_timer_);
 	helloTimer= NULL;	///< Timer for sending HELLO messages.
 	tcTimer= NULL;	///< Timer for sending TC messages.
 	midTimer = NULL;	///< Timer for sending MID messages.
@@ -2265,7 +2270,7 @@ OLSR_ETX::~OLSR_ETX()
 	dupset().clear();
 	ifaceassocset().clear();
 */
-
+/*
 	if (&hello_timer_!=NULL)
 		cancelAndDelete(&hello_timer_);
 	if (&tc_timer_!=NULL)
@@ -2274,6 +2279,25 @@ OLSR_ETX::~OLSR_ETX()
 		cancelAndDelete(&mid_timer_);
 	if (&link_quality_timer_!=NULL)
 		cancelAndDelete(&link_quality_timer_);
+	*/
+	cancelAndDelete(timerMessage);
+	int size = timerQueuePtr->size();
+	for  (TimerQueue::iterator it = timerQueuePtr->begin();it!=timerQueuePtr->end();it++)
+	{
+		OLSR_Timer * timer = it->second;
+		timer->setTuple(NULL);
+		if (helloTimer==timer)
+			helloTimer=NULL;
+		else if (tcTimer==timer)
+			tcTimer=NULL;
+		else if (midTimer==timer)
+			midTimer=NULL;
+		else if (linkQualityTimer==timer)
+			linkQualityTimer=NULL;
+		delete timer;
+	}
+	timerQueuePtr->clear();
+	delete timerQueuePtr;
 
 }
 

@@ -67,24 +67,49 @@ Define_Module(OLSR);
 
 /********** Timers **********/
 
-
-
-OLSR_Timer::OLSR_Timer(OLSR* agent) : cMessage("OLSR_Timer")
+void OLSR_Timer::removeTimer()
 {
-	agent_ = agent;
+	removeQueueTimer();
 }
 
-OLSR_Timer::OLSR_Timer() : cMessage("OLSR_Timer"){
+OLSR_Timer::OLSR_Timer(OLSR* agent) : cOwnedObject("OLSR_Timer")
+{
+	agent_ = agent;
+	tuple_=NULL;
+}
+
+OLSR_Timer::~OLSR_Timer()
+{
+	removeTimer();
+}
+
+OLSR_Timer::OLSR_Timer() : cOwnedObject("OLSR_Timer"){
 	agent_ = dynamic_cast <OLSR*> (this->getOwner());
 	if (agent_==NULL)
 		opp_error ("timer ower is bad");
+	tuple_=NULL;
+}
+
+void OLSR_Timer::removeQueueTimer()
+{
+	TimerQueue::iterator it;
+	for (it=agent_->timerQueuePtr->begin() ; it != agent_->timerQueuePtr->end(); it++ )
+	{
+		if (it->second==this)
+		{
+			agent_->timerQueuePtr->erase(it);
+			return;
+		}
+	}
 }
 
 void OLSR_Timer::resched(double time)
 {
-	if (this->isScheduled())
-		agent_->cancelEvent(this);
-	agent_->scheduleAt (simTime()+time,this);
+	removeQueueTimer();
+	agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+time,this));
+	//if (this->isScheduled())
+	//	agent_->cancelEvent(this);
+	// agent_->scheduleAt (simTime()+time,this);
 }
 
 
@@ -95,7 +120,8 @@ void OLSR_Timer::resched(double time)
 void
 OLSR_HelloTimer::expire() {
 	agent_->send_hello();
-	agent_->scheduleAt(simTime()+agent_->hello_ival_- JITTER,this);
+	// agent_->scheduleAt(simTime()+agent_->hello_ival_- JITTER,this);
+	agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+agent_->hello_ival_- JITTER,this));
 }
 
 ///
@@ -106,7 +132,9 @@ void
 OLSR_TcTimer::expire() {
 	if (agent_->mprselset().size() > 0)
 		agent_->send_tc();
-	agent_->scheduleAt(simTime()+agent_->tc_ival_- JITTER,this);
+	// agent_->scheduleAt(simTime()+agent_->tc_ival_- JITTER,this);
+	agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+agent_->tc_ival_- JITTER,this));
+
 }
 
 ///
@@ -118,7 +146,8 @@ void
 OLSR_MidTimer::expire() {
 #ifdef MULTIPLE_IFACES_SUPPORT
 	agent_->send_mid();
-	agent_->scheduleAt(simTime()+agent_->mid_ival_- JITTER,this);
+//	agent_->scheduleAt(simTime()+agent_->mid_ival_- JITTER,this);
+	agent_->timerQueue.insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+agent_->mid_ival_- JITTER,this));
 #endif
 }
 
@@ -133,18 +162,29 @@ OLSR_MidTimer::expire() {
 
 void
 OLSR_DupTupleTimer::expire () {
-	double time =tuple_->time();
+	OLSR_dup_tuple* tuple = dynamic_cast<OLSR_dup_tuple*> (tuple_);
+	double time = tuple->time();
 	if (time < SIMTIME_DBL(simTime()))
+	{
+		removeTimer();
 		delete this;
+	}
 	else
-		agent_->scheduleAt (simTime()+DELAY_T(time),this);
+	{
+		// agent_->scheduleAt (simTime()+DELAY_T(time),this);
+		agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+DELAY_T(time),this));
+	}
 }
 
 OLSR_DupTupleTimer::~OLSR_DupTupleTimer () {
-	tuple_->asocTimer= NULL;
+	removeTimer();
+	if (!tuple_)
+		return;
+	OLSR_dup_tuple* tuple = dynamic_cast<OLSR_dup_tuple*> (tuple_);
+	tuple->asocTimer= NULL;
 	if (agent_->state_ptr==NULL)
 		return;
-	agent_->rm_dup_tuple(tuple_);
+	agent_->rm_dup_tuple(tuple);
 	delete tuple_;
 }
 
@@ -162,7 +202,7 @@ OLSR_DupTupleTimer::~OLSR_DupTupleTimer () {
 
 OLSR_LinkTupleTimer::OLSR_LinkTupleTimer(OLSR* agent, OLSR_link_tuple* tuple) : OLSR_Timer(agent) {
 		tuple_		= tuple;
-		tuple_->asocTimer = this;
+		tuple->asocTimer = this;
 		first_time_	= true;
 }
 
@@ -170,24 +210,36 @@ void
 OLSR_LinkTupleTimer::expire () {
 	double now;
 	now = SIMTIME_DBL(simTime());
-	if (tuple_->time() < now)
+	OLSR_link_tuple* tuple = dynamic_cast<OLSR_link_tuple*> (tuple_);
+	if (tuple->time() < now)
+	{
+		removeTimer();
 		delete this;
-	else if (tuple_->sym_time() < now) {
+	}
+	else if (tuple->sym_time() < now) {
 		if (first_time_)
 			first_time_ = false;
 		else
-			agent_->nb_loss(tuple_);
-		agent_->scheduleAt (simTime()+DELAY_T(tuple_->time()),this);
+			agent_->nb_loss(tuple);
+		// agent_->scheduleAt (simTime()+DELAY_T(tuple_->time()),this);
+		agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+DELAY_T(tuple->time()),this));
 	}
 	else
-		agent_->scheduleAt (simTime()+DELAY_T(MIN(tuple_->time(), tuple_->sym_time())),this);
+	{
+		// agent_->scheduleAt (simTime()+DELAY_T(MIN(tuple_->time(), tuple_->sym_time())),this);
+		agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+DELAY_T(MIN(tuple->time(), tuple->sym_time())),this));
+	}
 }
 
 OLSR_LinkTupleTimer::~OLSR_LinkTupleTimer () {
-	tuple_->asocTimer= NULL;
+	removeTimer();
+	if (!tuple_)
+		return;
+	OLSR_link_tuple* tuple = dynamic_cast<OLSR_link_tuple*> (tuple_);
+	tuple->asocTimer= NULL;
 	if (agent_->state_ptr==NULL)
 		return;
-	agent_->rm_link_tuple(tuple_);
+	agent_->rm_link_tuple(tuple);
 	delete tuple_;
 }
 
@@ -201,19 +253,28 @@ OLSR_LinkTupleTimer::~OLSR_LinkTupleTimer () {
 
 void
 OLSR_Nb2hopTupleTimer::expire () {
-	double time =tuple_->time();
+	OLSR_nb2hop_tuple* tuple = dynamic_cast<OLSR_nb2hop_tuple*> (tuple_);
+	double time =tuple->time();
 	if (time < SIMTIME_DBL(simTime())) {
+		removeTimer();
 		delete this;
 	}
 	else
-		agent_->scheduleAt (simTime()+DELAY_T(time),this);
+	{
+		// agent_->scheduleAt (simTime()+DELAY_T(time),this);
+		agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+DELAY_T(time),this));
+	}
 }
 
 OLSR_Nb2hopTupleTimer::~OLSR_Nb2hopTupleTimer () {
-	tuple_->asocTimer= NULL;
+	removeTimer();
+	if (!tuple_)
+		return;
+	OLSR_nb2hop_tuple* tuple = dynamic_cast<OLSR_nb2hop_tuple*> (tuple_);
+	tuple->asocTimer= NULL;
 	if (agent_->state_ptr==NULL)
 		return;
-	agent_->rm_nb2hop_tuple(tuple_);
+	agent_->rm_nb2hop_tuple(tuple);
 	delete tuple_;
 }
 
@@ -229,19 +290,28 @@ OLSR_Nb2hopTupleTimer::~OLSR_Nb2hopTupleTimer () {
 
 void
 OLSR_MprSelTupleTimer::expire () {
-	double time =tuple_->time();
+	OLSR_mprsel_tuple* tuple = dynamic_cast<OLSR_mprsel_tuple*> (tuple_);
+	double time =tuple->time();
 	if (time < SIMTIME_DBL(simTime())) {
+		removeTimer();
 		delete this;
 	}
 	else
-		agent_->scheduleAt (simTime()+DELAY_T(time),this);
+	{
+//		agent_->scheduleAt (simTime()+DELAY_T(time),this);
+		agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+DELAY_T(time),this));
+	}
 }
 
 OLSR_MprSelTupleTimer::~OLSR_MprSelTupleTimer () {
-	tuple_->asocTimer= NULL;
+	removeTimer();
+	if (!tuple_)
+		return;
+	OLSR_mprsel_tuple* tuple = dynamic_cast<OLSR_mprsel_tuple*> (tuple_);
+	tuple->asocTimer= NULL;
 	if (agent_->state_ptr==NULL)
 		return;
-	agent_->rm_mprsel_tuple(tuple_);
+	agent_->rm_mprsel_tuple(tuple);
 	delete tuple_;
 }
 
@@ -257,19 +327,28 @@ OLSR_MprSelTupleTimer::~OLSR_MprSelTupleTimer () {
 
 void
 OLSR_TopologyTupleTimer::expire () {
-	double time =tuple_->time();
+	OLSR_topology_tuple* tuple = dynamic_cast<OLSR_topology_tuple*> (tuple_);
+	double time =tuple->time();
 	if (time < SIMTIME_DBL(simTime())) {
+		removeTimer();
 		delete this;
 	}
 	else
-		agent_->scheduleAt (simTime()+DELAY_T(time),this);
+	{
+//		agent_->scheduleAt (simTime()+DELAY_T(time),this);
+		agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+DELAY_T(time),this));
+	}
 }
 
 OLSR_TopologyTupleTimer::~OLSR_TopologyTupleTimer () {
-	tuple_->asocTimer= NULL;
+	removeTimer();
+	if (!tuple_)
+		return;
+	OLSR_topology_tuple* tuple = dynamic_cast<OLSR_topology_tuple*> (tuple_);
+	tuple->asocTimer= NULL;
 	if (agent_->state_ptr==NULL)
 		return;
-	agent_->rm_topology_tuple(tuple_);
+	agent_->rm_topology_tuple(tuple);
 	delete tuple_;
 }
 
@@ -281,19 +360,28 @@ OLSR_TopologyTupleTimer::~OLSR_TopologyTupleTimer () {
 ///
 
 void OLSR_IfaceAssocTupleTimer::expire () {
-	double time =tuple_->time();
+	OLSR_iface_assoc_tuple* tuple = dynamic_cast<OLSR_iface_assoc_tuple*> (tuple_);
+	double time =tuple->time();
 	if (time < SIMTIME_DBL(simTime())) {
+		removeTimer();
 		delete this;
 	}
 	else
-		agent_->scheduleAt (simTime()+DELAY_T(time),this);
+	{
+	//	agent_->scheduleAt (simTime()+DELAY_T(time),this);
+		agent_->timerQueuePtr->insert(std::pair<simtime_t, OLSR_Timer *>(simTime()+DELAY_T(time),this));
+	}
 }
 
 OLSR_IfaceAssocTupleTimer::~OLSR_IfaceAssocTupleTimer () {
-	tuple_->asocTimer= NULL;
+	removeTimer();
+	if (!tuple_)
+		return;
+	OLSR_iface_assoc_tuple* tuple = dynamic_cast<OLSR_iface_assoc_tuple*> (tuple_);
+	tuple->asocTimer= NULL;
 	if (agent_->state_ptr==NULL)
 		return;
-	agent_->rm_ifaceassoc_tuple(tuple_);
+	agent_->rm_ifaceassoc_tuple(tuple);
 	delete tuple_;
 }
 
@@ -308,6 +396,7 @@ OLSR_IfaceAssocTupleTimer::~OLSR_IfaceAssocTupleTimer () {
 void
 OLSR_MsgTimer::expire() {
 	agent_->send_pkt();
+	removeTimer();
 	delete this;
 }
 
@@ -337,6 +426,12 @@ OLSR::initialize(int stage) {
 
 		registerRoutingModule();
 		ra_addr_ = getAddress();
+
+
+		timerMessage = new cMessage();
+		timerQueuePtr = new TimerQueue;
+
+
 		// Starts all timers
 
 		helloTimer = new OLSR_HelloTimer();	///< Timer for sending HELLO messages.
@@ -352,6 +447,7 @@ OLSR::initialize(int stage) {
 		{
 			linkLayerFeeback();
 		}
+		scheduleNextEvent();
 	}
 }
 
@@ -371,14 +467,23 @@ void OLSR::handleMessage (cMessage *msg)
 {
 	if (msg->isSelfMessage())
 	{
-		OLSR_Timer *timer=dynamic_cast<OLSR_Timer*>(msg);
-		if (timer==NULL)
-			opp_error ("timer ower is bad");
-		else
-			timer->expire();
+		//OLSR_Timer *timer=dynamic_cast<OLSR_Timer*>(msg);
+		while (timerQueuePtr->begin()->first<=simTime())
+		{
+			OLSR_Timer *timer= timerQueuePtr->begin()->second;
+			if (timer==NULL)
+				opp_error ("timer ower is bad");
+			else
+			{
+				timerQueuePtr->erase(timerQueuePtr->begin());
+				timer->expire();
+			}
+		}
 	}
 	else
 		recv_olsr(msg);
+
+	scheduleNextEvent();
 }
 
 ///
@@ -2060,7 +2165,7 @@ void OLSR:: processLinkBreak(const cPolymorphic *details)
 
 void OLSR::finish()
 {
-
+	/*
 	rtable_.clear();
 	msgs_.clear();
 	delete state_ptr;
@@ -2072,6 +2177,7 @@ void OLSR::finish()
 	helloTimer= NULL;	///< Timer for sending HELLO messages.
 	tcTimer= NULL;	///< Timer for sending TC messages.
 	midTimer = NULL;	///< Timer for sending MID messages.
+	*/
 }
 
 OLSR::~OLSR()
@@ -2093,13 +2199,38 @@ OLSR::~OLSR()
 	dupset().clear();
 	ifaceassocset().clear();
 */
-
+/*
 	if (&hello_timer_!=NULL)
 		cancelAndDelete(&hello_timer_);
 	if (&tc_timer_!=NULL)
 		cancelAndDelete(&tc_timer_);
 	if (&mid_timer_!=NULL)
 		cancelAndDelete(&mid_timer_);
+*/
+	cancelAndDelete(timerMessage);
+	int size = timerQueuePtr->size();
+	for  (TimerQueue::iterator it = timerQueuePtr->begin();it!=timerQueuePtr->end();it++)
+	{
+		OLSR_Timer * timer = it->second;
+		timer->setTuple(NULL);
+		if (helloTimer==timer)
+			helloTimer=NULL;
+		else if (tcTimer==timer)
+			tcTimer=NULL;
+		else if (midTimer==timer)
+			midTimer=NULL;
+		delete timer;
+	}
+
+	if (helloTimer)
+		delete helloTimer;
+	else if (tcTimer)
+		delete tcTimer;
+	else if (midTimer)
+		delete midTimer;
+
+	timerQueuePtr->clear();
+	delete timerQueuePtr;
 }
 
 
@@ -2144,4 +2275,24 @@ bool OLSR::isOurType(cPacket * msg)
 bool OLSR::getDestAddress(cPacket *msg,Uint128 &dest)
 {
 	return false;
+}
+
+void OLSR::scheduleNextEvent()
+{
+	TimerQueue::iterator e = timerQueuePtr->begin();
+	if (timerMessage->isScheduled())
+	{
+		if (e->first <timerMessage->getArrivalTime())
+		{
+			cancelEvent(timerMessage);
+			scheduleAt(e->first,timerMessage);
+		}
+		else if (e->first>timerMessage->getArrivalTime())
+			error("OLSR timer Queue problem");
+	}
+	else
+	{
+		double time = SIMTIME_DBL(e->first);
+		scheduleAt(e->first,timerMessage);
+	}
 }
