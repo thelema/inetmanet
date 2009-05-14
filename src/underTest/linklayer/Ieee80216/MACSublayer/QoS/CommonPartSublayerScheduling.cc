@@ -151,14 +151,14 @@ void CommonPartSublayerScheduling::sendPacketsDown( int burst_capacity ) {
 	}
 	else if ( scheduler == "WRR" ) {
 		while ( scheduled_packets_size < burst_capacity && pending_packets > 0 ) {
-			ev << "scheduledPacketSize: "<<scheduled_packets_size<< "  burstCapacity: "<<burst_capacity<<"\n";
+			EV << "scheduledPacketSize: "<<scheduled_packets_size<< "  burstCapacity: "<<burst_capacity<<"\n";
 			doWeightedRoundRobin( burst_capacity, &scheduled_packets_size, false );
 
 			pending_packets = queue_ugs.size() + queue_rtps.size() + queue_be.size() + queue_nrtps.size() + queue_ertps.size();
 		}
 	}
 	else if ( scheduler == "APQ" ) {
-		ev << "scheduledPacketSize: "<<scheduled_packets_size<< "  burstCapacity: "<<burst_capacity<<"\n";
+		EV << "scheduledPacketSize: "<<scheduled_packets_size<< "  burstCapacity: "<<burst_capacity<<"\n";
 		doAbsolutePriorityQueuing( burst_capacity, &scheduled_packets_size );
 	}
 
@@ -273,7 +273,7 @@ void CommonPartSublayerScheduling::doWeightedRoundRobin( int max_burst_size, int
 
 				if ( *scheduled_packets_size + msg->getByteLength() <= max_burst_size ) {
 					*scheduled_packets_size += msg->getByteLength();
-					ev << "  packetSize: "<< msg->getByteLength() << "\n";
+					EV << "  packetSize: "<< msg->getByteLength() << "\n";
 
 					sums[priority] += msg->getByteLength();
 //					sums_perSecond[priority] += msg->length();
@@ -300,7 +300,7 @@ void CommonPartSublayerScheduling::doWeightedRoundRobin( int max_burst_size, int
 
 		if ( cancel_priority )
 			packet_size_too_large_counter++; //If all packets to large. If even BE doesn't fit, then break. Otherwise endless loop.
-			//ev << "packet size error counter: " << packet_size_too_large_counter << "\n";
+			//EV << "packet size error counter: " << packet_size_too_large_counter << "\n";
 	}
 
 	if ( packet_size_too_large_counter > 0 )
@@ -326,7 +326,7 @@ void CommonPartSublayerScheduling::doAbsolutePriorityQueuing( int max_burst_size
 
 			if ( *scheduled_packets_size + msg->getByteLength() <= max_burst_size ) {
 				*scheduled_packets_size += msg->getByteLength();
-				ev << "  packetSize: "<< msg->getByteLength() << "\n";
+				EV << "  packetSize: "<< msg->getByteLength() << "\n";
 
 				sums[priority] += msg->getByteLength();
 //				sums_perSecond[priority] += msg->length();

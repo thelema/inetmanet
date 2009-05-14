@@ -289,7 +289,7 @@ struct structBasestationInfo
 
 	bool enablePacking;
 
-	int downlink_per_second;	// fixed downlink per second. if 0, downlink_to_uplink is used to calculate is in BS
+	double downlink_per_second;	//VITA geaendert: war davor int // fixed downlink per second. if 0, downlink_to_uplink is used to calculate is in BS
 	double downlink_to_uplink;
 
 	bool useULGrantWaitingQueue;

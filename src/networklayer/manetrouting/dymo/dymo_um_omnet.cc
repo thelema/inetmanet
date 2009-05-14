@@ -251,8 +251,6 @@ DYMOUM::~ DYMOUM()
 		delete gateWayAddress;
 	if (ipNodeId)
 		delete ipNodeId;
-	if (send_buf)
-		delete send_buf;
 	free(progname);
 
 	macToIpAdress.clear();

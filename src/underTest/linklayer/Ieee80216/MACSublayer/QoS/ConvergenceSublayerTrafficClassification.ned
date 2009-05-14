@@ -1,6 +1,6 @@
 package inet.underTest.linklayer.Ieee80216.MACSublayer.QoS;
 //
-//@author Michael KrÃ¼cken
+//@author Michael Krücken
 //
 
 simple ConvergenceSublayerTrafficClassification

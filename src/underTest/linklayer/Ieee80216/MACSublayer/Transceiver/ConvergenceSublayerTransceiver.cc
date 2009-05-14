@@ -22,14 +22,14 @@ void ConvergenceSublayerTransceiver::initialize()
 }
 
 void ConvergenceSublayerTransceiver::handleMessage(cMessage *msg)
-{	
+{
     if (msg->arrivedOn(higherLayerGateIn))
     {
-    	ev << "\n\nMessage arrived on ConvergenceSublayerTransceiver! ==> " << msg;
-    	ev << "Forwarding...";
+    	EV << "\n\nMessage arrived on ConvergenceSublayerTransceiver! ==> " << msg;
+    	EV << "Forwarding...";
     	send(msg,"commonPartGateOut");
     }
-    
+
 }
 
 

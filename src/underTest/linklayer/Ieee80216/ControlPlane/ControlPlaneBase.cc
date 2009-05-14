@@ -166,9 +166,9 @@ ServiceFlow *ControlPlaneBase::getServiceFlowForCID( int cid ) {
 		if ( sfid_it != map_serviceFlows->end() ) {
 			return &((*sfid_it).second);
 		}
-		else ev << "getServiceFlowForCID("<< cid <<"): SFID not found!\n";
+		else EV << "getServiceFlowForCID("<< cid <<"): SFID not found!\n";
 	}
-	else ev << "getServiceFlowForCID("<< cid <<"): CID not found!\n";
+	else EV << "getServiceFlowForCID("<< cid <<"): CID not found!\n";
 }
 
 int ControlPlaneBase::getSFIDForCID( int cid ) {
@@ -178,23 +178,23 @@ int ControlPlaneBase::getSFIDForCID( int cid ) {
 		return cid_it->second;
 	}
 	else {
-		ev << "getSFIDForCID("<< cid <<"): CID not found!\n";
+		EV << "getSFIDForCID("<< cid <<"): CID not found!\n";
 		return NULL;
 	}
 }
 
 void ControlPlaneBase::listActiveServiceFlows() {
-	ev << "\n\n  Active ServiceFlows (CID):\n";
+	EV << "\n  (in  ControlPlaneBase::listActiveServiceFlows)\n";
 	if ( map_serviceFlows->size() > 0 ) {
 		ServiceFlowMap::iterator sf_it;
 		for ( sf_it=map_serviceFlows->begin(); sf_it!=map_serviceFlows->end(); sf_it++ ) {
 			ServiceFlow *cur_sf = &(sf_it->second);
 			if ( cur_sf->state == SF_ACTIVE ) {
-				ev << "  " << cur_sf->CID << "  "<< cur_sf->link_type <<"\n";
+				EV << " CID: " << cur_sf->CID << "    link type:"<< cur_sf->link_type <<"\n";
 			}
 		}
 	}
-	ev << "\n\n";
+	EV << "\n\n";
 }
 
 /**
@@ -217,11 +217,11 @@ std::list<int> ControlPlaneBase::findMatchingServiceFlow( ip_traffic_types traff
 			if ( sf_it != map_serviceFlows->end() ) {
 				ServiceFlow sf = (*sf_it).second;
 
-				ev << (*cm_it).first << " => " << (*cm_it).second << ", SFTrafficType=" << sf.traffic_type << ", link type="<< sf.link_type <<"\n";
+				EV << (*cm_it).first << " => " << (*cm_it).second << ", SFTrafficType=" << sf.traffic_type << ", link type="<< sf.link_type <<"\n";
 
 				if ( sf.traffic_type == traffic_type && sf.link_type == link_type ) {
 
-					ev << "Matching ServiceFlow found!\n";
+					EV << "Matching ServiceFlow found!\n";
 					list_matching_cids.push_back( sf.CID );
 				}
 			}

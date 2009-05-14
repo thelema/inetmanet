@@ -33,7 +33,7 @@ ControlPlaneBasestation::~ControlPlaneBasestation() {
 
 //void ControlPlaneBasestation::startTransmitting(cMessage *msg)
 //{
-//ev << "Starting transmission of " << msg << endl;
+//EV << "Starting transmission of " << msg << endl;
 //}
 
 void ControlPlaneBasestation::finish() {
@@ -67,10 +67,12 @@ void ControlPlaneBasestation::initialize(int stage) {
 		 * Uebernahme von Paramtern fuer die Basisstation
 		 *
 		 */
-		/// ERROR
-		DlMapInterval = &cMsgPar("DLMapInterval"); // ERROR SEE cPar
-		/// ERROR
-		localBasestationInfo.DLMAP_interval = par("DLMapInterval"); //DlMapInterval->doubleValue();// festlegen der DL-MAP Intervall und länge des Donlink Rahmen
+		//DlMapInterval = &cMsgPar("DLMapInterval");
+		//localBasestationInfo.DLMAP_interval = DlMapInterval->doubleValue();// festlegen der DL-MAP Intervall und länge des Donlink Rahmen
+
+		//DlMapInterval = par("DLMapInterval");
+
+		localBasestationInfo.DLMAP_interval = par("DLMapInterval");
 		localBasestationInfo.DownlinkChannel = par("DownlinkChannel");
 		localBasestationInfo.UplinkChannel = par("UplinkChannel");
 
@@ -120,7 +122,7 @@ void ControlPlaneBasestation::initialize(int stage) {
 
 		// state variables
 		fsm.setName("BS Control Plane State Machine");
-		//ev << "Inizilisierung von ControlPlaneBS abgeschlossen.\n";
+		//EV << "Inizilisierung von ControlPlaneBS abgeschlossen.\n";
 	}
 
 	// get the pointer to the scheduling module
@@ -147,16 +149,16 @@ void ControlPlaneBasestation::initialize(int stage) {
 
 	//Verbindung zu den Radio-Modulen
 	cModule *module_radio_Transceiver = getParentModule()->getParentModule()->getSubmodule("bsTransceiver")->getSubmodule("radioTransceiver");
-	ev << "Achtung RS: Name des Radio Moduls: "
+	EV << "Achtung RS: Name des Radio Moduls: "
 			<<module_radio_Transceiver->getName() <<"\n";
 	if (transceiverRadio = check_and_cast<Ieee80216Radio *>(module_radio_Transceiver))
-		ev <<"check erfolgreich: transceiverRadio = "<<module_radio_Transceiver->getName() <<"\n";
+		EV <<"check erfolgreich: transceiverRadio = "<<module_radio_Transceiver->getName() <<"\n";
 
 	cModule *module_radio_Receiver = getParentModule()->getParentModule()->getSubmodule("bsReceiver")->getSubmodule("radioReceiver");
-	ev << "Achtung RS: Name des Radio Moduls: " <<module_radio_Receiver->getName()
+	EV << "Achtung RS: Name des Radio Moduls: " <<module_radio_Receiver->getName()
 			<<"\n";
 	if (receiverRadio = dynamic_cast<Ieee80216Radio *>(module_radio_Receiver))
-		ev <<"check erfolgreich: receiverRadio = " << module_radio_Receiver->getName()
+		EV <<"check erfolgreich: receiverRadio = " << module_radio_Receiver->getName()
 				<<"\n";
 
 	/**
@@ -172,7 +174,7 @@ void ControlPlaneBasestation::initialize(int stage) {
 	delete tmp;
 
 	uplink_subframe_starttime_offset = (localBasestationInfo.radioDatenrate - localBasestationInfo.downlink_per_second) * localBasestationInfo.DLMAP_interval / localBasestationInfo.radioDatenrate;
-
+	EV << "VITA: uplink_subframe_starttime_offset: " << uplink_subframe_starttime_offset << endl;
 
 //	module = parentModule()->submodule("cp_authorization");
 //	cps_auth = check_and_cast<CommonPartSublayerAuthorizationModule*>(module);
@@ -198,9 +200,8 @@ void ControlPlaneBasestation::initialize(int stage) {
  * the SS uplink opportunities in the next UL-MAP.
  * TODO classification BS
  */
-void ControlPlaneBasestation::handleClassificationCommand(
-		Ieee80216ClassificationCommand *command) {
-
+void ControlPlaneBasestation::handleClassificationCommand(Ieee80216ClassificationCommand *command) {
+	EV << "(in ControlPlaneBasestation::handleClassificationCommand) received command: " << command->getName() <<".\n";
 	MobileSubscriberStationList::iterator it;
 	for (it=localeMobilestationList.begin(); it!=localeMobilestationList.end(); it++) {
 
@@ -220,7 +221,7 @@ void ControlPlaneBasestation::handleClassificationCommand(
 *
 */
 void ControlPlaneBasestation::handleMessage(cMessage *msg) {
-
+	EV << "(in ControlPlaneBasestation::handleMessage) received message: " << msg->getName() <<".\n";
 	ControlPlaneBase::handleMessage(msg);
 
 	if (msg->getArrivalGateId() == serviceFlowsGateIn) {
@@ -242,7 +243,7 @@ void ControlPlaneBasestation::handleMessage(cMessage *msg) {
 * Bearbeitung von Nachrichten h�herer Schichten
 */
 void ControlPlaneBasestation::handleHigherLayerMsg(cMessage *msg) {
-
+	EV << "(in ControlPlaneBasestation::handleHigherLayerMsg) received message: " << msg->getName() <<".\n";
 }
 
 /**
@@ -250,7 +251,7 @@ void ControlPlaneBasestation::handleHigherLayerMsg(cMessage *msg) {
 */
 void ControlPlaneBasestation::handleLowerLayerMsg(cMessage *msg) {
 
-	ev << "Module " << getName() << " receice message: " << msg->getName() <<".\n";
+	EV << "(in ControlPlaneBasestation::handleLowerLayerMsg) received message: " << msg->getName() <<".\n";
 	if (dynamic_cast<Ieee80216GenericMacHeader*>(msg))
 	{
 		Ieee80216GenericMacHeader *genericMacHeader = check_and_cast<Ieee80216GenericMacHeader *>(msg);
@@ -282,10 +283,10 @@ void ControlPlaneBasestation::handleLowerLayerMsg(cMessage *msg) {
 /**
 * Identifikation von Management-Nachrichten
 */
-void ControlPlaneBasestation::handleManagementFrame(
-		Ieee80216GenericMacHeader *genericFrame) {
+void ControlPlaneBasestation::handleManagementFrame(Ieee80216GenericMacHeader *genericFrame) {
+	EV << "(in ControlPlaneBasestation::handleManagementFrame) " << genericFrame << endl;
 	if (!(dynamic_cast<Ieee80216ManagementFrame *>(genericFrame))) {
-		error("Handle Manegement Frame keine Kontrolnachricht!");
+		error("Handle Management Frame keine Kontrolnachricht!");
 	}
 
 	Ieee80216ManagementFrame *mgmtFrame = check_and_cast<
@@ -342,7 +343,8 @@ void ControlPlaneBasestation::handleManagementFrame(
  *
  ****************************************************************************/
 void ControlPlaneBasestation::handleSelfMsg(cMessage *msg) {
-	ev << "Self message:"<< msg->getName() <<" im Modul ("<< msg <<"|"<< setMStoScanmodusTimer <<" | "<<scantimer<<"\n";
+	EV << "(in  ControlPlaneBasestation::handleSelfMsg) " << endl;
+	EV << "Self message:"<< msg->getName() <<" im Modul ("<< msg <<"|"<< setMStoScanmodusTimer <<" | "<<scantimer<<"\n";
 	string scanmodusTimer = "setMStoScanmodusTimer";
 
 	if (msg==broadcastTimer) {
@@ -463,6 +465,7 @@ void ControlPlaneBasestation::handleWithFSM(cMessage *msg) {
 }
 
 void ControlPlaneBasestation::handleServiceFlowMessage(cMessage *msg) {
+	EV << "(in  ControlPlaneBasestation::handleServiceFlowMessage) " << endl;
 	send(msg, transceiverCommonGateOut);
 }
 
@@ -470,22 +473,21 @@ void ControlPlaneBasestation::handleServiceFlowMessage(cMessage *msg) {
 * Funktion zur bearbeitung des Bandwith Request MAC Header
 *
 **/
-void ControlPlaneBasestation::handleBandwidthRequest(
-		Ieee80216BandwidthMacHeader *bw_req) {
-
+void ControlPlaneBasestation::handleBandwidthRequest(Ieee80216BandwidthMacHeader *bw_req) {
+	EV << "(in  ControlPlaneBasestation::handleBandwidthRequest) " << endl;
 	bool isAuthorized;
 
 	// Management Connections
 	// are immediately activated
 	if (lookupLocaleMobilestationListCID(bw_req->getCID() ) != NULL) {
-		ev << "BW-REQ for Management-Connection arrived, CID: "
+		EV << "BW-REQ for Management-Connection arrived, CID: "
 				<< bw_req->getCID() <<"\n";
 		isAuthorized = true;
 	}
 	// Transport Connections
 	// have to be authorized before activation
 	else {
-		ev << "BW-REQ for Transport-Connection arrived, CID: "
+		EV << "BW-REQ for Transport-Connection arrived, CID: "
 				<< bw_req->getCID() <<"\n";
 		isAuthorized = false;
 
@@ -495,13 +497,13 @@ void ControlPlaneBasestation::handleBandwidthRequest(
 	if (isAuthorized) {
 		// activate the corresponding ServiceFlow
 		getServiceFlowForCID( bw_req->getCID() )->state = SF_ACTIVE;
-		ev << "ServiceFlow "<< getServiceFlowForCID( bw_req->getCID() )->SFID <<" set ACTIVE for CID: " << bw_req->getCID() << " (type: "<< getServiceFlowForCID( bw_req->getCID() )->link_type <<")\n";
+		EV << "ServiceFlow "<< getServiceFlowForCID( bw_req->getCID() )->SFID <<" set ACTIVE for CID: " << bw_req->getCID() << " (type: "<< getServiceFlowForCID( bw_req->getCID() )->link_type <<")\n";
 	}
 }
 /*
 void ControlPlaneBasestation::handleScheduleTimer() {
 
-	ev << "\n ENTER HANDLESCHEDULETIMER \n";
+	EV << "\n ENTER HANDLESCHEDULETIMER \n";
 
 	if (map_serviceFlows->size() > 0) {
 		ServiceFlowMap::iterator sf_it;
@@ -515,9 +517,9 @@ void ControlPlaneBasestation::handleScheduleTimer() {
 				cMessage *sf_timer = new cMessage(cid_str);
 
 				if (sf_timer->isScheduled() ) {
-					ev << "\n\n\n KLAPPT!!! \n\n\n";
+					EV << "\n\n\n KLAPPT!!! \n\n\n";
 				} else {
-					ev << "Message with CID="<< cur_sf->CID
+					EV << "Message with CID="<< cur_sf->CID
 							<<" has not been scheduled, yet. \n\n\n";
 					scheduleAt(simTime() + (DlMapInterval->doubleValue() / 2),
 							sf_timer);
@@ -533,7 +535,7 @@ void ControlPlaneBasestation::buildPreamble()
 {
 	Ieee80216_Preambel *Preamble = new Ieee80216_Preambel ("Preamble");
 	sendtoLowerLayer(Preamble);
-	ev << "Laenge der Praemble: " << Preamble->getByteLength() <<endl;
+	EV << "Laenge der Praemble: " << Preamble->getByteLength() <<endl;
 }
 
 /**
@@ -550,6 +552,7 @@ void ControlPlaneBasestation::buildPreamble()
 /** @brief "Kapitel 5.2.4" MAP-Nachrichten */
 void ControlPlaneBasestation::buildDL_MAP()//Erzeugt die DL-Map Managementnachricht
 {
+	EV << "(in ControlPlaneBasestation::buildDL_MAP) " << endl;
 	long tx_data_in_next_dlmap = 0;
 
 	/** General MAC-Header Informationen
@@ -585,7 +588,7 @@ void ControlPlaneBasestation::buildDL_MAP()//Erzeugt die DL-Map Managementnachri
 	 */
 	if ( !tx_dataMsgQueue->empty() ) {
 		int tx_elements = tx_dataMsgQueue->size();
-		ev << "Found "<< tx_elements <<" in the data queue. Creating DL_MAP-IEs...\n";
+		EV << "Found "<< tx_elements <<" in the data queue. Creating DL_MAP-IEs...\n";
 
 		ManagementMessage->setDlmap_ie_ListArraySize(tx_elements);
 
@@ -595,12 +598,12 @@ void ControlPlaneBasestation::buildDL_MAP()//Erzeugt die DL-Map Managementnachri
 				/ localBasestationInfo.radioDatenrate;
 
 
-		/*
-		 ev << "dlmap_ie_size	  : " << localBasestationInfo.dlmap_ie_size << "\n";
-		 ev << "cur_ulmap_size	  : " << cur_ulmap_size << "\n";
-		 ev << "acc_offset_duration: " << accumulated_offset_duration << "\n";
-		 ev << "radioDatenrate	  : " << localBasestationInfo.radioDatenrate << "\n";
-		 */
+
+		 EV << "dlmap_ie_size	  : " << localBasestationInfo.dlmap_ie_size << "\n";
+		 EV << "cur_ulmap_size	  : " << cur_ulmap_size << "\n";
+		 EV << "acc_offset_duration: " << accumulated_offset_duration << "\n";
+		 EV << "radioDatenrate	  : " << localBasestationInfo.radioDatenrate << "\n";
+
 
 		// send all elements currently waiting in the data queue
 		Ieee80216MacHeaderFrameList::iterator it = tx_dataMsgQueue->begin();
@@ -614,14 +617,14 @@ void ControlPlaneBasestation::buildDL_MAP()//Erzeugt die DL-Map Managementnachri
 			tx_data_in_next_dlmap += gm->getByteLength();
 
 			double tx_element_duration = (double)gm->getByteLength() / localBasestationInfo.radioDatenrate;
-				//ev << "gm->length()        = " << gm->length() <<"\n";
-				//ev << "tx_element_duration = " << tx_element_duration <<"\n";
+				//EV << "gm->length()        = " << gm->length() <<"\n";
+				//EV << "tx_element_duration = " << tx_element_duration <<"\n";
 
 			dl_map_ie->setStartTime_Offset( accumulated_offset_duration );
 
 			accumulated_offset_duration = accumulated_offset_duration + tx_element_duration;
 
-			ev << "DL-Burst Starttime Offset: "
+			EV << "DL-Burst Starttime Offset: "
 					<< dl_map_ie->getStartTime_Offset() << "\n";
 
 			ManagementMessage->setDlmap_ie_List(index++, *dl_map_ie);
@@ -658,19 +661,19 @@ void ControlPlaneBasestation::buildDL_MAP()//Erzeugt die DL-Map Managementnachri
 	}
 
 	broadcast_stop_time = simTime().dbl() + accumulated_offset_duration;
-	ev << "BROADCAST DOWNLINK STOP TIME: "<< broadcast_stop_time << "\n";
+	EV << "BROADCAST DOWNLINK STOP TIME: "<< broadcast_stop_time << "\n";
 
 	/** Sende Nachricht zum Transciever Module
 	 */
 	//uplink_subframe_starttime_offset = simTime() + localBasestationInfo.DLMAP_interval;
 
 	uplink_subframe_starttime = simTime().dbl() + uplink_subframe_starttime_offset;
-	ev << "\nDL subframe start: " << simTime() << "\n";
-	ev << "UL subframe start: " << uplink_subframe_starttime << "\n";
+	EV << "\nDL subframe start: " << simTime() << "\n";
+	EV << "UL subframe start: " << uplink_subframe_starttime << "\n";
 	double duration = broadcast_stop_time - simTime().dbl();
-	ev << "DL subframe contains "<< tx_data_in_next_dlmap << " bit downlink data (needed transmission time: "<< duration <<")\n\n";
+	EV << "DL subframe contains "<< tx_data_in_next_dlmap << " bit downlink data (needed transmission time: "<< duration <<")\n\n";
 
-	ev << "Sende " << ManagementMessage->getName()	<< " Nachricht. Die Simulationszeit:" << simTime() <<" .\n";
+	EV << "Sende " << ManagementMessage->getName()	<< " Nachricht. Die Simulationszeit:" << simTime() <<" .\n";
 
 	next_frame_start = simTime().dbl();
 	sendtoLowerLayer(ManagementMessage);
@@ -683,8 +686,10 @@ void ControlPlaneBasestation::buildDL_MAP()//Erzeugt die DL-Map Managementnachri
 * Senderechte
 **/
 /** @brief "Kapitel 5.2.4" MAP-Nachrichten */
+
 void ControlPlaneBasestation::buildUL_MAP()//create DL_MAP frame
 {
+	EV << "(in ControlPlaneBasestation::buildUL_MAP)" << endl;
 	buildRangingUL_MAP_IE(); //Funktion zum erzeugen der Ranging Sende-Intervalle
 	buildBandwithRequestUL_MAP_IE();//Funktion zum erzeugen der Bandwith Request Intervalle
 
@@ -712,7 +717,7 @@ void ControlPlaneBasestation::buildUL_MAP()//create DL_MAP frame
 
 	/** Fuege Informationselemente in die UL-Map ein
 	 */
-	ev << "BS: #UL-MAP_IE in UL-MAP: " << ul_map_ie_List.size() << "\n";
+	EV << "BS: #UL-MAP_IE in UL-MAP: " << ul_map_ie_List.size() << "\n";
 
 	// insert all IEs currently in the list
 	ManagementMessage->setUlmap_ie_ListArraySize(ul_map_ie_List.size());
@@ -729,7 +734,7 @@ void ControlPlaneBasestation::buildUL_MAP()//create DL_MAP frame
 
 	/** Sende Nachricht zum Transciever Module
 	 */
-	ev << "Sende " << ManagementMessage->getName()<< "("
+	EV << "Sende " << ManagementMessage->getName()<< "("
 			<< ManagementMessage->getByteLength()
 			<<"bit) Nachricht. Die Simulationszeit:" << simTime() <<" .\n";
 	sendtoLowerLayer(ManagementMessage);
@@ -743,7 +748,7 @@ void ControlPlaneBasestation::buildUL_MAP()//create DL_MAP frame
 **/
 /** @brief "Kapitel 5.3.3" Initial Ranging */
 void ControlPlaneBasestation::buildRangingUL_MAP_IE() {
-
+	EV << "(in ControlPlaneBasestation::buildRangingUL_MAP_IE)" << endl;
 	Ieee80216UL_MAP_IE *frame = new Ieee80216UL_MAP_IE ("RNG_UL_MAP_IE");
 	frame->setCID(0x0000);//Ranging CID
 	frame->setStartTime_Offset(0);
@@ -759,6 +764,7 @@ void ControlPlaneBasestation::buildRangingUL_MAP_IE() {
 **/
 void ControlPlaneBasestation::buildBandwithRequestUL_MAP_IE()
 {
+	EV << "(in ControlPlaneBasestation::buildBandwithRequestUL_MAP_IE)" << endl;
 	Ieee80216UL_MAP_IE *frame = new Ieee80216UL_MAP_IE ("BW_UL_MAP_IE");
 	frame->setCID(0xFFFF);//Broadcast CID
 	frame->setStartTime_Offset(localBasestationInfo.Ranging_request_opportunity_size
@@ -829,7 +835,7 @@ void ControlPlaneBasestation::buildUL_MAP_IE(ServiceFlow *sf, double *accumulate
 
 
 
-			ev << "bits per ul-map interval, CID="<< cid <<": " << bits_per_ulmap << " (="
+			EV << "bits per ul-map interval, CID="<< cid <<": " << bits_per_ulmap << " (="
 					<< active_params->min_reserved_traffic_rate << "*"
 					<< localBasestationInfo.DLMAP_interval <<"+48)\n";
 		}
@@ -858,12 +864,12 @@ void ControlPlaneBasestation::buildUL_MAP_IE(ServiceFlow *sf, double *accumulate
 		 *
 		 * TODO: implementation of fairness in combination with the scheduler
 		 */
-		ev << "next_frame_start: "<< next_frame_start<< "   frame_stop: "<<next_frame_start+localBasestationInfo.DLMAP_interval
+		EV << "next_frame_start: "<< next_frame_start<< "   frame_stop: "<<next_frame_start+localBasestationInfo.DLMAP_interval
 						<<"   offset: "<<ul_map_ie->getStopTime_Offset();
 
 		if ( ul_map_ie->getStopTime_Offset() > localBasestationInfo.DLMAP_interval * localBasestationInfo.downlink_to_uplink ) {
 			//breakpoint("grants exceed uplink subframe");
-			ev << "(!!!)\n";
+			EV << "(!!!)\n";
 			*granted_data_in_next_ul_subframe -= bits_per_ulmap;
 
 			// use waiting queue only if activated
@@ -880,7 +886,7 @@ void ControlPlaneBasestation::buildUL_MAP_IE(ServiceFlow *sf, double *accumulate
 		 * If the grant fits in the next uplink frame, put it there!
 		 */
 		else {
-			ev << "\n";
+			EV << "\n";
 			/**
 			 * The duration is set according to standard and can later be used on the MS side
 			 * to schedule the stopControlRequest instead of saving extra information in the
@@ -894,7 +900,7 @@ void ControlPlaneBasestation::buildUL_MAP_IE(ServiceFlow *sf, double *accumulate
 
 			ul_map_ie->setBitlength(ul_map_ie->getBitlength() );
 
-			ev << "Pushing back new UL_MAP-IE in list (CID: " << cid << ")\n";
+			EV << "Pushing back new UL_MAP-IE in list (CID: " << cid << ")\n";
 			ul_map_ie_List.push_back( *ul_map_ie);
 
 			map_servedGrants[ul_map_ie->getRealCID()] = ul_map_ie->getCID();
@@ -905,7 +911,7 @@ void ControlPlaneBasestation::buildUL_MAP_IE(ServiceFlow *sf, double *accumulate
 		}
 	}
 	else {
-		ev << "Cannot allocate resources for CID="<< sf->CID
+		EV << "Cannot allocate resources for CID="<< sf->CID
 				<<", ServiceFlow not active\n";
 	}
 }
@@ -923,11 +929,12 @@ void ControlPlaneBasestation::buildUL_MAP_IE(ServiceFlow *sf, double *accumulate
  * 		high priority flows, further implementation needs to be done.
  */
 void ControlPlaneBasestation::buildScheduledIEs() {
+	EV << "(in  ControlPlaneBasestation::buildScheduledIEs)" << endl;
 	if (map_serviceFlows->size() > 0) {
 		double accumulated_offset = 0;
 		long granted_data_in_next_ul_subframe = 0;
 
-		ev << "\n#ServiceFlows in Map: " << map_serviceFlows->size() << "\n";
+		EV << "\n#ServiceFlows in Map: " << map_serviceFlows->size() << "\n";
 
 		map_servedGrants.clear();
 
@@ -950,7 +957,7 @@ void ControlPlaneBasestation::buildScheduledIEs() {
 				if ( waiting_sf->state == SF_ACTIVE &&
 						waiting_sf->link_type == ldUPLINK || waiting_sf->link_type == ldMANAGEMENT ) {
 
-					ev << "buildScheduledIEs(): Building UL_MAP-IE for waiting CID: "
+					EV << "buildScheduledIEs(): Building UL_MAP-IE for waiting CID: "
 							<< waiting_sf->CID << "("<< lookupLocaleMobilestationListCID(waiting_sf->CID)->Primary_Management_CID <<")\n";
 
 					buildUL_MAP_IE(waiting_sf, &accumulated_offset, &granted_data_in_next_ul_subframe, localBasestationInfo.grant_compensation );
@@ -970,7 +977,7 @@ void ControlPlaneBasestation::buildScheduledIEs() {
 						map_servedGrants.find( cur_sf->CID ) == map_servedGrants.end() &&
 						cur_sf->link_type == ldUPLINK || cur_sf->link_type == ldMANAGEMENT ) {
 
-					ev << "buildScheduledIEs(): Building UL_MAP-IE for CID: "
+					EV << "buildScheduledIEs(): Building UL_MAP-IE for CID: "
 							<< cur_sf->CID << "("<< lookupLocaleMobilestationListCID(cur_sf->CID)->Primary_Management_CID <<")\n";
 
 					buildUL_MAP_IE(cur_sf, &accumulated_offset, &granted_data_in_next_ul_subframe, 1 );
@@ -988,13 +995,13 @@ void ControlPlaneBasestation::buildScheduledIEs() {
 //					map_servedGrants.find( cur_sf->CID ) == map_servedGrants.end() &&
 //					cur_sf->link_type == ldUPLINK || cur_sf->link_type == ldMANAGEMENT ) {
 //
-//				ev << "buildScheduledIEs(): Building UL_MAP-IE for CID: "
+//				EV << "buildScheduledIEs(): Building UL_MAP-IE for CID: "
 //						<< cur_sf->CID << "("<< lookupLocaleMobilestationListCID(cur_sf->CID)->Primary_Management_CID <<")\n";
 //
 //				buildUL_MAP_IE(cur_sf, &accumulated_offset, &granted_data_in_next_ul_subframe );
 //			}
 //		}
-		ev << "Granted data in next UL subframe: " << granted_data_in_next_ul_subframe << "  Duration: "<< accumulated_offset <<"\n";
+		EV << "Granted data in next UL subframe: " << granted_data_in_next_ul_subframe << "  Duration: "<< accumulated_offset <<"\n";
 	}
 }
 
@@ -1021,7 +1028,7 @@ void ControlPlaneBasestation::buildDCD() {
 
 	/** Sende Nachricht zum Transciever Module
 	 */
-	ev << "Sende " << ManagementMessage->getName() << " Nachricht. Die Simulationszeit:" << simTime() <<" .\n";
+	EV << "Sende " << ManagementMessage->getName() << " Nachricht. Die Simulationszeit:" << simTime() <<" .\n";
 	//burst.byteLength = burst.byteLength +6;
 	sendtoLowerLayer(ManagementMessage);
 }
@@ -1056,7 +1063,7 @@ void ControlPlaneBasestation::buildUCD() {
 	//burst.byteLength = burst.byteLength +6;
 
 	/** Sende Nachricht zum Transciever Module **/
-	ev << "Sende " << ManagementMessage->getName()<< " Nachricht. Die Simulationszeit:" << simTime() <<" .\n";
+	EV << "Sende " << ManagementMessage->getName()<< " Nachricht. Die Simulationszeit:" << simTime() <<" .\n";
 	sendtoLowerLayer(ManagementMessage);
 
 }
@@ -1092,7 +1099,7 @@ void ControlPlaneBasestation::buildRNG_RSP(MACAddress receiveMobileStation) {
 	getServiceFlowForCID( ss->Basic_CID )->state = SF_ACTIVE;
 
 	/** Sende Nachricht zum Transciever Module */
-	ev << "Sende " << ManagementMessage->getName() << " Nachricht. Die Simulationszeit:" << simTime() <<" .\n";
+	EV << "Sende " << ManagementMessage->getName() << " Nachricht. Die Simulationszeit:" << simTime() <<" .\n";
 	sendtoLowerLayer(ManagementMessage);
 }
 
@@ -1118,7 +1125,7 @@ void ControlPlaneBasestation::buildSBC_RSP(int basic_cid) {
 
 	getServiceFlowForCID( lookupLocaleMobilestationListCID(basic_cid)->Primary_Management_CID )->state = SF_ACTIVE;
 
-	ev << "Sending SBC_RSP" << endl;
+	EV << "Sending SBC_RSP" << endl;
 	sendtoLowerLayer(frame);
 }
 
@@ -1152,7 +1159,7 @@ void ControlPlaneBasestation::buildREG_RSP(int primary_cid) {
 
 //	cps_scheduling->setNumberOfConnectedStations( localeMobilestationList.size() );
 
-	ev << "Sending REG_RSP" << endl;
+	EV << "Sending REG_RSP" << endl;
 	sendtoLowerLayer(frame);
 
 	// new: generate DSA-REQs for all currently active downlink ServiceFlows for the
@@ -1201,9 +1208,9 @@ void ControlPlaneBasestation::build_MOB_SCN_RSP(int cid)
 
     scheduleAt(simTime()+localBasestationInfo.strartFrame*localBasestationInfo.DLMAP_interval, MStoScanmodusTimer);
 
-    ev << "Sending MOB_SCN-RSP" << endl;
-    ev << "Simulationtime" << simTime() <<endl;
-    ev << "Start Time" << simTime()+localBasestationInfo.strartFrame * localBasestationInfo.DLMAP_interval << endl;
+    EV << "Sending MOB_SCN-RSP" << endl;
+    EV << "Simulationtime" << simTime() <<endl;
+    EV << "Start Time" << simTime()+localBasestationInfo.strartFrame * localBasestationInfo.DLMAP_interval << endl;
 
     //breakpoint("Send SCN-RSP");
 
@@ -1228,7 +1235,7 @@ void ControlPlaneBasestation::build_MOB_BSHO_RSP(int CID)
     /** Nachrichtenspecifische Informationen */
     // (mk)
     frame->setCID(CID);
-    ev << "Sending MOB_BSHO-RSP" << endl;
+    EV << "Sending MOB_BSHO-RSP" << endl;
     sendtoLowerLayer(frame);
 
 }
@@ -1244,7 +1251,7 @@ void ControlPlaneBasestation::build_MOB_BSHO_RSP(int CID)
 */
 void ControlPlaneBasestation::handle_RNG_REQ_Frame(Ieee80216_RNG_REQ *frame) {
 
-	ev << "RNG_REQ arrived.\n";
+	EV << "(in ControlPlaneBasestation::handle_RNG_REQ_Frame) RNG_REQ arrived.\n";
 
 	// if the station is not yet in the connected stations list, add it
 	if ( !lookupLocaleMobilestationListMAC(frame->getMSS_MAC_Address()))
@@ -1253,7 +1260,7 @@ void ControlPlaneBasestation::handle_RNG_REQ_Frame(Ieee80216_RNG_REQ *frame) {
 		}
 	// else the station tries to register
 	else {
-		ev << "STATION ALREADY REGISTERED" << "\n";
+		EV << "STATION ALREADY REGISTERED" << "\n";
 
 		structMobilestationInfo *station = NULL;
 		MobileSubscriberStationList::iterator hit_it;
@@ -1262,7 +1269,7 @@ void ControlPlaneBasestation::handle_RNG_REQ_Frame(Ieee80216_RNG_REQ *frame) {
 			for (it=localeMobilestationList.begin(); it!=localeMobilestationList.end(); ++it) {
 
 				if (it->MobileMacAddress == frame->getMSS_MAC_Address() ) {
-					ev << frame->getMSS_MAC_Address() << " found in SubscriberList\n";
+					EV << frame->getMSS_MAC_Address() << " found in SubscriberList\n";
 					station = &(*it);
 					hit_it = it;
 				}
@@ -1297,7 +1304,7 @@ void ControlPlaneBasestation::handle_RNG_REQ_Frame(Ieee80216_RNG_REQ *frame) {
 	 * Next, we create the Basic and Primary MAC connections and their ServiceFlows.
 	 * The IDs and the ServiceFlow are directly put into "map_connections" and "map_serviceFlow".
 	 */
-	ev << "Creating Basic and Primary Management connections to SS\n";
+	EV << "Creating Basic and Primary Management connections to SS\n";
 	structMobilestationInfo *cur_station =
 			lookupLocaleMobilestationListMAC(frame->getMSS_MAC_Address() );
 
@@ -1322,25 +1329,25 @@ void ControlPlaneBasestation::handle_RNG_REQ_Frame(Ieee80216_RNG_REQ *frame) {
 }
 
 void ControlPlaneBasestation::handle_SBC_REQ_Frame(Ieee80216_SBC_REQ *frame) {
-	ev << "SBC_REQ arrived.\n";
+	EV << "(in  ControlPlaneBasestation::handle_SBC_REQ_Frame) SBC_REQ arrived.\n";
 	buildSBC_RSP(frame->getCID());
 }
 
 void ControlPlaneBasestation::handle_REG_REQ_Frame(Ieee80216_REG_REQ *frame) {
 
-	ev << "REG_REQ arrived.\n";
+	EV << "(in  ControlPlaneBasestation::handle_REG_REQ_Frame) REG_REQ arrived.\n";
 	buildREG_RSP(frame->getCID());
 }
 
 void ControlPlaneBasestation::handle_MOB_SCN_REQ_Frame(Ieee80216_MOB_SCN_REQ *frame)
 {
 
-	ev << "MOB_SCN-REQ arrived.\n";
+	EV << "(in  ControlPlaneBasestation::handle_MOB_SCN_REQ_Frame) MOB_SCN-REQ arrived.\n";
 	//get scan parameter from mobilestation
 	localBasestationInfo.scanDuration = frame->getScanDuration();
 	localBasestationInfo.interleavingInterval = frame->getInterleavingInterval();
 	localBasestationInfo.scanIteration = frame->getScanIteration();
-    	ev << "scanDuration" << localBasestationInfo.scanDuration << endl;
+    	EV << "scanDuration" << localBasestationInfo.scanDuration << endl;
 	//breakpoint("BS recieve MOB_SCN_REQ");
 	if (localBasestationInfo.scanDuration >=1)
 	{
@@ -1352,7 +1359,7 @@ void ControlPlaneBasestation::handle_MOB_SCN_REQ_Frame(Ieee80216_MOB_SCN_REQ *fr
 void ControlPlaneBasestation::handle_MOB_MSHO_REQ_Frame(Ieee80216_MSHO_REQ *frame)
 {
 
-	ev << "MOB_MSHO-REQ arrived.\n";
+	EV << "(in  ControlPlaneBasestation::handle_MOB_MSHO_REQ_Frame) MOB_MSHO-REQ arrived.\n";
 	build_MOB_BSHO_RSP(frame->getCID());
 	//breakpoint("BS-MSHO-REQ");
 }
@@ -1360,7 +1367,7 @@ void ControlPlaneBasestation::handle_MOB_MSHO_REQ_Frame(Ieee80216_MSHO_REQ *fram
 void ControlPlaneBasestation::handle_MOB_HO_IND_Frame( Ieee80216_MOB_HO_IND *frame )
 {
 
-	ev << "MOB_HO-IND arrived, removing MS from system.\n";
+	EV << "(in  ControlPlaneBasestation::handle_MOB_HO_IND_Frame) MOB_HO-IND arrived, removing MS from system.\n";
 
 	int lost_station_cid = frame->getCID();
 
@@ -1407,6 +1414,7 @@ void ControlPlaneBasestation::handle_MOB_HO_IND_Frame( Ieee80216_MOB_HO_IND *fra
 *****************************************************************************************/
 
 void ControlPlaneBasestation::clearMSSList() {
+	EV << "(in  ControlPlaneBasestation::clearMSSList) " << endl;
 	MobileSubscriberStationList::iterator it;
 
 	for (it=localeMobilestationList.begin(); it!=localeMobilestationList.end(); ++it)
@@ -1417,6 +1425,7 @@ void ControlPlaneBasestation::clearMSSList() {
 
 void ControlPlaneBasestation::storeMSSInfo(const MACAddress& Address)//create new Base Station ID in BSInfo list
 {
+	EV << "(in  ControlPlaneBasestation::storeMSSInfo) " << endl;
 	structMobilestationInfo *mss = lookupLocaleMobilestationListMAC(Address);
 	if (mss != NULL) {
 		EV << "MAC Address=" << Address << " already in our MSS list.\n";
@@ -1434,14 +1443,14 @@ void ControlPlaneBasestation::storeMSSInfo(const MACAddress& Address)//create ne
 // TODO effizienter: auf Map umstellen... (mk)
 structMobilestationInfo *ControlPlaneBasestation::lookupLocaleMobilestationListMAC(
 		const MACAddress& Address) {
-	//ev << "mssList enthält " << localeMobilestationList.size()
+	//EV << "mssList enthält " << localeMobilestationList.size()
 	//		<< " Mobilstationen\n";
 
 	MobileSubscriberStationList::iterator it;
 	for (it=localeMobilestationList.begin(); it!=localeMobilestationList.end(); ++it) {
 
 		if (it->MobileMacAddress == Address) {
-			ev << Address << " found in SubscriberList\n";
+			EV << Address << " found in SubscriberList\n";
 			return &(*it);
 		}
 	}
@@ -1450,7 +1459,7 @@ structMobilestationInfo *ControlPlaneBasestation::lookupLocaleMobilestationListM
 
 structMobilestationInfo *ControlPlaneBasestation::lookupLocaleMobilestationListCID( int cid) {
 
-	ev << "mssList enthält " << localeMobilestationList.size()
+	EV << "mssList enthält " << localeMobilestationList.size()
 			<< " Mobilstationen\n";
 
 	MobileSubscriberStationList::iterator it;
@@ -1462,7 +1471,7 @@ structMobilestationInfo *ControlPlaneBasestation::lookupLocaleMobilestationListC
 			return &(*it);
 		}
 	}
-	ev << "MobileStation not found!\n";
+	EV << "MobileStation not found!\n";
 	return NULL;
 }
 /**
@@ -1479,7 +1488,7 @@ void ControlPlaneBasestation::setRadio() {
 
 void ControlPlaneBasestation::setRadioDownlink() {
 
-	ev << "Setze Downlink Kanal:"<< localBasestationInfo.DownlinkChannel<< endl;
+	EV << "Setze Downlink Kanal:"<< localBasestationInfo.DownlinkChannel<< endl;
 	PhyControlInfo *phyCtrl = new PhyControlInfo();
 	phyCtrl->setChannelNumber(localBasestationInfo.DownlinkChannel);
 	phyCtrl->setBitrate(localBasestationInfo.radioDatenrate);
@@ -1490,7 +1499,7 @@ void ControlPlaneBasestation::setRadioDownlink() {
 }
 
 void ControlPlaneBasestation::setRadioUplink() {
-	ev << "Setze Uplink Kanal:"<< localBasestationInfo.UplinkChannel<< endl;
+	EV << "Setze Uplink Kanal:"<< localBasestationInfo.UplinkChannel<< endl;
 	PhyControlInfo *phyCtrl = new PhyControlInfo();
 	phyCtrl->setChannelNumber(localBasestationInfo.UplinkChannel);
 	phyCtrl->setBitrate(localBasestationInfo.radioDatenrate);
@@ -1502,15 +1511,15 @@ void ControlPlaneBasestation::setRadioUplink() {
  *****************************************************************************************/
 
 void ControlPlaneBasestation::startControlBurst() {
-
-	Ieee80216Prim_sendControlRequest *sendControlPDU =
-			new Ieee80216Prim_sendControlRequest();
+	EV << "(in  ControlPlaneBasestation::startControlBurst) " << endl;
+	Ieee80216Prim_sendControlRequest *sendControlPDU =	new Ieee80216Prim_sendControlRequest();
 	sendControlPDU->setPduCID(0xFFFF);
 	sendControlPDU->setRealCID(0xFFFF);
 	sendRequest(sendControlPDU);
 }
 
 void ControlPlaneBasestation::stopControlBurst() {
+	EV << "(in  ControlPlaneBasestation::stopControlBurst) " << endl;
 	Ieee80216Prim_stopControlRequest *stopControlPDU =
 			new Ieee80216Prim_stopControlRequest();
 	stopControlPDU->setPduCID(0xFFFF);
@@ -1523,6 +1532,7 @@ void ControlPlaneBasestation::stopControlBurst() {
  * packet in bits.
  */
 double ControlPlaneBasestation::computePacketDuration(int bits) {
+	EV << "(in  ControlPlaneBasestation::computePacketDuration) " << endl;
 	// FIXME: bitrate vom Radio-Modul holen!!!
 	bitrate = 4E+6;
 	return bits / bitrate;
@@ -1537,6 +1547,7 @@ bool ControlPlaneBasestation::cidIsInConnectionMap(int cid) {
 // (mk)
 // copy/paste from 802.11Mac
 void ControlPlaneBasestation::registerInterface() {
+	EV << "(in  ControlPlaneBasestation::registerInterface) " << endl;
 	IInterfaceTable *ift = InterfaceTableAccess().getIfExists();
 	if (!ift)
 		return;
@@ -1572,7 +1583,7 @@ void ControlPlaneBasestation::registerInterface() {
 }
 
 void ControlPlaneBasestation::setMobilestationScanmodus(cMessage *msg) {
-
+	EV << "(in  ControlPlaneBasestation::setMobilestationScanmodus) " << endl;
 	Ieee80216Prim_ScanMS *scanMS = check_and_cast<Ieee80216Prim_ScanMS *>(msg);
 
 	structMobilestationInfo *scanMobilestation;

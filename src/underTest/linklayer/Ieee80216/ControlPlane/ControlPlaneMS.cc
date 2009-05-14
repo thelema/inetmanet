@@ -28,7 +28,7 @@ void ControlPlaneMS::makeSBC_REQ(MobileSubStationInfo MSInfo)
     SubType Type;//SubType ist ein Struct und ist in Ieee80216Frame.msg defeniert. Er kenzeichnet ob Subheader vorhanden sind.
     Type.Subheader = 1;
     frame->setTYPE(Type);
-    ev << "Sending SBC_REQ " <<endl;
+    EV << "Sending SBC_REQ " <<endl;
     sendLowerMessage(frame);
 }
 
@@ -43,7 +43,7 @@ void ControlPlaneMS::makeREG_REQ(MobileSubStationInfo MSInfo)
     SubType Type;//SubType ist ein Struct und ist in Ieee80216Frame.msg defeniert. Er kenzeichnet ob Subheader vorhanden sind.
     Type.Subheader = 1;
     frame->setTYPE(Type);
-    ev << "Sending REG_REQ" << endl;
+    EV << "Sending REG_REQ" << endl;
     sendLowerMessage(frame);
 }
 

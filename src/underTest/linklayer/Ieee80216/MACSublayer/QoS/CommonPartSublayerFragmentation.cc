@@ -30,20 +30,20 @@ void CommonPartSublayerFragmentation::initialize() {
 }
 
 void CommonPartSublayerFragmentation::handleMessage( cMessage *msg ) {
-	ev << "(in handleMessage) message "<<msg->getName()<<" eingetroffen an fragmentation.\n";
+	EV << "(in handleMessage) message "<<msg->getName()<<" eingetroffen an fragmentation.\n";
 	//higher layer message in transceiver
 	if ( msg->getArrivalGateId() == commonPartGateIn ) {
-		ev << "von commonPartGateIn "<<msg<<" an securityGateOut gesendet.\n";
+		EV << "von commonPartGateIn "<<msg<<" an securityGateOut gesendet.\n";
 		send(msg, securityGateOut);
 	}
 	//lower layer message in receiver
 	else if ( msg->getArrivalGateId() == securityGateIn ) {
-		ev << "von securityGateIn "<<msg<<" an commonPartGateOut gesendet.\n";
+		EV << "von securityGateIn "<<msg<<" an commonPartGateOut gesendet.\n";
 		send(msg, commonPartGateOut);
 	}
 	//higher layer message in receiver
 	else if ( msg->getArrivalGateId() == commonPartGateIn ) {
-		ev << "von commonPartGateIn "<<msg<<" an securityGateOut gesendet.\n";
+		EV << "von commonPartGateIn "<<msg<<" an securityGateOut gesendet.\n";
 		send(msg, securityGateOut);
 	}
 

@@ -25,7 +25,7 @@ simple ControlPlaneMobilestation
         double interleavingInterval; // Ranging Response timeout (Table 342 timer T3)
         // number of radio channels (frequencies)       
         double scanIteration; // number of radio channels (frequencies)       
-        volatile double DLMapInterval;
+        double DLMapInterval;
 
         //Handover parameter        
         // Handover Margin

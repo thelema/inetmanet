@@ -61,13 +61,13 @@ void ConvergenceSublayerTrafficClassification::handleMessage( cMessage *msg ) {
 
 	if ( msg->isSelfMessage() ) {
 //		if ( this->parentModule()->parentModule()->parentModule()->parentModule()->name().compare(ms) == 0 ) {
-		ev << "(in handleMessage) Message " << msg->getName() << " ist eine SelfMessage und wird an die Funktion handleSelfMessage() weitergeleitet.\n";
+		EV << "(in handleMessage) Message " << msg->getName() << " ist eine SelfMessage und wird an die Funktion handleSelfMessage() weitergeleitet.\n";
 
 			handleSelfMessage(msg);
 //		}
 	}
 	if (msg->isPacket()){
-		ev << "(in handleMessage) Message " << msg->getName() << " ist ein Paket.\n";
+		EV << "(in handleMessage) Message " << msg->getName() << " ist ein Paket.\n";
 			// || -> XOR, alternative ist eine Switch-Konstruktion dazu.
 			if ( msg->getArrivalGateId() == higherLayerGateIn_ftp ||
 				 msg->getArrivalGateId() == higherLayerGateIn_voice_no_supr ||
@@ -77,12 +77,12 @@ void ConvergenceSublayerTrafficClassification::handleMessage( cMessage *msg ) {
 				cPacket *tempPtr = PK(msg);
 				if ( tempPtr->getByteLength() != 0  ) {
 					if( dynamic_cast<IPDatagram*>(tempPtr) ) {
-						ev << "Incoming packet: " << tempPtr->getName() << "(" << tempPtr->getByteLength() <<" byte(s))\n";
+						EV << "Incoming packet: " << tempPtr->getName() << "(" << tempPtr->getByteLength() <<" byte(s))\n";
 						handleUnclassifiedMessage(tempPtr);
 					} // Da ist was vom TG reingekommen -> Debug-Output mit ev auf der Konsole.
 				}
 				else {
-					ev << "Incoming message has length 0\n";
+					EV << "Incoming message has length 0\n";
 				}
 			}
 	}
@@ -100,7 +100,7 @@ void ConvergenceSublayerTrafficClassification::handleSelfMessage( cMessage *msg 
 		delete msg;
 	}
 	else {
-		ev << "Retry timer for traffic type "<< traffic_type << " activated\n";
+		EV << "Retry timer for traffic type "<< traffic_type << " activated\n";
 		current_tt_requests.erase(traffic_type);
 
 		delete msg;
@@ -117,7 +117,7 @@ void ConvergenceSublayerTrafficClassification::handleUnclassifiedMessage( cMessa
 	IPDatagram *ip_d = check_and_cast<IPDatagram*>(msg); // check_and_cast erspart Fehlerabfrage, NULL-Pointer (Omnet-code, siehe Doku).
 	Ieee80216TGControlInformation *ci = check_and_cast<Ieee80216TGControlInformation*>(ip_d->getControlInfo());
 
-	ev << "Traffic type of arriving packet is: " << ci->getTraffic_type() << "\n";
+	EV << "Traffic type of arriving packet is: " << ci->getTraffic_type() << "\n";
 
 	//cModule *cplane = parentModule()->parentModule()->parentModule()->submodule("controlPlane")->submodule("cp_mobilestation");
 	//ControlPlaneMobilestation *cpms = dynamic_cast<ControlPlaneMobilestation*>(cplane);
@@ -145,7 +145,7 @@ void ConvergenceSublayerTrafficClassification::handleUnclassifiedMessage( cMessa
 
 	// a suitable connection has been found
 	if ( list_cids.size() > 0 ) {
-		ev << "Found "<< list_cids.size() <<" matching CIDs for incoming packets\n";
+		EV << "Found "<< list_cids.size() <<" matching CIDs for incoming packets\n";
 
 		string packet_name;
 		std::list<int>::iterator it;
@@ -178,7 +178,7 @@ void ConvergenceSublayerTrafficClassification::handleUnclassifiedMessage( cMessa
 			// Erzeugen, Duplizieren
 			IPDatagram *duplicate = check_and_cast<IPDatagram*>( check_and_cast<cMessage*>(msg->dup()) );
 				duplicate->setControlInfo( new Ieee80216TGControlInformation( *ci ) );
-				ev << "has controlinformation: " << duplicate->getControlInfo() << "\n";
+				EV << "has controlinformation: " << duplicate->getControlInfo() << "\n";
 			// Header Erzeugen
 			Ieee80216GenericMacHeader *mac = new Ieee80216GenericMacHeader( packet_name.c_str() );
 				mac->setCID( *it );
@@ -189,7 +189,7 @@ void ConvergenceSublayerTrafficClassification::handleUnclassifiedMessage( cMessa
 //				Ieee80216TGControlInformation *cinfo = new Ieee80216TGControlInformation(*ci);
 //				mac->setControlInfo( cinfo );
 
-			ev << "duplicate: " << mac->getName();
+			EV << "duplicate: " << mac->getName();
 
 			send( mac, headerCompressionGateOut );
 
@@ -208,7 +208,7 @@ void ConvergenceSublayerTrafficClassification::handleUnclassifiedMessage( cMessa
 	else{
 		if ( map_it == current_tt_requests.end() ) {
 
-			ev << "Found no matching CID for incoming packets - sending classification command to ControlPlane..\n";
+			EV << "Found no matching CID for incoming packets - sending classification command to ControlPlane..\n";
 			// TODO: DSD, DSC fehlen noch!
 			// CC = Classification Command
 			Ieee80216ClassificationCommand *cc = new  Ieee80216ClassificationCommand();
@@ -269,14 +269,14 @@ void ConvergenceSublayerTrafficClassification::handleUnclassifiedMessage( cMessa
 			 * If the request has been rejected for the moment or the request got lost,
 			 * a new connection attempt is ensured.
 			 */
-			ev << "Starting retry timer for traffic type "<<ci->getTraffic_type()<<"\n";
+			EV << "Starting retry timer for traffic type "<<ci->getTraffic_type()<<"\n";
 			// Timer started after send-method. Abchecken ob SF erfolgreich eingerichtet. läuft innerhalb einer Station ab. Also hier gehts nicht um erfolgreich gesendete Pakete. Auch nicht um ARQ
 			startNewRetryTimer( (ip_traffic_types)ci->getTraffic_type() );
 
 			delete msg;
 		}
 		else {
-			ev << "DSA-REQ for traffic type ["<< ci->getTraffic_type() << "] already sent. Still waiting for DSX-RVD...Retries: "<<current_tt_requests[ci->getTraffic_type()]<<"\n";
+			EV << "DSA-REQ for traffic type ["<< ci->getTraffic_type() << "] already sent. Still waiting for DSX-RVD...Retries: "<<current_tt_requests[ci->getTraffic_type()]<<"\n";
 			current_tt_requests[ci->getTraffic_type()]++;
 			// req
 			delete msg;

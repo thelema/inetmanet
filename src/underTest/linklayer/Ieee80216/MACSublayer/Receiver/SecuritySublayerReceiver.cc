@@ -24,21 +24,21 @@ void SecuritySublayerReceiver::initialize()
 
 void SecuritySublayerReceiver::handleMessage(cMessage *msg)
 {
-	ev << "(in handleMessage) message "<<msg->getName()<<" eingetroffen an SecuritySublayerReceiver.\n";
+	EV << "(in handleMessage) message "<<msg->getName()<<" eingetroffen an SecuritySublayerReceiver.\n";
 
   if (msg->getArrivalGateId() == receiverRadioGateIn )
     {
-	  ev << "von receiverRadioGateIn: "<< msg << ". An commonPartGateOut gesendet.\n";
+	  EV << "von receiverRadioGateIn: "<< msg << ". An commonPartGateOut gesendet.\n";
 	send(msg, commonPartGateOut);
     }
   else if (msg->getArrivalGateId() == commonPartGateIn )
     {
-	  ev << "von commonPartGateIn: "<< msg << ". An receiverRadioGateOut gesendet.\n";
+	  EV << "von commonPartGateIn: "<< msg << ". An receiverRadioGateOut gesendet.\n";
 	send(msg, receiverRadioGateOut);
     }
   else
     {
-    ev << "nothing to do in function SecuritySublayerReceiver::handleMessage" << endl;
+    EV << "nothing to do in function SecuritySublayerReceiver::handleMessage" << endl;
     }
 
 }

@@ -54,11 +54,11 @@ void ConvergenceSublayerControlModule::handleMessage( cPacket *msg ) {
 //It has to be classified, so it's forwarded to the TrafficClassification module
 void ConvergenceSublayerControlModule::handleUpperLayerMessage( cPacket *msg ) {
 
-	ev << "Message arrived in CS: " << msg <<"\n";
+	EV << "Message arrived in CS: " << msg <<"\n";
 
 	if ( msg->getByteLength() != 0 ) {
 
-		ev << "MESSAGE LENGTH: " << msg->getByteLength() <<"\n";
+		EV << "MESSAGE LENGTH: " << msg->getByteLength() <<"\n";
 
 		// vorrübergehend: handle incoming packet as payload and
 		// encapsulate into IPDatagram for classification
@@ -78,11 +78,11 @@ void ConvergenceSublayerControlModule::handleUpperLayerMessage( cPacket *msg ) {
 			IPControlInfo *ip_ctrlinfo = check_and_cast<IPControlInfo *>(msg->getControlInfo());
 
 			if ( ip_ctrlinfo != NULL) {
-				ev << "IPControlInfo arrived. Length: " << ip_ctrlinfo << "\n";
+				EV << "IPControlInfo arrived. Length: " << ip_ctrlinfo << "\n";
 				send( msg, tcOut );
 			}
 			else {
-				ev << "Non-IP-Packet arrived\n";
+				EV << "Non-IP-Packet arrived\n";
 			}
 		}
 	}
@@ -97,12 +97,12 @@ void ConvergenceSublayerControlModule::handleSelfMessage( cMessage *msg ) {
 		ipd->setDestAddress("123.123.123.123");
 		ipd->setHeaderLength(IP_HEADER_BYTES);
 
-	ev << "Created new IPDatagram - sending it to TrafficClassification\n";
+	EV << "Created new IPDatagram - sending it to TrafficClassification\n";
 
 	send( ipd, tcOut );
 
 //		IInterfaceTable *itable = InterfaceTableAccess().get();
-//		ev << "\n\n\nInterface: " << itable->getInterface(0)->name() <<"\n\n\n";
+//		EV << "\n\n\nInterface: " << itable->getInterface(0)->name() <<"\n\n\n";
 	//------------------------------------------
 }
 

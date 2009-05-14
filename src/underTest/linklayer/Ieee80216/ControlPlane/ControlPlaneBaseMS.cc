@@ -62,7 +62,7 @@ nb = NotificationBoardAccess().get();
     //gateToWatch = gate("");
         // subscribe for the information of the carrier sense
         nb->subscribe(this, NF_RADIOSTATE_CHANGED);
-    ev << "Inizilisierung von ControlPlaneMS abgeschlossen.\n";
+    EV << "Inizilisierung von ControlPlaneMS abgeschlossen.\n";
     // start up: send scan request
     scheduleAt(simTime(), new cMessage("startUp", MK_STARTUP));
 }
@@ -71,7 +71,7 @@ void ControlPlaneBaseMS::startTransmitting(cMessage *msg)
 {
     if (ev.isGUI()) displayStatus(true);
 
-    ev << "Starting transmission of " << msg << endl;
+    EV << "Starting transmission of " << msg << endl;
 
 }
 
@@ -82,7 +82,7 @@ void ControlPlaneBaseMS::handleMessage(cMessage *msg)
     if (msg->isSelfMessage())// Abarbeiten von Nachrichten die vom diesem Module gesendet werden
     {
         // process timers
-	ev << "Received " << msg << " from it self"<< endl;
+	EV << "Received " << msg << " from it self"<< endl;
 	handleTimer(msg);
 
     }
@@ -90,23 +90,23 @@ void ControlPlaneBaseMS::handleMessage(cMessage *msg)
     {
 
         // process incoming frame
-        ev << "Frame arrived from MAC: " << msg << "\n";
+        EV << "Frame arrived from MAC: " << msg << "\n";
         Ieee80216GenericMacHeader *frame = check_and_cast<Ieee80216GenericMacHeader *>(msg);
-	ev << "Arrived Generic Frame\n";
+	EV << "Arrived Generic Frame\n";
 	SubType Type;//SubType ist ein Struct und ist in Ieee80216Frame.msg defeniert. Er kenzeichnet ob Subheader vorhanden sind.
 	Type = frame->getTYPE();
 
 		if (Type.Subheader = 1)
 		{
-		  ev << "Subheader\n";
+		  EV << "Subheader\n";
 		  handleManagmentFrame(frame);
 		}
     }
 
     else // Abarbeiten von Nachrichten die vom überliegenden Schichten gesendet werden
     {
-        ev << "Received " << msg << " from Quelle"<< endl;
-	ev << " Mgmt Module ID:" << getId() << endl;
+        EV << "Received " << msg << " from Quelle"<< endl;
+	EV << " Mgmt Module ID:" << getId() << endl;
         send(msg,"cpsDownOut");
     }
 }
@@ -220,7 +220,7 @@ ControlPlaneBaseMS::BSInfo *ControlPlaneBaseMS::lookupBS(const MACAddress& Bases
 BasestationList::iterator it;
     for ( it=bsList.begin(); it!=bsList.end(); ++it)
        if (it->BasestationID == BasestationID)
-            ev << BasestationID;
+            EV << BasestationID;
 
 	return &(*it);
     return NULL;
@@ -306,13 +306,13 @@ void ControlPlaneBaseMS::UplinkChannelBS(const MACAddress& BasestationID, const 
 void ControlPlaneBaseMS::handleDL_MAPFrame(Ieee80216DL_MAP *frame)
 {
 
-	ev << "DL_MAP arrived from BasestationID:" << frame->getBS_ID() << "\n";
+	EV << "DL_MAP arrived from BasestationID:" << frame->getBS_ID() << "\n";
 
 	storeBSInfo(frame->getBS_ID());
 	if (ScanChannelTimer != NULL)//Wenn eine gültige DL_Map empfangen wurde, wird nicht weiter nacheinem Download Kanal gesucht
 	{
 	cancelEvent(ScanChannelTimer);
-	ev << "Cancel ScanChannelTimer event\n";
+	EV << "Cancel ScanChannelTimer event\n";
 	scheduleAt(simTime()+30, ScanChannelTimer);
         }
 	scanning.recieve_DL_MAP = true;
@@ -323,7 +323,7 @@ void ControlPlaneBaseMS::handleDCDFrame(Ieee80216_DCD *frame)
 {
 if(scanning.recieve_DL_MAP)
   {
-   ev << "DCD arrived.\n";
+   EV << "DCD arrived.\n";
    scanning.recieve_DCD = true;
   }
 }
@@ -332,7 +332,7 @@ void ControlPlaneBaseMS::handleUCDFrame(Ieee80216_UCD *frame)
 {
 if(scanning.recieve_DL_MAP && scanning.recieve_DCD)
   {
-   ev << "UCD arrived.\n";
+   EV << "UCD arrived.\n";
    scanning.recieve_UCD = true;
    UplinkChannelBS(frame->getBS_ID(),frame->getUploadChannel());
    changeUplinkChannel(frame->getUploadChannel());
@@ -344,14 +344,14 @@ void ControlPlaneBaseMS::handle_RNG_RSP_Frame(Ieee80216_RNG_RSP *frame)
 {
 if(scanning.recieve_DL_MAP && scanning.recieve_DCD  && scanning.recieve_UCD)
   {
-   ev << "RNG_RSP arrived.\n";
+   EV << "RNG_RSP arrived.\n";
    if(frame->getMSS_MAC_Address() == MSInfo.MobileMacAddress)
       {
 	makeSBC_REQ(MSInfo);
       }
    else
       {
-       ev << "RNG_RSP not for this mobile station.\n";
+       EV << "RNG_RSP not for this mobile station.\n";
       }
   }
 }
@@ -360,7 +360,7 @@ void ControlPlaneBaseMS::handle_SBC_RSP_Frame(Ieee80216_SBC_RSP *frame)
 {
 if(scanning.recieve_DL_MAP && scanning.recieve_DCD  && scanning.recieve_UCD)
   {
-   ev << "SBC_RSP arrived.\n";
+   EV << "SBC_RSP arrived.\n";
    makeREG_REQ(MSInfo);
   }
 }
@@ -368,7 +368,7 @@ if(scanning.recieve_DL_MAP && scanning.recieve_DCD  && scanning.recieve_UCD)
 void ControlPlaneBaseMS::handle_REG_RSP_Frame(Ieee80216_REG_RSP *frame)
 {
 if(scanning.recieve_DL_MAP && scanning.recieve_DCD  && scanning.recieve_UCD)
-	ev << "REG_RSP arrived.\n";
+	EV << "REG_RSP arrived.\n";
 }
 
 void ControlPlaneBaseMS::receiveChangeNotification(int category, const cPolymorphic *details)

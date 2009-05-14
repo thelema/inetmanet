@@ -39,7 +39,6 @@ import inet.networklayer.manetrouting.ManetRouting;
 
 import inet.underTest.transport.aki.Aki;
 import inet.mobility.ANSimMobility;
-import inet.underTest.linklayer.Ieee80216.Ieee80216NicBS;
 import inet.underTest.linklayer.Ieee80216.Ieee80216NicMS;
 //
 // Models a mobile host with a wireless (802.11b) card in ad-hoc mode.

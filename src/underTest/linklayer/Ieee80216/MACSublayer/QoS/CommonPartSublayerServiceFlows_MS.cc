@@ -49,7 +49,7 @@ void CommonPartSublayerServiceFlows_MS::handleMessage( cPacket *msg ) {
 
 
 		default:
-			ev << "\n\nunidentified frame\n\n";
+			EV << "\n\nunidentified frame\n\n";
 	}
 
 }
@@ -75,7 +75,7 @@ void CommonPartSublayerServiceFlows_MS::handle_DSA_REQ( Ieee80216_DSA_REQ *dsa_r
 	// TODO jetzt ServiceFlow auf Gültigkeit prüfen, evt. ABÄNDERN ==>  DSA-RSP bauen und schicken
 	if ( true  ) {
 		Ieee80216_DSA_RSP *dsa_rsp;
-		ev << "DSA-REQ for traffic type: " << dsa_req->getTraffic_type() << "\n";
+		EV << "DSA-REQ for traffic type: " << dsa_req->getTraffic_type() << "\n";
 		dsa_rsp = build_DSA_RSP( dsa_req->getCID(), &dsa_req->getNewServiceFlow(), (ip_traffic_types)dsa_req->getTraffic_type() );
 
 	/** The BS-initiated DSA-REQ already contains IDs + the MS is not allowed to propose CIDs...
@@ -100,7 +100,7 @@ void CommonPartSublayerServiceFlows_MS::handle_DSA_RSP( Ieee80216_DSA_RSP *dsa_r
 
 	// maybe the ServiceFlow was rejected:
 	if ( dsa_rsp->getRejected() ) {
-		ev << "ServiceFlow request for traffic type ["<< dsa_rsp->getTraffic_type() <<"] has been rejected by BS\n";
+		EV << "ServiceFlow request for traffic type ["<< dsa_rsp->getTraffic_type() <<"] has been rejected by BS\n";
 		delete dsa_rsp;
 
 		return;
@@ -116,7 +116,7 @@ void CommonPartSublayerServiceFlows_MS::handle_DSA_RSP( Ieee80216_DSA_RSP *dsa_r
 
 	send( dsa_ack, controlPlaneOut );
 
-	ev << "New connection established by MobileStation! (CID=" << new_sf.CID <<" | SFID=" <<new_sf.SFID <<" ,TrafficType: "<< dsa_rsp->getTraffic_type() <<")\n";
+	EV << "New connection established by MobileStation! (CID=" << new_sf.CID <<" | SFID=" <<new_sf.SFID <<" ,TrafficType: "<< dsa_rsp->getTraffic_type() <<")\n";
 
 	delete dsa_rsp;
 }
@@ -132,7 +132,7 @@ void CommonPartSublayerServiceFlows_MS::handle_DSA_ACK( Ieee80216_DSA_ACK *dsa_a
 	map_connections[new_sf.CID] = new_sf.SFID;
 	map_serviceFlows[new_sf.SFID] = new_sf;
 
-	ev << "New connection established by BaseStation! (CID=" << new_sf.CID <<" | SFID=" <<new_sf.SFID <<" ,TrafficType: "<< new_sf.traffic_type <<")\n";
+	EV << "New connection established by BaseStation! (CID=" << new_sf.CID <<" | SFID=" <<new_sf.SFID <<" ,TrafficType: "<< new_sf.traffic_type <<")\n";
 
 	delete dsa_ack;
 }

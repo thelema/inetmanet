@@ -286,8 +286,11 @@ int CommonPartSublayerServiceFlows_BS::getFreeSFID() {
 	 * from a list of removed ServiceFlows during runtime
 	 */
 	if ( list_removed_SFIDs.size() > 0 ) {
-		sfid = list_removed_SFIDs.front();
-		list_removed_SFIDs.pop_front();
+		if (list_removed_SFIDs.begin() != list_removed_SFIDs.end())
+		{
+			sfid = list_removed_SFIDs.front();
+			list_removed_SFIDs.pop_front();
+		}
 
 		/*list<int>::iterator list_it = list_removed_SFIDs.begin();
 		if ( list_it != list_removed_SFIDs.end() ) {
@@ -371,11 +374,11 @@ int CommonPartSublayerServiceFlows_BS::getNewManagementCID( management_type mtyp
 		//TODO ab hier: QuickFind o.ä. implementieren, da alle CIDs ausgeschöpft sind und jetzt
 		// vermutlich lücken im interval von 1 - m durch löschen von ServiceFlows enstanden sind..
 		// diese suchen und neu vergeben!
-		ev << "Connections exceed maximum connections limit of " << allowed_connections <<"\n";
+		EV << "Connections exceed maximum connections limit of " << allowed_connections <<"\n";
 		error ("Too many connections!");
 	}
 
-	ev << "   CID = " << new_cid << "\n";
+	EV << "   CID = " << new_cid << "\n";
 	return new_cid;
 }
 
@@ -434,9 +437,9 @@ bool CommonPartSublayerServiceFlows_BS::checkQoSParams( sf_QoSParamSet *req_para
 
 	int max_sustained_traffic_rate = req_params->max_sustained_traffic_rate;
 	int min_reserved_traffic_rate = req_params->min_reserved_traffic_rate;
-	// int max_latency = req_params->max_latency;
-	// int tolerated_jitter = req_params->tolerated_jitter;
-	// int priority = req_params->traffic_priority;
+	int max_latency = req_params->max_latency;
+	int tolerated_jitter = req_params->tolerated_jitter;
+	int priority = req_params->traffic_priority;
 	req_tx_policy tx_policy = req_params->request_transmission_policy;
 
 	if ( link_type == ldMANAGEMENT )
@@ -533,7 +536,7 @@ bool CommonPartSublayerServiceFlows_BS::kickFlowBelow( ip_traffic_types needy_fl
 	sortServiceFlowsByPriority();
 
 	int needed_datarate = demanded_traffic_rate - availableDatarate[link_type];
-	ev << "needed datarate: "<<needed_datarate<<"\n";
+	EV << "needed datarate: "<<needed_datarate<<"\n";
 	short prio = BE;
 	while ( prio > needy_flow && needed_datarate > 0 ) {
 		list<ServiceFlow*>::iterator it;
@@ -547,7 +550,7 @@ bool CommonPartSublayerServiceFlows_BS::kickFlowBelow( ip_traffic_types needy_fl
 					(*it)->active_parameters->granted_traffic_rate -= needed_datarate;
 					needed_datarate = 0;
 
-					ev << "reduced flow: "<<(*it)->CID<<"  prio: "<<prio<<"\n";
+					EV << "reduced flow: "<<(*it)->CID<<"  prio: "<<prio<<"\n";
 				}
 				// if the current flow has less datarate than needed, kick it completely
 				// ==> DSD-REQ
@@ -556,7 +559,7 @@ bool CommonPartSublayerServiceFlows_BS::kickFlowBelow( ip_traffic_types needy_fl
 					(*it)->active_parameters->granted_traffic_rate = 0;
 
 					(*it)->state = SF_PROVISIONED;
-					ev << "kicked flow: "<<(*it)->CID<<"  prio: "<<prio<<"  and set back to provisioned\n";
+					EV << "kicked flow: "<<(*it)->CID<<"  prio: "<<prio<<"  and set back to provisioned\n";
 				}
 			}
 		}

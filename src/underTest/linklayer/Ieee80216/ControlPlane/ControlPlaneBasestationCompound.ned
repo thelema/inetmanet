@@ -1,11 +1,11 @@
 package inet.underTest.linklayer.Ieee80216.ControlPlane;
 //
-// @author Michael KrÃ¼cken
+// @author Michael Krücken
 //
 
 import inet.underTest.linklayer.Ieee80216.ControlPlane.ControlPlaneBasestation;
 import inet.underTest.linklayer.Ieee80216.MACSublayer.QoS.CommonPartSublayerServiceFlows_BS;
-	//	"CommonPartSublayerAuthorizationModule";
+
 
 module ControlPlaneBasestationCompound
 

@@ -4,13 +4,13 @@ package inet.underTest.linklayer.Ieee80216.MACSublayer;
 // for Mobile Subscriber Station (MSS)
 //
 
-import inet.underTest.linklayer.Ieee80216.MACSublayer.Receiver.ConvergenceSublayerReceiver;
 import inet.underTest.linklayer.Ieee80216.MACSublayer.Receiver.CommonPartSublayerReceiverCompound;
+import inet.underTest.linklayer.Ieee80216.MACSublayer.Receiver.ConvergenceSublayerReceiver;
 import inet.underTest.linklayer.Ieee80216.MACSublayer.Receiver.SecuritySublayerReceiver;
 import inet.underTest.linklayer.radio.Ieee80216Radio;
 
 
-module Receiver
+module ReceiverExtended
 
 {
     gates:
@@ -36,7 +36,6 @@ module Receiver
         }
         radioReceiver: Ieee80216Radio {
             parameters:
-                isInput=true;
                 @display("p=124,486;i=prot3");
         }
     connections:

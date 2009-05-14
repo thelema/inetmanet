@@ -24,14 +24,14 @@ void ConvergenceSublayerReceiver::handleMessage(cMessage *msg)
 {
     if (msg->getArrivalGateId() == commonPartGateIn)
     {
-    	ev << "\n\nMessage arrived on ConvergenceSublayerUp! ==> " << msg;
+    	EV << "\n\nMessage arrived on ConvergenceSublayerUp! ==> " << msg;
 
-    	ev << "\nSuddenly, a black hole forwarded the message to another universe.";
+    	EV << "\nSuddenly, a black hole forwarded the message to another universe.";
     	send(msg, higherLayerGateOut);
     }
     else
     {
-    	ev << "nothing" << endl;
+    	EV << "nothing" << endl;
     }
 }
 

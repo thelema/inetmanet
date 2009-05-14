@@ -83,8 +83,8 @@ protected:
 
     Ieee80216Prim_ScanMS *setMStoScanmodusTimer;
 
-    cMsgPar *DlMapInterval;
-    cMsgPar BWREQGrants;
+    //cPar *DlMapInterval;
+    cParImpl *BWREQGrants;
 
    /**
     * Keeps track of the currently available datarate,
