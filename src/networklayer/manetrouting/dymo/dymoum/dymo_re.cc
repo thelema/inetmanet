@@ -456,8 +456,13 @@ void NS_CLASS __re_send(RE *re)
 
 		// Queue the new RE
 
-		#ifdef OMNETPP
+#ifdef OMNETPP
 		int cont = numInterfacesActive;
+		double delay = -1;
+
+		if (par("EqualDelay"))
+			delay = par("broadCastDelay");
+
 		// Send RE over all enabled interfaces
 		for (i = 0; i < DYMO_MAX_NR_INTERFACES; i++)
 			if (DEV_NR(i).enabled)
@@ -466,7 +471,7 @@ void NS_CLASS __re_send(RE *re)
 					dymo_socket_queue((DYMO_element *) re->dup());
 				else
 					dymo_socket_queue((DYMO_element *) re);
-				dymo_socket_send(dest_addr, &DEV_NR(i));
+				dymo_socket_send(dest_addr, &DEV_NR(i),delay);
 				cont--;
 			}
 #else

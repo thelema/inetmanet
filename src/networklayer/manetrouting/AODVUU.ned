@@ -21,6 +21,7 @@ simple AODVUU
         bool llfeedback= default(false); // Use hello
         volatile double broadCastDelay @unit("s") = default (uniform(0s,0.005s));
         volatile double uniCastDelay @unit("s") = default (0s);
+        bool EqualDelay =default(false);
     gates:
         input from_ip;
         output to_ip;

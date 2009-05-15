@@ -64,7 +64,7 @@ DYMO_element *dymo_socket_new_element();
 DYMO_element *dymo_socket_queue(DYMO_element *e);
 
 /* Sends queued DYMO element */
-void dymo_socket_send(struct in_addr dest_addr, struct dev_info *dev);
+void dymo_socket_send(struct in_addr dest_addr, struct dev_info *dev,double delay=-1);
 
 #ifdef NS_PORT
 /* Process a received DYMO packet */

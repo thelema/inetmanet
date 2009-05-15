@@ -207,7 +207,7 @@ DYMO_element *NS_CLASS dymo_socket_queue(DYMO_element *e)
 #endif
 }
 
-void NS_CLASS dymo_socket_send(struct in_addr dest_addr, struct dev_info *dev)
+void NS_CLASS dymo_socket_send(struct in_addr dest_addr, struct dev_info *dev,double delay)
 {
 	struct timeval now;
 #ifndef NS_PORT
@@ -330,12 +330,19 @@ void NS_CLASS dymo_socket_send(struct in_addr dest_addr, struct dev_info *dev)
 	if (dest_addr.s_addr == DYMO_BROADCAST)
 	{
 		destAdd = IPAddress::ALLONES_ADDRESS;
-		sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("broadCastDelay"),dev->ipaddr.s_addr);
+		if (delay>0)
+			sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,delay,dev->ipaddr.s_addr);
+		else
+			sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("broadCastDelay"),dev->ipaddr.s_addr);
 	}
 	else
 	{
+
 		destAdd = dest_addr.s_addr;
-		sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("uniCastDelay"),dev->ipaddr.s_addr);
+		if (delay>0)
+			sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,delay,dev->ipaddr.s_addr);
+		else
+			sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("uniCastDelay"),dev->ipaddr.s_addr);
 	}
 	totalSend++;
 
