@@ -84,8 +84,11 @@ void Ieee80211Mesh::initialize(int stage)
 		routingModuleProactive = NULL;
 		routingModuleReactive = NULL;
 		useLwmpls = par("UseLwMpls");
+		bool useReactive = par("useReactive");
+		bool useProactive = par("useProactive");
+
 		// Proactive protocol
-		if (par("useProactive"))
+		if (useProactive)
 		{
 
 			//if (isEtx)
@@ -101,7 +104,7 @@ void Ieee80211Mesh::initialize(int stage)
 		}
 
 		// Reactive protocol
-		if (par("useReactive"))
+		if (useReactive)
 		{
 			moduleType = cModuleType::find("inet.networklayer.manetrouting.DYMOUM");
 			module = moduleType->create("ManetRoutingProtocolReactive", this);
@@ -113,7 +116,7 @@ void Ieee80211Mesh::initialize(int stage)
 			routingModuleReactive->scheduleStart(simTime());
 		}
 
-		if (routingModuleProactive==NULL && routingModuleProactive ==NULL)
+		if (routingModuleProactive==NULL && routingModuleReactive ==NULL)
 			error("Ieee80211Mesh doesn't have active routing protocol");
 
 		mplsData->mplsMaxTime()=35;
@@ -1769,7 +1772,7 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 	else
 	{
 		Uint128 add[20];
-		int dist;
+		int dist=0;
 		if (routingModuleProactive)
 
 			dist = routingModuleProactive->getRoute(dest,add);

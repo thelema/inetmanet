@@ -40,8 +40,6 @@ module Ieee80211aNicMesh
     submodules:
         mgmt: Ieee80211Mesh {
             parameters:
-                useProactive = useProactive;
-                useReactive = useReactive;
                 @display("p=96,69;q=wlanDataQueue");
             gates:
                 macIn[1];
