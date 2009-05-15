@@ -206,7 +206,13 @@ ChannelControlExtended *ChannelControlExtended::get()
 {
 	ChannelControl * cc = ChannelControl::get();
 	if (!cc)
-		throw cRuntimeError("Could not find ChannelControl module");
+	{
+		cc = dynamic_cast<ChannelControl *>(simulation.getModuleByPath("channelcontrolextended"));
+	    if (!cc)
+	        cc = dynamic_cast<ChannelControl *>(simulation.getModuleByPath("channelcontrolextended"));
+	    if (!cc)
+	        throw cRuntimeError("Could not find ChannelControl module");
+	}
 	ChannelControlExtended *ccExt = dynamic_cast<ChannelControlExtended *>(cc);
     return ccExt;
 }
