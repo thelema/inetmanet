@@ -710,8 +710,8 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 			if (mpls_pk_ptr->getControlInfo())
 				delete mpls_pk_ptr->removeControlInfo();
 			frame->encapsulate(mpls_pk_ptr);
-                        if (frame->getReceiverAddress().isUnspecified())
-                                ASSERT(!frame->getReceiverAddress().isUnspecified());
+			if (frame->getReceiverAddress().isUnspecified())
+				ASSERT(!frame->getReceiverAddress().isUnspecified());
 			sendOrEnqueue(frame);
 		}
 		else
@@ -1126,8 +1126,8 @@ void Ieee80211Mesh::mplsNotFoundPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddr
 			if (mpls_pk_ptr->getControlInfo())
 				delete mpls_pk_ptr->removeControlInfo();
 			frame->encapsulate(mpls_pk_ptr);
-                        if (frame->getReceiverAddress().isUnspecified())
-                                  ASSERT(!frame->getReceiverAddress().isUnspecified());
+			if (frame->getReceiverAddress().isUnspecified())
+				ASSERT(!frame->getReceiverAddress().isUnspecified());
 			sendOrEnqueue(frame);
 		}
 		else
@@ -1787,7 +1787,7 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 		if (dist==0)
 		{
 // Destination unreachable
-			if (src==myAddress)
+			if (routingModuleReactive)
 			{
 				ControlManetRouting *ctrlmanet = new ControlManetRouting();
 				ctrlmanet->setOptionCode(MANET_ROUTE_NOROUTE);
@@ -1795,10 +1795,14 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 				ctrlmanet->setSrcAddress(myAddress);
 				ctrlmanet->encapsulate(frame->decapsulate());
 				delete frame;
+				frame = NULL;
 				send(ctrlmanet,"routingOutReactive");
 			}
 			else
+			{
 				delete frame;
+				frame=NULL;
+			}
 		}
 		else
 		{
@@ -1807,7 +1811,8 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 
 	}
 	//send(msg, macBaseGateId + ie->getNetworkLayerGateIndex());
-	sendOrEnqueue(frame);
+	if (frame)
+		sendOrEnqueue(frame);
 	return true;
 }
 
