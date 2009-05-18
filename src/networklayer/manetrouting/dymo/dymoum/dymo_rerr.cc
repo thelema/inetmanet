@@ -189,6 +189,10 @@ void NS_CLASS rerr_forward(RERR *rerr)
 	dlog(LOG_DEBUG, 0, __FUNCTION__, "forwarding RERR");
 #ifdef OMNETPP
 
+	double delay = -1;
+	if (par("EqualDelay"))
+		delay = par("broadCastDelay");
+
 	rerr->setByteLength(0);
 
 	int cont = numInterfacesActive;
@@ -208,7 +212,7 @@ void NS_CLASS rerr_forward(RERR *rerr)
 				dymo_socket_queue((DYMO_element *) rerr->dup());
 			else
 				dymo_socket_queue((DYMO_element *) rerr);
-			dymo_socket_send(dest_addr, &DEV_NR(i));
+			dymo_socket_send(dest_addr, &DEV_NR(i),delay);
 			cont--;
 		}
 	}

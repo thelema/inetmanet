@@ -114,6 +114,12 @@ void NS_CLASS hello_send(void *arg)
 	return;
     }
 
+#ifdef OMNETPP
+	double delay = -1;
+	if (par("EqualDelay"))
+		delay = par("broadCastDelay");
+#endif
+
     time_diff = timeval_diff(&now, &this_host.bcast_time);
     jitter = hello_jitter();
 
@@ -192,7 +198,11 @@ void NS_CLASS hello_send(void *arg)
 #endif
 	    }
 	    dest.s_addr = AODV_BROADCAST;
+#ifdef OMNETPP
+	    aodv_socket_send((AODV_msg *) rrep, dest, msg_size, 1, &DEV_NR(i),delay);
+#else
 	    aodv_socket_send((AODV_msg *) rrep, dest, msg_size, 1, &DEV_NR(i));
+#endif
 	}
 
 	timer_set_timeout(&hello_timer, HELLO_INTERVAL + jitter);

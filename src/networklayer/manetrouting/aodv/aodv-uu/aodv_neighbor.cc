@@ -184,32 +184,47 @@ void NS_CLASS neighbor_link_break(rt_table_t * rt)
     }
 
     if (rerr) {
-	DEBUG(LOG_DEBUG, 0, "RERR created, %d bytes.", RERR_CALC_SIZE(rerr));
+    	DEBUG(LOG_DEBUG, 0, "RERR created, %d bytes.", RERR_CALC_SIZE(rerr));
 
-	rt_u = rt_table_find(rerr_unicast_dest);
+    	rt_u = rt_table_find(rerr_unicast_dest);
 
-	if (rt_u && rerr->dest_count == 1 && (rerr_unicast_dest.s_addr!=0))
-	    aodv_socket_send((AODV_msg *) rerr,
-			     rerr_unicast_dest,
-			     RERR_CALC_SIZE(rerr), 1,
-			     &DEV_IFINDEX(rt_u->ifindex));
+    	if (rt_u && rerr->dest_count == 1 && (rerr_unicast_dest.s_addr!=0))
+    		aodv_socket_send((AODV_msg *) rerr,
+    				rerr_unicast_dest,
+    				RERR_CALC_SIZE(rerr), 1,
+    				&DEV_IFINDEX(rt_u->ifindex));
 
-	else if (rerr->dest_count > 0) {
-	    /* FIXME: Should only transmit RERR on those interfaces
-	     * which have precursor nodes for the broken route */
-	    for (i = 0; i < MAX_NR_INTERFACES; i++) {
-		struct in_addr dest;
-
-		if (!DEV_NR(i).enabled)
-		    continue;
-		dest.s_addr = AODV_BROADCAST;
-		aodv_socket_send((AODV_msg *) rerr, dest,
-				 RERR_CALC_SIZE(rerr), 1, &DEV_NR(i));
-	    }
-	}
+    	else if (rerr->dest_count > 0) {
+    		/* FIXME: Should only transmit RERR on those interfaces
+    		 * 	     * which have precursor nodes for the broken route */
 #ifdef OMNETPP
-        else
-          delete rerr;
+    		double delay = -1;
+    		if (par("EqualDelay"))
+    			delay = par("broadCastDelay");
+    		int cont = getNumWlanInterfaces();
+#endif
+    		for (i = 0; i < MAX_NR_INTERFACES; i++) {
+    			struct in_addr dest;
+    			if (!DEV_NR(i).enabled)
+    				continue;
+    			dest.s_addr = AODV_BROADCAST;
+#ifdef OMNETPP
+    			if (cont>1)
+    				aodv_socket_send((AODV_msg *) rerr->dup(), dest,
+    		    					RERR_CALC_SIZE(rerr), 1, &DEV_NR(i),delay);
+    			else
+    				aodv_socket_send((AODV_msg *) rerr, dest,
+    		    					RERR_CALC_SIZE(rerr), 1, &DEV_NR(i),delay);
+   				cont--;
+#else
+    			aodv_socket_send((AODV_msg *) rerr, dest,
+    					RERR_CALC_SIZE(rerr), 1, &DEV_NR(i));
+#endif
+    			}
+    		}
+#ifdef OMNETPP
+    	else
+    		delete rerr;
 #endif
     }
 }

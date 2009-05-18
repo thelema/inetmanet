@@ -80,14 +80,34 @@ void NS_CLASS hello_send(void *arg)
 
 	HELLO *hello = hello_create();
 	dest_addr.s_addr = DYMO_BROADCAST;
+#ifdef OMNETPP
+	double delay = -1;
+	int cont = numInterfacesActive;
+	if (par("EqualDelay"))
+		delay = par("broadCastDelay");
 
+// Send HELLO over all enabled interfaces
+	for (i = 0; i < DYMO_MAX_NR_INTERFACES; i++)
+		if (DEV_NR(i).enabled)
+		{
+			if (cont>1)
+				dymo_socket_queue((DYMO_element *) hello->dup());
+			else
+				dymo_socket_queue((DYMO_element *) hello);
+			dymo_socket_send(dest_addr, &DEV_NR(i),delay);
+			cont--;
+		}
+
+#else
 	// Queue the new HELLO
 	hello = (HELLO *) dymo_socket_queue((DYMO_element *) hello);
-
 	// Send HELLO over all enabled interfaces
 	for (i = 0; i < DYMO_MAX_NR_INTERFACES; i++)
 		if (DEV_NR(i).enabled)
 			dymo_socket_send(dest_addr, &DEV_NR(i));
+
+#endif
+
 
 	// Schedule next HELLO
 	timer_set_timeout(&hello_timer, (hello_ival*1000) + hello_jitter());
