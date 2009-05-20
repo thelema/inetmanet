@@ -1494,9 +1494,9 @@ OLSR_ETX::send_pkt() {
 			if (i == 0)
 				op2->setSend_time(op1->send_time());
       // Sending packet pair
-			sendToIp (op1, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,0);
+			sendToIp (op1, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,(nsaddr_t)0);
 			if (i == 0)
-				sendToIp (op2, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,0);
+				sendToIp (op2, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,(nsaddr_t)0);
 		}
 		else {
 			OLSR_pkt* op	= new OLSR_pkt;
@@ -1514,7 +1514,7 @@ OLSR_ETX::send_pkt() {
 
 				it = msgs_.erase(it);
 			}
-			sendToIp (op, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,0);
+			sendToIp (op, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,(nsaddr_t)0);
 
 		}
 	}

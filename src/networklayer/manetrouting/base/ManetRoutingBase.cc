@@ -260,6 +260,146 @@ void ManetRoutingBase::sendToIp (cPacket *msg, int srcPort, const Uint128& destA
 }
 
 
+
+void ManetRoutingBase::sendToIp (cPacket *msg, int srcPort, const Uint128& destAddr, int destPort,int ttl,double delay,int index)
+{
+	InterfaceEntry  *ie = NULL;
+	if (mac_layer_)
+	{
+		Ieee802Ctrl *ctrl = new Ieee802Ctrl;
+		MACAddress macadd = (MACAddress) destAddr;
+		IPAddress add = destAddr.getIPAddress();
+		if (index!=-1)
+		{
+			ie = getInterfaceEntry (index); // The user want to use a pre-defined interface
+		}
+		else
+			ie = interfaceVector[interfaceVector.size()-1].interfacePtr;
+
+		if (IPAddress::ALLONES_ADDRESS==add)
+			ctrl->setDest(MACAddress::BROADCAST_ADDRESS);
+		else
+			ctrl->setDest(macadd);
+
+		if (ctrl->getDest()==MACAddress::BROADCAST_ADDRESS)
+		{
+			for (unsigned int i = 0;i<interfaceVector.size()-1;i++)
+			{
+// It's necessary to duplicate the the control info message and include the information relative to the interface
+				Ieee802Ctrl *ctrlAux = ctrl->dup();
+				ie = interfaceVector[i].interfacePtr;
+				cPacket *msgAux = msg->dup();
+// Set the control info to the duplicate packet
+				if (ie)
+					ctrlAux->setInputPort(ie->getInterfaceId());
+				msgAux->setControlInfo(ctrlAux);
+				sendDelayed(msgAux,delay,"to_ip");
+				
+			}
+			ie = interfaceVector[interfaceVector.size()-1].interfacePtr;
+		}
+
+		if (ie)
+			ctrl->setInputPort(ie->getInterfaceId());
+		msg->setControlInfo(ctrl);
+		sendDelayed(msg,delay,"to_ip");
+		return;
+	}
+
+	UDPPacket *udpPacket = new UDPPacket(msg->getName());
+	udpPacket->setByteLength(UDP_HDR_LEN);
+	udpPacket->encapsulate(msg);
+	//IPvXAddress srcAddr = interfaceWlanptr->ipv4Data()->getIPAddress();
+
+	if (ttl==0)
+	{
+        // delete and return 
+		delete msg;
+		return;
+	}
+	// set source and destination port
+	udpPacket->setSourcePort(srcPort);
+	udpPacket->setDestinationPort(destPort);
+	
+
+	if (index!=-1)
+	{
+		ie = getInterfaceEntry (index); // The user want to use a pre-defined interface
+	}
+
+	//if (!destAddr.isIPv6())
+	if (true)
+	{
+		// send to IPv4
+		IPAddress add = destAddr.getIPAddress();
+		IPAddress  srcadd;
+
+
+// If found interface We use the address of interface
+		if (ie)              
+			srcadd = ie->ipv4Data()->getIPAddress();
+		else
+			srcadd = hostAddress.getIPAddress();
+
+		EV << "Sending app packet " << msg->getName() << " over IPv4." << " from " << 
+			add.str() << " to " << add.str() << "\n";
+		IPControlInfo *ipControlInfo = new IPControlInfo();
+		ipControlInfo->setOrigDatagram(NULL);
+		ipControlInfo->setDestAddr(add);
+		//ipControlInfo->setProtocol(IP_PROT_UDP);
+		ipControlInfo->setProtocol(IP_PROT_MANET);
+
+		ipControlInfo->setTimeToLive(ttl);
+		udpPacket->setControlInfo(ipControlInfo);
+
+		if (ie!=NULL)
+			ipControlInfo->setInterfaceId(ie->getInterfaceId());
+
+		if (add == IPAddress::ALLONES_ADDRESS && ie == NULL)
+		{
+// In this case we send a broadcast packet per interface
+			for (unsigned int i = 0;i<interfaceVector.size()-1;i++)
+			{
+				ie = interfaceVector[i].interfacePtr;
+				srcadd = ie->ipv4Data()->getIPAddress();
+// It's necessary to duplicate the the control info message and include the information relative to the interface
+				IPControlInfo *ipControlInfoAux = new IPControlInfo(*ipControlInfo);
+				ipControlInfoAux->setOrigDatagram(NULL);
+				ipControlInfoAux->setInterfaceId(ie->getInterfaceId());
+				ipControlInfoAux->setSrcAddr(srcadd);
+				UDPPacket *udpPacketAux = udpPacket->dup();
+// Set the control info to the duplicate udp packet
+				udpPacketAux->setControlInfo(ipControlInfoAux);
+				sendDelayed(udpPacketAux,delay,"to_ip");
+			}
+			ie = interfaceVector[interfaceVector.size()-1].interfacePtr;
+			srcadd = ie->ipv4Data()->getIPAddress();
+			ipControlInfo->setInterfaceId(ie->getInterfaceId());
+		}
+		ipControlInfo->setSrcAddr(srcadd);
+		sendDelayed(udpPacket,delay,"to_ip");
+	}
+	else
+	{
+		// send to IPv6
+		EV << "Sending app packet " << msg->getName() << " over IPv6.\n";
+		IPv6ControlInfo *ipControlInfo = new IPv6ControlInfo();
+		// ipControlInfo->setProtocol(IP_PROT_UDP);
+		ipControlInfo->setProtocol(IP_PROT_MANET);
+		ipControlInfo->setSrcAddr((IPv6Address) hostAddress);
+		ipControlInfo->setDestAddr((IPv6Address)destAddr);
+		ipControlInfo->setHopLimit(ttl);
+		// ipControlInfo->setInterfaceId(udpCtrl->InterfaceId()); FIXME extend IPv6 with this!!!
+		udpPacket->setControlInfo(ipControlInfo);
+		sendDelayed(udpPacket,delay,"to_ip");
+	}
+	// totalSend++;
+}
+
+
+
+
+
 void ManetRoutingBase::omnet_chg_rte (const struct in_addr &dst, const struct in_addr &gtwy, const struct in_addr &netm,
 		  short int hops,bool del_entry)
 {
@@ -344,6 +484,80 @@ void ManetRoutingBase::omnet_chg_rte (const Uint128 &dst, const Uint128 &gtwy, c
 	if (!found)
 		inet_rt->addRoute(entry);
 }
+
+// This methods use the nic index to identify the output nic.
+void ManetRoutingBase::omnet_chg_rte (const struct in_addr &dst, const struct in_addr &gtwy, const struct in_addr &netm,
+									  short int hops,bool del_entry,int index)
+{
+	omnet_chg_rte (dst.s_addr,gtwy.s_addr,netm.s_addr,hops,del_entry,index);
+}
+
+
+void ManetRoutingBase::omnet_chg_rte (const Uint128 &dst, const Uint128 &gtwy, const Uint128 &netm,short int hops,bool del_entry,int index)
+{
+	/* Add route to kernel routing table ... */
+	IPAddress desAddress((uint32_t)dst);
+	IPRoute *entry=NULL;
+
+	if (mac_layer_)
+		return;
+
+	bool found = false;
+	for (int i=inet_rt->getNumRoutes(); i>0 ; --i)
+	{
+		const IPRoute *e = inet_rt->getRoute(i-1);
+		if (desAddress == e->getHost())
+		{
+			if (del_entry && !found)
+			{
+				if (!inet_rt->deleteRoute(e))
+					opp_error ("Aodv omnet_chg_rte can't delete route entry");  
+			}
+			else
+			{
+				found = true;
+				entry = const_cast<IPRoute*>(e);
+			}
+		}
+	}
+
+
+	if (del_entry)
+	   return;
+
+	if (!found)
+		entry = new   IPRoute();
+
+	IPAddress netmask((uint32_t)netm);
+	IPAddress gateway((uint32_t)gtwy);
+	if (netm==0)
+		netmask = IPAddress((uint32_t)dst).getNetworkMask().getInt();
+
+	/// Destination
+	entry->setHost(desAddress);
+	/// Route mask
+	entry->setNetmask (netmask);
+	/// Next hop
+	entry->setGateway (gateway);
+	/// Metric ("cost" to reach the destination)
+	entry->setMetric(hops);
+	/// Interface name and pointer
+
+	entry->setInterface(getInterfaceEntry(index));
+
+	/// Route type: Direct or Remote
+	if(entry->getGateway().isUnspecified())
+		entry->setType (IPRoute::DIRECT);
+	else
+		entry->setType (IPRoute::REMOTE);
+	/// Source of route, MANUAL by reading a file,
+	/// routing protocol name otherwise
+	entry->setSource(IPRoute::MANET);
+
+	if (!found)
+		inet_rt->addRoute(entry);
+}
+
 
 //
 // Check if it exists in the ip4 routing table the address dst

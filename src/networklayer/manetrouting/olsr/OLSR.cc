@@ -1307,7 +1307,7 @@ OLSR::send_pkt() {
 			it = msgs_.erase(it);
 		}
 
-		sendToIp (op, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,0);
+		sendToIp (op, RT_PORT,destAdd, RT_PORT,IP_DEF_TTL,(nsaddr_t)0);
 	}
 }
 

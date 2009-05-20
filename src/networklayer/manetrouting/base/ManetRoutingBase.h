@@ -76,8 +76,13 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 //   encapsulate messages and send to the next layer
 //
 /////////////////////////////////////
-		virtual void sendToIp (cPacket *, int, const Uint128 & , int ,int ,double,const Uint128 & iface=0);
+		virtual void sendToIp (cPacket *, int, const Uint128 & , int ,int,double,const Uint128 & iface=0);
+		virtual void sendToIp (cPacket *p, int port, int dest , int porDest, int ttl,double delay,int iface=0)
+		{
+			sendToIp (p, port , (Uint128) dest , porDest ,ttl,delay, (Uint128) iface);
+		}
 		virtual void sendToIp (cPacket *, int, const Uint128 & , int ,int,const Uint128 &iface =0);
+		virtual void sendToIp (cPacket *, int, const Uint128 & , int ,int,double,int index=-1);
 /////////////////////////////////
 //
 //   Ip4 routing table access routines
@@ -90,6 +95,9 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 		virtual void omnet_chg_rte (const Uint128 &dst, const Uint128 &gtwy, const Uint128 &netm,short int hops,bool del_entry,const Uint128 &iface=0);
 		virtual void omnet_chg_rte (const struct in_addr &dst, const struct in_addr &gtwy, const struct in_addr &netm,short int hops,bool del_entry);
 		virtual void omnet_chg_rte (const struct in_addr &, const struct in_addr &, const struct in_addr &,short int,bool,const struct in_addr &);
+		virtual void omnet_chg_rte (const Uint128 &dst, const Uint128 &gtwy, const Uint128 &netm,short int hops,bool del_entry,int);
+		virtual void omnet_chg_rte (const struct in_addr &, const struct in_addr &, const struct in_addr &,short int,bool,int);
+
 
 		virtual void deleteIpEntry(const Uint128 &dst){omnet_chg_rte (dst,dst,dst,0,true);}
 		virtual void setIpEntry(const Uint128 &dst, const Uint128 &gtwy, const Uint128 &netm,short int hops,const Uint128 &iface=0){omnet_chg_rte (dst,gtwy,netm,hops,false,iface);}
