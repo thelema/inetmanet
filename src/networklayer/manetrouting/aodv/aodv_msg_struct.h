@@ -51,10 +51,12 @@ typedef AODV_msg hdr_aodvuu;	// Name convention for headers
 
 /* Extra unreachable destinations... */
 typedef struct {
-	u_int32_t dest_addr;
+	// u_int32_t dest_addr;
+	Uint128 dest_addr;
 	u_int32_t dest_seqno;
 } RERR_udest;
-#define RERR_UDEST_SIZE sizeof(RERR_udest)
+//#define RERR_UDEST_SIZE sizeof(RERR_udest)
+#define RERR_UDEST_SIZE 8
 
 #ifdef RERR
 #undef RERR
@@ -69,7 +71,7 @@ struct RERR : public AODV_msg {
 	explicit RERR(const char *name="RERRAodvMsg") : AODV_msg (name) {setBitLength(12*8);dest_count=0;_udest=NULL;}
 	~RERR ();
 	RERR (const RERR &m);
-	void addUdest(unsigned int,unsigned int);
+	void addUdest(const Uint128 &,unsigned int);
 	void clearUdest();
 	RERR_udest * getUdest(int);
 	RERR & 	operator= (const RERR &m);
@@ -77,7 +79,7 @@ struct RERR : public AODV_msg {
 };
 
 #define RERR_UDEST_FIRST(rerr) (rerr->getUdest(0))
-#define RERR_UDEST_NEXT(udest) ((RERR_udest *)((char *)udest + RERR_UDEST_SIZE))
+#define RERR_UDEST_NEXT(udest) ((RERR_udest *)((char *)udest + sizeof(RERR_udest)))
 #define RERR_SIZE 12
 #define RERR_CALC_SIZE(rerr) (rerr->getByteLength())
 

@@ -134,9 +134,9 @@ RERR::~RERR ()
 	clearUdest();
 }
 
-void RERR::addUdest(unsigned int src_addr, unsigned int udest_seqno)
+void RERR::addUdest(const Uint128 & src_addr, unsigned int udest_seqno)
 {
-	
+
 	RERR_udest *temp_udest;
 	temp_udest = new RERR_udest [dest_count+1];
 	for (int i=0; i < dest_count; i++)
@@ -149,7 +149,7 @@ void RERR::addUdest(unsigned int src_addr, unsigned int udest_seqno)
 	temp_udest[dest_count].dest_seqno= udest_seqno;
 	_udest= temp_udest;
 	dest_count++;
-	setBitLength(getBitLength ()+(RERR_UDEST_SIZE*8));
+	setBitLength(getBitLength ()+(RERR_UDEST_SIZE));
 }
 
 RERR_udest * RERR::getUdest(int i)
