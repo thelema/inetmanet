@@ -98,14 +98,21 @@ OLSR_ETX::initialize(int stage) {
 
 
 
+		if ( par("Fish_eye"))
+			parameter_.fish_eye() = 1;
+		else
+			parameter_.fish_eye() = 0;
   		parameter_.mpr_algorithm() = par("Mpr_algorithm");
   		parameter_.routing_algorithm() = par("routing_algorithm");
  		parameter_.link_quality() = par("Link_quality");
-  		parameter_.fish_eye() = par("Fish_eye");
+
   		parameter_.tc_redundancy() = par("Tc_redundancy");
 
   /// Link delay extension
-  		parameter_.link_delay() = par("Link_delay");
+  		if (par("Link_delay"))
+  			parameter_.link_delay() = 1;
+  		else
+  			parameter_.link_delay() = 0;
   		parameter_.c_alpha() = par("C_alpha");
 
   // Fish Eye Routing Algorithm for TC message dispatching...
