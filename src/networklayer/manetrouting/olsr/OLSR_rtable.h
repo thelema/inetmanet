@@ -48,15 +48,15 @@ class OLSR_rtable : public cObject {
 	rtable_t	rt_;	///< Data structure for the routing table.
 
 public:
-	
+
 	OLSR_rtable();
 	~OLSR_rtable();
-	
+
 	void		clear();
 	void		rm_entry(const nsaddr_t &dest);
-	OLSR_rt_entry*	add_entry(const nsaddr_t &dest, const nsaddr_t &next,const nsaddr_t &iface, uint32_t dist);
-	OLSR_rt_entry*	add_entry(const nsaddr_t &dest, const nsaddr_t &next,const nsaddr_t &iface, uint32_t dist,PathVector path);
-	OLSR_rt_entry*	add_entry(const nsaddr_t &dest,const nsaddr_t &next,const nsaddr_t &iface, uint32_t dist,OLSR_rt_entry *entry);
+	OLSR_rt_entry*	add_entry(const nsaddr_t &dest, const nsaddr_t &next,const nsaddr_t &iface, uint32_t dist,const int &);
+	OLSR_rt_entry*	add_entry(const nsaddr_t &dest, const nsaddr_t &next,const nsaddr_t &iface, uint32_t dist,const int &,PathVector path);
+	OLSR_rt_entry*	add_entry(const nsaddr_t &dest,const nsaddr_t &next,const nsaddr_t &iface, uint32_t dist,const int &,OLSR_rt_entry *entry);
 	OLSR_rt_entry*	lookup(const nsaddr_t &dest);
 	OLSR_rt_entry*	find_send_entry(OLSR_rt_entry*);
 	uint32_t	size();

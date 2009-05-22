@@ -492,7 +492,7 @@ void OLSR::handleMessage (cMessage *msg)
 ///
 
 OLSR_pkt *
-OLSR::check_packet(cPacket* msg,nsaddr_t &src_addr)
+OLSR::check_packet(cPacket* msg,nsaddr_t &src_addr,int &index)
 {
 	cPacket *msg_aux=NULL;
 	OLSR_pkt *op;
@@ -539,6 +539,8 @@ OLSR::check_packet(cPacket* msg,nsaddr_t &src_addr)
 	op =  check_and_cast<OLSR_pkt  *>(msg_aux);
 	IPControlInfo* controlInfo = check_and_cast<IPControlInfo*>(msg->removeControlInfo());
 	src_addr = controlInfo->getSrcAddr().getInt();
+	index = controlInfo->getInterfaceId();
+
 	delete controlInfo;
 	delete msg;
 	return op;
@@ -552,11 +554,12 @@ OLSR::recv_olsr(cMessage* msg) {
 
 	OLSR_pkt* op;
 	nsaddr_t src_addr;
+	int index;
 
 	// All routing messages are sent from and to port RT_PORT,
 	// so we check it.
 
-	op = check_packet(PK(msg),src_addr);
+	op = check_packet(PK(msg),src_addr,index);
 	if (op==NULL)
 		return;
 
@@ -588,11 +591,11 @@ OLSR::recv_olsr(cMessage* msg) {
 		if (duplicated == NULL) {
 			// Process the message according to its type
 			if (msg.msg_type() == OLSR_HELLO_MSG)
-				process_hello(msg, ra_addr(), src_addr);
+				process_hello(msg, ra_addr(), src_addr,index);
 			else if (msg.msg_type() == OLSR_TC_MSG)
-				process_tc(msg, src_addr);
+				process_tc(msg, src_addr,index);
 			else if (msg.msg_type() == OLSR_MID_MSG)
-				process_mid(msg, src_addr);
+				process_mid(msg, src_addr,index);
 			else {
 				debug("%f: Node %d can not process OLSR packet because does not "
 					"implement OLSR type (%x)\n",
@@ -875,7 +878,7 @@ OLSR::rtable_computation() {
 					rtable_.add_entry(link_tuple->nb_iface_addr(),
 							link_tuple->nb_iface_addr(),
 							link_tuple->local_iface_addr(),
-							1);
+							1,link_tuple->local_iface_index());
 
 					omnet_chg_rte (link_tuple->nb_iface_addr(),
 							link_tuple->nb_iface_addr(),
@@ -890,7 +893,7 @@ OLSR::rtable_computation() {
 				rtable_.add_entry(nb_tuple->nb_main_addr(),
 						lt->nb_iface_addr(),
 						lt->local_iface_addr(),
-						1);
+						1,lt->local_iface_index());
 				omnet_chg_rte (nb_tuple->nb_main_addr(),
 						lt->nb_iface_addr(),
 						0,// Default mask
@@ -930,7 +933,7 @@ OLSR::rtable_computation() {
 			rtable_.add_entry(nb2hop_tuple->nb2hop_addr(),
 					entry->next_addr(),
 					entry->iface_addr(),
-					2);
+					2,entry->local_iface_index());
 			omnet_chg_rte (nb2hop_tuple->nb2hop_addr(),
 					entry->next_addr(),
 					0,
@@ -958,7 +961,7 @@ OLSR::rtable_computation() {
 				rtable_.add_entry(topology_tuple->dest_addr(),
 						entry2->next_addr(),
 						entry2->iface_addr(),
-						h+1,entry2);
+						h+1,entry2->local_iface_index(),entry2);
 				omnet_chg_rte (topology_tuple->dest_addr(),
 					entry2->next_addr(),
 					0,
@@ -983,7 +986,7 @@ OLSR::rtable_computation() {
 				rtable_.add_entry(tuple->iface_addr(),
 						entry1->next_addr(),
 						entry1->iface_addr(),
-						entry1->dist(),entry1);
+						entry1->dist(),entry1->local_iface_index(),entry1);
 				omnet_chg_rte (tuple->iface_addr(),
 					entry1->next_addr(),
 					0,
@@ -1008,10 +1011,10 @@ OLSR::rtable_computation() {
 /// \param sender_iface the address of the interface where the message was sent from.
 ///
 void
-OLSR::process_hello(OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsaddr_t &sender_iface) {
+OLSR::process_hello(OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsaddr_t &sender_iface, const int &index) {
 	assert(msg.msg_type() == OLSR_HELLO_MSG);
 
-        link_sensing(msg, receiver_iface, sender_iface);
+    link_sensing(msg, receiver_iface, sender_iface,index);
 	populate_nbset(msg);
 	populate_nb2hopset(msg);
 	mpr_computation();
@@ -1028,7 +1031,7 @@ OLSR::process_hello(OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsaddr_
 /// \param sender_iface the address of the interface where the message was sent from.
 ///
 void
-OLSR::process_tc(OLSR_msg& msg, const nsaddr_t &sender_iface) {
+OLSR::process_tc(OLSR_msg& msg, const nsaddr_t &sender_iface,const int &index) {
 	assert(msg.msg_type() == OLSR_TC_MSG);
 	double now	= CURRENT_TIME;
 	OLSR_tc& tc	= msg.tc();
@@ -1081,6 +1084,7 @@ OLSR::process_tc(OLSR_msg& msg, const nsaddr_t &sender_iface) {
 			topology_tuple->last_addr()	= msg.orig_addr();
 			topology_tuple->seq()		= tc.ansn();
 			topology_tuple->time()		= now + OLSR::emf_to_seconds(msg.vtime());
+			topology_tuple->local_iface_index()=index;
 			add_topology_tuple(topology_tuple);
 			// Schedules topology tuple deletion
 			OLSR_TopologyTupleTimer* topology_timer =
@@ -1100,7 +1104,7 @@ OLSR::process_tc(OLSR_msg& msg, const nsaddr_t &sender_iface) {
 /// \param sender_iface the address of the interface where the message was sent from.
 ///
 void
-OLSR::process_mid(OLSR_msg& msg, const nsaddr_t &sender_iface) {
+OLSR::process_mid(OLSR_msg& msg, const nsaddr_t &sender_iface,const int &index) {
 	assert(msg.msg_type() == OLSR_MID_MSG);
 	double now	= CURRENT_TIME;
 	OLSR_mid& mid	= msg.mid();
@@ -1129,6 +1133,7 @@ OLSR::process_mid(OLSR_msg& msg, const nsaddr_t &sender_iface) {
 			tuple->iface_addr()		= msg.mid().iface_addr(i);
 			tuple->main_addr()		= msg.orig_addr();
 			tuple->time()			= now + OLSR::emf_to_seconds(msg.vtime());
+			tuple->local_iface_index()=index;
 			add_ifaceassoc_tuple(tuple);
 			// Schedules iface association tuple deletion
 			OLSR_IfaceAssocTupleTimer* ifaceassoc_timer =
@@ -1471,7 +1476,7 @@ OLSR::send_mid() {
 /// \param sender_iface the address of the interface where the message was sent from.
 ///
 void
-OLSR::link_sensing(OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsaddr_t &sender_iface) {
+OLSR::link_sensing(OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsaddr_t &sender_iface,const int &index) {
 	OLSR_hello& hello	= msg.hello();
 	double now		= CURRENT_TIME;
 	bool updated		= false;
@@ -1483,6 +1488,7 @@ OLSR::link_sensing(OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsaddr_t
 		link_tuple = new OLSR_link_tuple;
 		link_tuple->nb_iface_addr()	= sender_iface;
 		link_tuple->local_iface_addr()	= receiver_iface;
+		link_tuple->local_iface_index()=index;
 		link_tuple->sym_time()		= now - 1;
 		link_tuple->lost_time()		= 0.0;
 		link_tuple->time()		= now + OLSR::emf_to_seconds(msg.vtime());

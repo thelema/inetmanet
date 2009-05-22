@@ -184,12 +184,13 @@ OLSR_ETX::recv_olsr(cMessage* msg) {
 
 	OLSR_pkt* op;
 	nsaddr_t src_addr;
+	int index;
 
 	// All routing messages are sent from and to port RT_PORT,
 	// so we check it.
 
 // Extract information and delete the cantainer without more use
-	op = check_packet(PK(msg),src_addr);
+	op = check_packet(PK(msg),src_addr,index);
 	if (op==NULL)
 		return;
 
@@ -222,11 +223,11 @@ OLSR_ETX::recv_olsr(cMessage* msg) {
 		if (duplicated == NULL) {
 			// Process the message according to its type
 			if (msg.msg_type() == OLSR_HELLO_MSG)
-				process_hello(msg, ra_addr(), src_addr, op->pkt_seq_num());
+				process_hello(msg, ra_addr(), src_addr, op->pkt_seq_num(),index);
 			else if (msg.msg_type() == OLSR_TC_MSG)
-				process_tc(msg, src_addr);
+				process_tc(msg, src_addr,index);
 			else if (msg.msg_type() == OLSR_MID_MSG)
-				process_mid(msg, src_addr);
+				process_mid(msg, src_addr,index);
 			else {
 				debug("%f: Node %d can not process OLSR packet because does not "
 					"implement OLSR type (%x)\n",
@@ -1158,7 +1159,7 @@ OLSR_ETX::rtable_dijkstra_computation() {
 	        it != dijkstra->all_nodes()->end(); it++) {
 		if (dijkstra->D(*it).hop_count() == 1) {
       // add route...
-			rtable_.add_entry(*it, *it, dijkstra->D(*it).link().last_node(), 1);
+			rtable_.add_entry(*it, *it, dijkstra->D(*it).link().last_node(), 1,-1);
 
 			omnet_chg_rte (*it, *it,0,1,false,dijkstra->D(*it).link().last_node());
 
@@ -1174,7 +1175,7 @@ OLSR_ETX::rtable_dijkstra_computation() {
       // add route...
 			OLSR_ETX_rt_entry* entry = rtable_.lookup(dijkstra->D(*it).link().last_node());
 			assert(entry != NULL);
-			rtable_.add_entry(*it, dijkstra->D(*it).link().last_node(), entry->iface_addr(), 2);
+			rtable_.add_entry(*it, dijkstra->D(*it).link().last_node(), entry->iface_addr(), 2,entry->local_iface_index());
 			omnet_chg_rte (*it, dijkstra->D(*it).link().last_node(),0,2,false,entry->iface_addr());
 
 
@@ -1191,7 +1192,7 @@ OLSR_ETX::rtable_dijkstra_computation() {
         // add route...
 				OLSR_ETX_rt_entry* entry = rtable_.lookup(dijkstra->D(*it).link().last_node());
 				assert(entry != NULL);
-				rtable_.add_entry(*it, dijkstra->D(*it).link().last_node(), entry->iface_addr(), i);
+				rtable_.add_entry(*it, dijkstra->D(*it).link().last_node(), entry->iface_addr(), i,entry->local_iface_index());
 				omnet_chg_rte (*it, dijkstra->D(*it).link().last_node(),0,i,false,entry->iface_addr());
 
 			        processed_nodes.insert(*it);
@@ -1213,7 +1214,7 @@ OLSR_ETX::rtable_dijkstra_computation() {
 		OLSR_ETX_rt_entry* entry2 = rtable_.lookup(tuple->iface_addr());
 		if (entry1 != NULL && entry2 == NULL) {
 			rtable_.add_entry(tuple->iface_addr(),
-			entry1->next_addr(), entry1->iface_addr(), entry1->dist());
+			entry1->next_addr(), entry1->iface_addr(), entry1->dist(),entry1->local_iface_index());
 			omnet_chg_rte (tuple->iface_addr(),entry1->next_addr(),0,entry1->dist(),false,entry1->iface_addr());
 
 		}
@@ -1235,9 +1236,9 @@ OLSR_ETX::rtable_dijkstra_computation() {
 /// \param sender_iface the address of the interface where the message was sent from.
 ///
 void
-OLSR_ETX::process_hello(OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsaddr_t &sender_iface,uint16_t pkt_seq_num) {
+OLSR_ETX::process_hello(OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsaddr_t &sender_iface,uint16_t pkt_seq_num,const int &index) {
 	assert(msg.msg_type() == OLSR_ETX_HELLO_MSG);
-	link_sensing(msg, receiver_iface, sender_iface, pkt_seq_num);
+	link_sensing(msg, receiver_iface, sender_iface, pkt_seq_num,index);
 	populate_nbset(msg);
 	populate_nb2hopset(msg);
 	switch (parameter_.mpr_algorithm()) {
@@ -1271,7 +1272,7 @@ OLSR_ETX::process_hello(OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsa
 /// \param sender_iface the address of the interface where the message was sent from.
 ///
 void
-OLSR_ETX::process_tc(OLSR_msg& msg, const nsaddr_t &sender_iface) {
+OLSR_ETX::process_tc(OLSR_msg& msg, const nsaddr_t &sender_iface,const int &index) {
 	assert(msg.msg_type() == OLSR_ETX_TC_MSG);
 	double now = CURRENT_TIME;
 	OLSR_tc& tc = msg.tc();
@@ -1776,7 +1777,7 @@ OLSR_ETX::send_tc() {
 void
 OLSR_ETX::link_sensing
   (OLSR_msg& msg, const nsaddr_t &receiver_iface, const nsaddr_t &sender_iface,
-   uint16_t pkt_seq_num) {
+   uint16_t pkt_seq_num,const int & index) {
 	OLSR_hello& hello  = msg.hello();
 	double now = CURRENT_TIME;
 	bool updated = false;

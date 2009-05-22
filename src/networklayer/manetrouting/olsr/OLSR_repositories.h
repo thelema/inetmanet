@@ -53,6 +53,8 @@ typedef struct OLSR_rt_entry : public cObject {
 	nsaddr_t	next_addr_;	///< Address of the next hop.
 	nsaddr_t	iface_addr_;	///< Address of the local interface.
 	uint32_t	dist_;		///< Distance in hops to the destination.
+	int index;
+	inline int & local_iface_index() {return index;}
 	PathVector  route;
 
 	inline nsaddr_t	& dest_addr()	{ return dest_addr_; }
@@ -73,6 +75,7 @@ typedef struct OLSR_rt_entry : public cObject {
 		iface_addr_=e->iface_addr_;	///< Address of the local interface.
 		dist_=e->dist_;		///< Distance in hops to the destination.
 		route=e->route;
+		index=e->index;
 	}
 	virtual OLSR_rt_entry *dup() {return new OLSR_rt_entry(this);}
 
@@ -88,6 +91,9 @@ typedef struct OLSR_iface_assoc_tuple : public cObject {
 	double		time_;
 	cObject *asocTimer;
 	// cMessage *asocTimer;
+
+	int index;
+	inline int & local_iface_index() {return index;}
 
 	inline nsaddr_t	& iface_addr()	{ return iface_addr_; }
 	inline nsaddr_t	& main_addr()	{ return main_addr_; }
@@ -121,11 +127,13 @@ typedef struct OLSR_link_tuple : public cObject {
 	double		lost_time_;
 	/// Time at which this tuple expires and must be removed.
 	double		time_;
+	int 		index;
 	//cMessage *asocTimer;
 	cObject *asocTimer;
 
 	inline nsaddr_t	& local_iface_addr()	{ return local_iface_addr_; }
 	inline nsaddr_t	& nb_iface_addr()		{ return nb_iface_addr_; }
+	inline int & local_iface_index() {return index;}
 
 
 	void	setLocal_iface_addr(const nsaddr_t &a)	{local_iface_addr_=a; }
@@ -274,6 +282,8 @@ typedef struct OLSR_topology_tuple : public cObject {
 	uint16_t	seq_;
 	/// Time at which this tuple expires and must be removed.
 	double		time_;
+	int index;
+
 	// cMessage *asocTimer;
 	cObject *asocTimer;
 
@@ -284,6 +294,7 @@ typedef struct OLSR_topology_tuple : public cObject {
 	inline void	setLast_addr(const nsaddr_t &a)	{last_addr_=a; }
 	inline uint16_t&	seq()		{ return seq_; }
 	inline double&		time()		{ return time_; }
+	inline int & local_iface_index() {return index;}
 
 	OLSR_topology_tuple(){asocTimer = NULL;}
 	OLSR_topology_tuple (OLSR_topology_tuple * e)
@@ -292,6 +303,7 @@ typedef struct OLSR_topology_tuple : public cObject {
 		last_addr_ = e->last_addr_;
 		seq_ = e->seq_;
 		time_ = e->time_;
+		index = e->index;
 		asocTimer = NULL;
 	}
 	virtual OLSR_topology_tuple *dup() {return new OLSR_topology_tuple(this);}

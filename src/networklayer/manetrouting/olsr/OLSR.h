@@ -400,7 +400,7 @@ protected:
 	char nodeName[50];
 
 
-	virtual OLSR_pkt * check_packet(cPacket* ,nsaddr_t &);
+	virtual OLSR_pkt * check_packet(cPacket* ,nsaddr_t &,int &);
 
 	// PortClassifier*	dmux_;		///< For passing packets up to agents.
 	// Trace*		logtarget_;	///< For logging.
@@ -446,9 +446,9 @@ protected:
 	virtual void		mpr_computation();
 	virtual void		rtable_computation();
 
-	virtual void		process_hello(OLSR_msg&, const nsaddr_t &, const nsaddr_t &);
-	virtual void		process_tc(OLSR_msg&,const nsaddr_t &);
-	virtual void		process_mid(OLSR_msg&,const nsaddr_t &);
+	virtual void		process_hello(OLSR_msg&, const nsaddr_t &, const nsaddr_t &,const int &);
+	virtual void		process_tc(OLSR_msg&,const nsaddr_t &,const int &);
+	virtual void		process_mid(OLSR_msg&,const nsaddr_t &,const int &);
 
 	virtual void		forward_default(OLSR_msg&, OLSR_dup_tuple*,const nsaddr_t &,const nsaddr_t &);
 	virtual void		forward_data(cMessage* p){}
@@ -459,7 +459,7 @@ protected:
 	virtual void		send_mid();
 	virtual void		send_pkt();
 
-	virtual void		link_sensing(OLSR_msg&, const nsaddr_t &,const nsaddr_t &);
+	virtual void		link_sensing(OLSR_msg&, const nsaddr_t &,const nsaddr_t &,const int &);
 	virtual void		populate_nbset(OLSR_msg&);
 	virtual void		populate_nb2hopset(OLSR_msg&);
 	virtual void		populate_mprselset(OLSR_msg&);

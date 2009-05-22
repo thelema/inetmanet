@@ -81,7 +81,7 @@ OLSR_rtable::lookup(const nsaddr_t &dest) {
 	// If there is no route to "dest", return NULL
 	if (it == rt_.end())
 		return NULL;
-	
+
 	// Returns the rt entry (second element of the pair)
 	return (*it).second;
 }
@@ -122,46 +122,48 @@ OLSR_rtable::find_send_entry(OLSR_rt_entry* entry) {
 /// \return		the routing table entry which has been added.
 ///
 OLSR_rt_entry*
-OLSR_rtable::add_entry(const nsaddr_t &dest, const nsaddr_t & next,const nsaddr_t & iface, uint32_t dist) {
+OLSR_rtable::add_entry(const nsaddr_t &dest, const nsaddr_t & next,const nsaddr_t & iface, uint32_t dist,const int &index) {
 	// Creates a new rt entry with specified values
 	OLSR_rt_entry* entry = new OLSR_rt_entry();
 	entry->dest_addr()	= dest;
 	entry->next_addr()	= next;
 	entry->iface_addr()	= iface;
 	entry->dist()		= dist;
+	entry->local_iface_index()=index;
 	if (entry->dist()==2)
 	{
 		entry->route.push_back(next);
 	}
-	
+
 	// Inserts the new entry
 	rtable_t::iterator it = rt_.find(dest);
 	if (it != rt_.end())
 		delete (*it).second;
 	rt_[dest] = entry;
-	
+
 	// Returns the new rt entry
 	return entry;
 }
 
 OLSR_rt_entry*
-OLSR_rtable::add_entry(const nsaddr_t & dest, const nsaddr_t & next, const nsaddr_t & iface, uint32_t dist,OLSR_rt_entry *entryAux) {
+OLSR_rtable::add_entry(const nsaddr_t & dest, const nsaddr_t & next, const nsaddr_t & iface, uint32_t dist,const int &index,OLSR_rt_entry *entryAux) {
 	// Creates a new rt entry with specified values
 	OLSR_rt_entry* entry = new OLSR_rt_entry();
 	entry->dest_addr()	= dest;
 	entry->next_addr()	= next;
 	entry->iface_addr()	= iface;
 	entry->dist()		= dist;
+	entry->local_iface_index()=index;
 	entry->route = entryAux->route;
 	if (entryAux->dist()==(entry->dist()-1))
 		entry->route.push_back(entryAux->dest_addr());
-	
+
 	// Inserts the new entry
 	rtable_t::iterator it = rt_.find(dest);
 	if (it != rt_.end())
 		delete (*it).second;
 	rt_[dest] = entry;
-	
+
 	// Returns the new rt entry
 	return entry;
 }
@@ -177,7 +179,7 @@ OLSR_rtable::size() {
 }
 
 ///
-/// \brief Prints out the content of the routing table 
+/// \brief Prints out the content of the routing table
 ///
 /// Content is represented as a table in which each line is preceeded by a 'P'.
 /// First line contains the name of every column (dest, next, iface, dist)
@@ -185,7 +187,7 @@ OLSR_rtable::size() {
 ///
 ///
 
-std::string OLSR_rtable::detailedInfo() 
+std::string OLSR_rtable::detailedInfo()
 {
 	std::stringstream out;
 
