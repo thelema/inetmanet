@@ -54,6 +54,7 @@ void AbstractRadio::initialize(int stage)
             error("transmitterPower cannot be bigger than pMax in ChannelControl!");
         rs.setBitrate(par("bitrate"));
         rs.setChannelNumber(par("channelNumber"));
+        rs.setRadioId(this->getId());
         thermalNoise = FWMath::dBm2mW(par("thermalNoise"));
         carrierFrequency = cc->par("carrierFrequency");  // taken from ChannelControl
         sensitivity = FWMath::dBm2mW(par("sensitivity"));

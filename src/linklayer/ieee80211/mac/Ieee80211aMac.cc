@@ -311,6 +311,7 @@ void Ieee80211aMac::initialize(int stage)
         WATCH(numReceived);
         WATCH(numSentBroadcast);
         WATCH(numReceivedBroadcast);
+        radioModule = gate("lowergateOut")->getNextGate()->getOwnerModule()->getId();
     }
 }
 
@@ -522,7 +523,10 @@ void Ieee80211aMac::receiveChangeNotification(int category, const cPolymorphic *
 
     if (category == NF_RADIOSTATE_CHANGED)
     {
-        RadioState::State newRadioState = check_and_cast<RadioState *>(details)->getState();
+    	RadioState * rstate = check_and_cast<RadioState *>(details);
+        if (rstate->getRadioId()!=getRadioModuleId())
+        	return;
+        RadioState::State newRadioState = rstate->getState();
 
         // FIXME: double recording, because there's no sample hold in the gui
         radioStateVector.record(radioState);

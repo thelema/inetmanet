@@ -172,6 +172,11 @@ class INET_API Ieee80211Mac : public WirelessMacBase, public INotifiable
 
     /** Physical radio (medium) state copied from physical layer */
     RadioState::State radioState;
+	// Use to distinguish the radio module that send the event
+	int radioModule;
+
+	int getRadioModuleId(){return radioModule;}
+
 
     /** Messages received from upper layer and to be transmitted later */
     Ieee80211DataOrMgmtFrameList transmissionQueue;
