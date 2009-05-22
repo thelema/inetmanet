@@ -445,6 +445,12 @@ protected:
 	virtual double    getRate    (char);
 	//@}
 
+	// Use to distinguish the radio module that send the event
+	int radioModule;
+
+	int getRadioModuleId(){return radioModule;}
+
+
 // member variables
 public:
 

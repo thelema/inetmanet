@@ -246,6 +246,7 @@ void Ieee802154Mac::initialize(int stage)
 		WATCH(numRxAckPkt);
 
 		WATCH(numTxAckInactive);
+		radioModule = gate("lowergateOut")->getNextGate()->getOwnerModule()->getId();
 	}
 	else if (1 == stage)
 	{
@@ -335,6 +336,10 @@ void Ieee802154Mac::receiveChangeNotification(int category, const cPolymorphic *
 
     switch(category)
     {
+
+		if (check_and_cast<RadioState *>(details)->getRadioId()!=getRadioModuleId())
+			return;
+
     	case NF_RADIO_CHANNEL_CHANGED:
     		ppib.phyCurrentChannel = check_and_cast<RadioState *>(details)->getChannelNumber();
     		phy_bitrate = getRate('b');

@@ -78,6 +78,7 @@ void Ieee802154Phy::initialize(int stage)
         rs.setState(RadioState::IDLE);
         //rs.setChannelNumber((int)def_phyCurrentChannel); // default: 11, 2.4G
         rs.setBitrate(getRate('b'));
+        rs.setRadioId(this->getId());
 
         newState = phy_IDLE;
         newState_turnaround = phy_IDLE;
