@@ -23,6 +23,7 @@ simple DYMOUM
         volatile double broadCastDelay @unit("s") = default (uniform(0s,0.005s));
         volatile double uniCastDelay @unit("s") = default (0s);
         bool EqualDelay =default(true);
+        bool UseIndex=default(false);
 
     gates:
         input from_ip;

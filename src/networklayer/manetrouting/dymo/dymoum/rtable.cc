@@ -125,7 +125,10 @@ rtable_entry_t *NS_CLASS rtable_insert(struct in_addr dest_addr,
 #ifdef OMNETPP
 	/* Add route to omnet inet routing table ... */
 	netmask.s_addr = IPAddress((uint32_t)nxthop_addr.s_addr).getNetworkMask().getInt();
-	omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,DEV_NR(ifindex).ipaddr);
+    if (useIndex)
+    	omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,ifindex);
+    else
+    	omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,DEV_NR(ifindex).ipaddr);
 #endif
 #endif	/* NS_PORT */
 
@@ -175,10 +178,13 @@ rtable_entry_t *NS_CLASS rtable_update(rtable_entry_t *entry,
 	}
 #else
 #ifdef OMNETPP
-		struct in_addr netmask;
+	struct in_addr netmask;
 	/* Add route to omnet inet routing table ... */
-       	netmask.s_addr = IPAddress((uint32_t)nxthop_addr.s_addr).getNetworkMask().getInt();
-	omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,DEV_NR(ifindex).ipaddr);
+	netmask.s_addr = IPAddress((uint32_t)nxthop_addr.s_addr).getNetworkMask().getInt();
+	if (useIndex)
+		omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,ifindex);
+	else
+		omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,DEV_NR(ifindex).ipaddr);
 
 
 #endif

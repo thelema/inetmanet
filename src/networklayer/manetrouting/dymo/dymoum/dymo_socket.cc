@@ -331,18 +331,39 @@ void NS_CLASS dymo_socket_send(struct in_addr dest_addr, struct dev_info *dev,do
 	{
 		destAdd = IPAddress::ALLONES_ADDRESS;
 		if (delay>0)
-			sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,delay,dev->ipaddr.s_addr);
+		{
+			if (useIndex)
+				sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,delay,dev->ifindex);
+			else
+				sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,delay,dev->ipaddr.s_addr);
+
+		}
 		else
-			sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("broadCastDelay"),dev->ipaddr.s_addr);
+		{
+			if (useIndex)
+				sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("broadCastDelay"),dev->ifindex);
+			else
+				sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("broadCastDelay"),dev->ipaddr.s_addr);
+		}
 	}
 	else
 	{
 
 		destAdd = dest_addr.s_addr;
 		if (delay>0)
-			sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,delay,dev->ipaddr.s_addr);
+		{
+			if (useIndex)
+				sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,delay,dev->ifindex);
+			else
+				sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,delay,dev->ipaddr.s_addr);
+		}
 		else
-			sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("uniCastDelay"),dev->ipaddr.s_addr);
+		{
+			if (useIndex)
+				sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("uniCastDelay"),dev->ifindex);
+			else
+				sendToIp(p, DYMO_PORT, destAdd, DYMO_PORT,DYMO_IPTTL,par("uniCastDelay"),dev->ipaddr.s_addr);
+		}
 	}
 	totalSend++;
 

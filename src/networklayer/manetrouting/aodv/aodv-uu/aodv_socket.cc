@@ -549,9 +549,19 @@ void NS_CLASS aodv_socket_send(AODV_msg * aodv_msg, struct in_addr dst,
 			 destAdd = dst.s_addr;
 		 }
 		 if (delay>0)
-			 sendToIp(aodv_msg, 654, destAdd, 654,ttl,delay,dev->ipaddr.s_addr);
+		 {
+			 if (useIndex)
+				 sendToIp(aodv_msg, 654, destAdd, 654,ttl,delay,dev->ifindex);
+			 else
+				 sendToIp(aodv_msg, 654, destAdd, 654,ttl,delay,dev->ipaddr.s_addr);
+		 }
 		 else
-			 sendToIp(aodv_msg, 654, destAdd, 654,ttl,  par ("broadCastDelay"),dev->ipaddr.s_addr);
+		 {
+			 if (useIndex)
+				 sendToIp(aodv_msg, 654, destAdd, 654,ttl,  par ("broadCastDelay"),dev->ifindex);
+			 else
+				 sendToIp(aodv_msg, 654, destAdd, 654,ttl,  par ("broadCastDelay"),dev->ipaddr.s_addr);
+		 }
 		 totalSend++;
 //	     sendToIp(aodv_msg, 654, destAdd, 654,ttl);
 #endif /*omnet++ */
@@ -585,17 +595,37 @@ void NS_CLASS aodv_socket_send(AODV_msg * aodv_msg, struct in_addr dst,
 		{
 			destAdd = IPAddress::ALLONES_ADDRESS;
 			if (delay>0)
-				sendToIp(aodv_msg, 654, destAdd, 654,ttl,delay,dev->ipaddr.s_addr);
+			{
+				 if (useIndex)
+					 sendToIp(aodv_msg, 654, destAdd, 654,ttl,delay,dev->ifindex);
+				 else
+					 sendToIp(aodv_msg, 654, destAdd, 654,ttl,delay,dev->ipaddr.s_addr);
+			}
 			else
-				sendToIp(aodv_msg, 654, destAdd, 654,ttl,par("broadCastDelay"),dev->ipaddr.s_addr);
+			{
+				if (useIndex)
+					sendToIp(aodv_msg, 654, destAdd, 654,ttl,par("broadCastDelay"),dev->ifindex);
+				else
+					sendToIp(aodv_msg, 654, destAdd, 654,ttl,par("broadCastDelay"),dev->ipaddr.s_addr);
+			}
 		}
 		else
 		{
 			destAdd = dst.s_addr;
 			if (delay>0)
-				sendToIp(aodv_msg, 654, destAdd, 654,ttl,delay,dev->ipaddr.s_addr);
+			{
+				if (useIndex)
+					sendToIp(aodv_msg, 654, destAdd, 654,ttl,delay,dev->ifindex);
+				else
+					sendToIp(aodv_msg, 654, destAdd, 654,ttl,delay,dev->ipaddr.s_addr);
+			}
 			else
-				sendToIp(aodv_msg, 654, destAdd, 654,ttl,par("uniCastDelay"),dev->ipaddr.s_addr);
+			{
+				if (useIndex)
+					sendToIp(aodv_msg, 654, destAdd, 654,ttl,par("uniCastDelay"),dev->ifindex);
+				else
+					sendToIp(aodv_msg, 654, destAdd, 654,ttl,par("uniCastDelay"),dev->ipaddr.s_addr);
+			}
 		}
 		totalSend++;
 #endif

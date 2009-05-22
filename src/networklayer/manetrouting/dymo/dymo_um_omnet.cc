@@ -159,7 +159,6 @@ void DYMOUM::initialize(int stage)
 		if ((RREQ_TRIES = (int) par("RREQTries"))==-1)
 			RREQ_TRIES = 3;
 
-
 		ipNodeId = new IPAddress(interface80211ptr->ipv4Data()->getIPAddress());
 
 		INIT_DLIST_HEAD(&TQ);
@@ -181,6 +180,8 @@ void DYMOUM::initialize(int stage)
 			attachPacket = false;
 
 		norouteBehaviour = par("noRouteBehaviour");
+		useIndex = par("UseIndex");
+
 		strcpy(nodeName,getParentModule()->getParentModule()->getFullName());
 		dymo_socket_init();
 		rtable_init();

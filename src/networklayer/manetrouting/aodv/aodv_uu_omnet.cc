@@ -119,6 +119,7 @@ void NS_CLASS initialize(int stage)
 		if ((bool)par("debug"))
 			debug = 1;
 
+		useIndex = par("UseIndex");
 		unidir_hack = (int) par("unidir_hack");
 
 		receive_n_hellos	= (int) par("receive_n_hellos");

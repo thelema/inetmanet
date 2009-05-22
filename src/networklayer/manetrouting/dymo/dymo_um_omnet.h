@@ -181,6 +181,7 @@ private:
 	long int timer_elem;
 	bool intermediateRREP;
 	bool attachPacket;
+	bool useIndex;
 
 
 	virtual void processLinkBreak(const cPolymorphic *details);

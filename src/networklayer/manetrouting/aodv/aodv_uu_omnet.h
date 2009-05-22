@@ -109,6 +109,7 @@ class AODVUU : public ManetRoutingBase {
 
 	char nodeName[50];
 	ICMPAccess icmpAccess;
+	bool useIndex;
 	// cMessage  messageEvent;
 
  public:
