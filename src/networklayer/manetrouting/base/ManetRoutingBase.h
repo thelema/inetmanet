@@ -34,7 +34,23 @@
 #include "NotifierConsts.h"
 #include <vector>
 
+class ManetRoutingBase;
+class ManetTimer :  public cOwnedObject {
+protected:
+	ManetRoutingBase *		agent_;	///< OLSR agent which created the timer.
+public:
+	ManetTimer();
+	ManetTimer(ManetRoutingBase* agent);
+	virtual void expire()=0;
+	virtual void removeQueueTimer();
+	virtual void removeTimer();
+	virtual void resched(double time);
+	virtual void resched(simtime_t time);
+	virtual ~ManetTimer();
+};
 
+
+typedef std::multimap <simtime_t, ManetTimer *> TimerMultiMap;
 class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 {
 
@@ -46,6 +62,7 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 		 Uint128	hostAddress;
 		 Uint128	routerId;
 		 static const int maxInterfaces = 3;
+
 
 		 typedef struct InterfaceIdentification
 		 {
@@ -60,8 +77,11 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 		 }InterfaceIdentification;
 		 std::vector <InterfaceIdentification> interfaceVector;
 	protected:
-		~ManetRoutingBase(){interfaceVector.clear();}
-		ManetRoutingBase(){mac_layer_ = false;}
+		 TimerMultiMap *timerMultiMapPtr;
+		 cMessage *timerMessagePtr;
+		 friend class ManetTimer;
+		~ManetRoutingBase();
+		ManetRoutingBase(){mac_layer_ = false;timerMessagePtr=NULL;timerMultiMapPtr=NULL;}
 
 ////////////////////////////////////////////
 ////////////////////////////////////////////
@@ -70,6 +90,13 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 /////////////////////////////////////////////
 /////////////////////////////////////////////
 		virtual void registerRoutingModule();
+
+//
+//
+		virtual void createTimerQueue();
+		virtual void scheduleEvent();
+		virtual bool checkTimer(cMessage *msg);
+
 
 /////////////////////////////////
 //

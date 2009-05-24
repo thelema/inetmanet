@@ -78,6 +78,26 @@ void ManetRoutingBase::registerRoutingModule()
 	// One enabled network interface (in total)
 }
 
+ManetRoutingBase::~ManetRoutingBase(){
+	interfaceVector.clear();
+	if (timerMessagePtr)
+	{
+		cancelAndDelete(timerMessagePtr);
+		timerMessagePtr=NULL;
+
+	}
+	if (timerMultiMapPtr)
+	{
+		for  (TimerMultiMap::iterator it = timerMultiMapPtr->begin();it!=timerMultiMapPtr->end();it++)
+		{
+			ManetTimer * timer = it->second;
+			delete timer;
+		}
+		delete timerMultiMapPtr;
+		timerMultiMapPtr=NULL;
+	}
+
+}
 
 bool ManetRoutingBase::isIpLocalAddress (const IPAddress& dest) const 
 {
@@ -711,5 +731,63 @@ InterfaceEntry * ManetRoutingBase::getWlanInterfaceEntry (int i) const
 		return interfaceVector[i].interfacePtr;
 	else
 		return NULL;
+}
+
+///////////////////
+//////////////////
+//
+//  Methods to manage the queue timer.
+//
+//////////////////
+//////////////////
+void ManetRoutingBase::createTimerQueue()
+{
+	timerMessagePtr = new cMessage();
+	timerMultiMapPtr = new TimerMultiMap;
+}
+
+
+void ManetRoutingBase::scheduleEvent()
+{
+	if (!timerMessagePtr)
+		return;
+	if (!timerMultiMapPtr)
+		return;
+
+	TimerMultiMap::iterator e = timerMultiMapPtr->begin();
+	if (timerMessagePtr->isScheduled())
+	{
+		if (e->first <timerMessagePtr->getArrivalTime())
+		{
+			cancelEvent(timerMessagePtr);
+			scheduleAt(e->first,timerMessagePtr);
+		}
+		else if (e->first>timerMessagePtr->getArrivalTime())
+			error("timer Queue problem");
+	}
+	else
+	{
+		scheduleAt(e->first,timerMessagePtr);
+	}
+}
+
+bool ManetRoutingBase::checkTimer(cMessage *msg)
+{
+	if (timerMessagePtr && (msg==timerMessagePtr))
+	{
+		while (timerMultiMapPtr->begin()->first<=simTime())
+		{
+			ManetTimer *timer= timerMultiMapPtr->begin()->second;
+			if (timer==NULL)
+				opp_error ("timer ower is bad");
+			else
+			{
+				timerMultiMapPtr->erase(timerMultiMapPtr->begin());
+				timer->expire();
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
