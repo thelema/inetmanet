@@ -1745,6 +1745,7 @@ OLSR::mac_failed(IPDatagram* p) {
 	if (next_addr == (Uint128) IP_BROADCAST)
 		return;
 
+	deleteIpEntry(dest_addr);
 	OLSR_link_tuple* link_tuple = state_.find_link_tuple(next_addr);
 	if (link_tuple != NULL) {
 		link_tuple->lost_time()	= now + OLSR_NEIGHB_HOLD_TIME;
@@ -1752,6 +1753,7 @@ OLSR::mac_failed(IPDatagram* p) {
 		nb_loss(link_tuple);
 
 	}
+
 }
 
 ///
