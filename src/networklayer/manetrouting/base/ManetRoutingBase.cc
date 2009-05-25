@@ -33,6 +33,54 @@
 #define UDP_HDR_LEN	8
 
 
+void ManetTimer::removeTimer()
+{
+	removeQueueTimer();
+}
+
+ManetTimer::ManetTimer(ManetRoutingBase* agent) : cOwnedObject("ManetTimer")
+{
+	agent_ = agent;
+}
+
+ManetTimer::~ManetTimer()
+{
+	removeTimer();
+}
+
+ManetTimer::ManetTimer() : cOwnedObject("ManetTimer"){
+	agent_ = dynamic_cast <ManetRoutingBase*> (this->getOwner());
+	if (agent_==NULL)
+		opp_error ("timer ower is bad");
+}
+
+void ManetTimer::removeQueueTimer()
+{
+	TimerMultiMap::iterator it;
+	for (it=agent_->getTimerMultimMap()->begin() ; it != agent_->getTimerMultimMap()->end(); it++ )
+	{
+		if (it->second==this)
+		{
+			agent_->getTimerMultimMap()->erase(it);
+			return;
+		}
+	}
+}
+
+void ManetTimer::resched(double time)
+{
+	removeQueueTimer();
+	agent_->getTimerMultimMap()->insert(std::pair<simtime_t, ManetTimer *>(simTime()+time,this));
+}
+
+void ManetTimer::resched(simtime_t time)
+{
+	removeQueueTimer();
+	agent_->getTimerMultimMap()->insert(std::pair<simtime_t, ManetTimer *>(time,this));
+}
+
+
+
 void ManetRoutingBase::registerRoutingModule()
 {
 	InterfaceEntry *   ie;
@@ -68,7 +116,7 @@ void ManetRoutingBase::registerRoutingModule()
 	const char *classname = getParentModule()->getClassName();
 	mac_layer_=false;
 	if (strcmp(classname,"Ieee80211Mesh")==0)
-	{	
+	{
 		hostAddress = interfaceVector[0].interfacePtr->getMacAddress();
 		mac_layer_=true;
 	}
@@ -99,14 +147,14 @@ ManetRoutingBase::~ManetRoutingBase(){
 
 }
 
-bool ManetRoutingBase::isIpLocalAddress (const IPAddress& dest) const 
+bool ManetRoutingBase::isIpLocalAddress (const IPAddress& dest) const
 {
 	return inet_rt->isLocalAddress(dest);
 }
 
 
 
-bool ManetRoutingBase::isLocalAddress (const Uint128& dest) const 
+bool ManetRoutingBase::isLocalAddress (const Uint128& dest) const
 {
 	if (!mac_layer_)
 		return inet_rt->isLocalAddress(dest.getIPAddress());
@@ -177,7 +225,7 @@ void ManetRoutingBase::sendToIp (cPacket *msg, int srcPort, const Uint128& destA
 					ctrlAux->setInputPort(ie->getInterfaceId());
 				msgAux->setControlInfo(ctrlAux);
 				sendDelayed(msgAux,delay,"to_ip");
-				
+
 			}
 			ie = interfaceVector[interfaceVector.size()-1].interfacePtr;
 		}
@@ -196,14 +244,14 @@ void ManetRoutingBase::sendToIp (cPacket *msg, int srcPort, const Uint128& destA
 
 	if (ttl==0)
 	{
-        // delete and return 
+        // delete and return
 		delete msg;
 		return;
 	}
 	// set source and destination port
 	udpPacket->setSourcePort(srcPort);
 	udpPacket->setDestinationPort(destPort);
-	
+
 
 	if (iface!=0)
 	{
@@ -219,12 +267,12 @@ void ManetRoutingBase::sendToIp (cPacket *msg, int srcPort, const Uint128& destA
 
 
 // If found interface We use the address of interface
-		if (ie)              
+		if (ie)
 			srcadd = ie->ipv4Data()->getIPAddress();
 		else
 			srcadd = hostAddress.getIPAddress();
 
-		EV << "Sending app packet " << msg->getName() << " over IPv4." << " from " << 
+		EV << "Sending app packet " << msg->getName() << " over IPv4." << " from " <<
 			add.str() << " to " << add.str() << "\n";
 		IPControlInfo *ipControlInfo = new IPControlInfo();
 		ipControlInfo->setOrigDatagram(NULL);
@@ -314,7 +362,7 @@ void ManetRoutingBase::sendToIp (cPacket *msg, int srcPort, const Uint128& destA
 					ctrlAux->setInputPort(ie->getInterfaceId());
 				msgAux->setControlInfo(ctrlAux);
 				sendDelayed(msgAux,delay,"to_ip");
-				
+
 			}
 			ie = interfaceVector[interfaceVector.size()-1].interfacePtr;
 		}
@@ -333,14 +381,14 @@ void ManetRoutingBase::sendToIp (cPacket *msg, int srcPort, const Uint128& destA
 
 	if (ttl==0)
 	{
-        // delete and return 
+        // delete and return
 		delete msg;
 		return;
 	}
 	// set source and destination port
 	udpPacket->setSourcePort(srcPort);
 	udpPacket->setDestinationPort(destPort);
-	
+
 
 	if (index!=-1)
 	{
@@ -356,12 +404,12 @@ void ManetRoutingBase::sendToIp (cPacket *msg, int srcPort, const Uint128& destA
 
 
 // If found interface We use the address of interface
-		if (ie)              
+		if (ie)
 			srcadd = ie->ipv4Data()->getIPAddress();
 		else
 			srcadd = hostAddress.getIPAddress();
 
-		EV << "Sending app packet " << msg->getName() << " over IPv4." << " from " << 
+		EV << "Sending app packet " << msg->getName() << " over IPv4." << " from " <<
 			add.str() << " to " << add.str() << "\n";
 		IPControlInfo *ipControlInfo = new IPControlInfo();
 		ipControlInfo->setOrigDatagram(NULL);
@@ -458,7 +506,7 @@ void ManetRoutingBase::omnet_chg_rte (const Uint128 &dst, const Uint128 &gtwy, c
 			if (del_entry && !found)
 			{
 				if (!inet_rt->deleteRoute(e))
-					opp_error ("Aodv omnet_chg_rte can't delete route entry");  
+					opp_error ("Aodv omnet_chg_rte can't delete route entry");
 			}
 			else
 			{
@@ -531,7 +579,7 @@ void ManetRoutingBase::omnet_chg_rte (const Uint128 &dst, const Uint128 &gtwy, c
 			if (del_entry && !found)
 			{
 				if (!inet_rt->deleteRoute(e))
-					opp_error ("Aodv omnet_chg_rte can't delete route entry");  
+					opp_error ("Aodv omnet_chg_rte can't delete route entry");
 			}
 			else
 			{
@@ -582,7 +630,7 @@ void ManetRoutingBase::omnet_chg_rte (const Uint128 &dst, const Uint128 &gtwy, c
 //
 // Check if it exists in the ip4 routing table the address dst
 // if it doesn't exist return ALLONES_ADDRESS
-// 
+//
 Uint128 ManetRoutingBase::omnet_exist_rte (Uint128 dst)
 {
 	/* Add route to kernel routing table ... */
@@ -610,7 +658,7 @@ void ManetRoutingBase::omnet_clean_rte ()
 	// clean the route table wlan interface entry
 	for (int i=inet_rt->getNumRoutes()-1;i>=0;i--)
 	{
-		entry= inet_rt->getRoute(i);	
+		entry= inet_rt->getRoute(i);
 		if (strstr (entry->getInterface()->getName(),"wlan")!=NULL)
 		{
 			inet_rt->deleteRoute(entry);
@@ -667,9 +715,9 @@ int ManetRoutingBase::gettimeofday(struct timeval *tv, struct timezone *tz)
 //
 // Get the index of interface with the same address that add
 //
-int ManetRoutingBase::getWlanInterfaceIndexByAddress (Uint128 add)  
+int ManetRoutingBase::getWlanInterfaceIndexByAddress (Uint128 add)
 {
-	if (add==0) 
+	if (add==0)
 		return interfaceVector[0].index;
 
 	for (unsigned int i=0;i<interfaceVector.size();i++)
@@ -693,9 +741,9 @@ int ManetRoutingBase::getWlanInterfaceIndexByAddress (Uint128 add)
 //
 InterfaceEntry * ManetRoutingBase::getInterfaceWlanByAddress(Uint128 add) const
 {
-	if (add==0) 
+	if (add==0)
 		return interfaceVector[0].interfacePtr;
-	
+
 	for (unsigned int i=0;i<interfaceVector.size();i++)
 	{
 		if (mac_layer_)
@@ -716,18 +764,18 @@ InterfaceEntry * ManetRoutingBase::getInterfaceWlanByAddress(Uint128 add) const
 // Get the index used in the general interface table
 //
 int ManetRoutingBase::getWlanInterfaceIndex (int i) const {
-	if (i >= 0 && i <  (int) interfaceVector.size()) 
+	if (i >= 0 && i <  (int) interfaceVector.size())
 		return interfaceVector[i].index;
 	else
 		return -1;
 }
 
 //
-// Get the i-esime wlan interface 
+// Get the i-esime wlan interface
 //
-InterfaceEntry * ManetRoutingBase::getWlanInterfaceEntry (int i) const 
+InterfaceEntry * ManetRoutingBase::getWlanInterfaceEntry (int i) const
 {
-	if (i >= 0 && i < (int)interfaceVector.size()) 
+	if (i >= 0 && i < (int)interfaceVector.size())
 		return interfaceVector[i].interfacePtr;
 	else
 		return NULL;

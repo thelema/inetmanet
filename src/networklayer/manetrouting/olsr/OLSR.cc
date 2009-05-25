@@ -432,6 +432,7 @@ OLSR::initialize(int stage) {
 		timerQueuePtr = new TimerQueue;
 
 
+		useIndex = par("UseIndex");
 		// Starts all timers
 
 		helloTimer = new OLSR_HelloTimer();	///< Timer for sending HELLO messages.
@@ -539,7 +540,18 @@ OLSR::check_packet(cPacket* msg,nsaddr_t &src_addr,int &index)
 	op =  check_and_cast<OLSR_pkt  *>(msg_aux);
 	IPControlInfo* controlInfo = check_and_cast<IPControlInfo*>(msg->removeControlInfo());
 	src_addr = controlInfo->getSrcAddr().getInt();
-	index = controlInfo->getInterfaceId();
+	index = -1;
+	InterfaceEntry * ie;
+
+	for (int i=0;i<getNumWlanInterfaces();i++)
+	{
+		ie = getWlanInterfaceEntry (i);
+		if (ie->getInterfaceId() == controlInfo->getInterfaceId())
+		{
+			index=getWlanInterfaceIndex(i);
+			break;
+		}
+	}
 
 	delete controlInfo;
 	delete msg;
@@ -879,11 +891,16 @@ OLSR::rtable_computation() {
 							link_tuple->nb_iface_addr(),
 							link_tuple->local_iface_addr(),
 							1,link_tuple->local_iface_index());
-
-					omnet_chg_rte (link_tuple->nb_iface_addr(),
+					if (!useIndex)
+						omnet_chg_rte (link_tuple->nb_iface_addr(),
 							link_tuple->nb_iface_addr(),
 							0,
 							1,false,link_tuple->local_iface_addr());
+					else
+						omnet_chg_rte (link_tuple->nb_iface_addr(),
+							link_tuple->nb_iface_addr(),
+							0,
+							1,false,link_tuple->local_iface_index());
 
 					if (link_tuple->nb_iface_addr() == nb_tuple->nb_main_addr())
 						nb_main_addr = true;
@@ -894,12 +911,18 @@ OLSR::rtable_computation() {
 						lt->nb_iface_addr(),
 						lt->local_iface_addr(),
 						1,lt->local_iface_index());
-				omnet_chg_rte (nb_tuple->nb_main_addr(),
+
+				if (!useIndex)
+					omnet_chg_rte (nb_tuple->nb_main_addr(),
 						lt->nb_iface_addr(),
 						0,// Default mask
 						1,false,lt->local_iface_addr());
 
-
+				else
+					omnet_chg_rte (nb_tuple->nb_main_addr(),
+						lt->nb_iface_addr(),
+						0,// Default mask
+						1,false,lt->local_iface_index());
 			}
 		}
 	}
@@ -934,10 +957,17 @@ OLSR::rtable_computation() {
 					entry->next_addr(),
 					entry->iface_addr(),
 					2,entry->local_iface_index());
-			omnet_chg_rte (nb2hop_tuple->nb2hop_addr(),
+			if (!useIndex)
+				omnet_chg_rte (nb2hop_tuple->nb2hop_addr(),
 					entry->next_addr(),
 					0,
 					2,false,entry->iface_addr());
+
+			else
+				omnet_chg_rte (nb2hop_tuple->nb2hop_addr(),
+					entry->next_addr(),
+					0,
+					2,false,entry->local_iface_index());
 
 		}
 	}
@@ -962,10 +992,19 @@ OLSR::rtable_computation() {
 						entry2->next_addr(),
 						entry2->iface_addr(),
 						h+1,entry2->local_iface_index(),entry2);
-				omnet_chg_rte (topology_tuple->dest_addr(),
-					entry2->next_addr(),
-					0,
-					h+1,false,entry2->iface_addr());
+
+				if (!useIndex)
+					omnet_chg_rte (topology_tuple->dest_addr(),
+						entry2->next_addr(),
+						0,
+						h+1,false,entry2->iface_addr());
+
+				else
+					omnet_chg_rte (topology_tuple->dest_addr(),
+						entry2->next_addr(),
+						0,
+						h+1,false,entry2->local_iface_index());
+
 				added = true;
 			}
 		}
@@ -987,10 +1026,18 @@ OLSR::rtable_computation() {
 						entry1->next_addr(),
 						entry1->iface_addr(),
 						entry1->dist(),entry1->local_iface_index(),entry1);
-				omnet_chg_rte (tuple->iface_addr(),
-					entry1->next_addr(),
-					0,
-					entry1->dist(),false,entry1->iface_addr());
+
+				if (!useIndex)
+					omnet_chg_rte (tuple->iface_addr(),
+						entry1->next_addr(),
+						0,
+						entry1->dist(),false,entry1->iface_addr());
+
+				else
+					omnet_chg_rte (tuple->iface_addr(),
+						entry1->next_addr(),
+						0,
+						entry1->dist(),false,entry1->local_iface_index());
 				added = true;
 			}
 		}

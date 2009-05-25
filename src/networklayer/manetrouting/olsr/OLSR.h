@@ -390,6 +390,7 @@ protected:
 	int		willingness_;
 	/// Determines if layer 2 notifications are enabled or not.
 	int		use_mac_;
+	bool useIndex;
 
 
 	/// Address of the routing agent.

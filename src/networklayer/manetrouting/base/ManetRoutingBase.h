@@ -76,10 +76,9 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 			 }
 		 }InterfaceIdentification;
 		 std::vector <InterfaceIdentification> interfaceVector;
-	protected:
 		 TimerMultiMap *timerMultiMapPtr;
 		 cMessage *timerMessagePtr;
-		 friend class ManetTimer;
+	protected:
 		~ManetRoutingBase();
 		ManetRoutingBase(){mac_layer_ = false;timerMessagePtr=NULL;timerMultiMapPtr=NULL;}
 
@@ -240,6 +239,7 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 		virtual bool isProactive()=0;
 		virtual bool isOurType(cPacket *)=0;
 		virtual bool getDestAddress(cPacket *,Uint128 &)=0;
+		TimerMultiMap *getTimerMultimMap()const {return timerMultiMapPtr;}
 
 };
 

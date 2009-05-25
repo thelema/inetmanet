@@ -155,11 +155,16 @@ OLSR_ETX::initialize(int stage) {
 		tc_timer_.resched(hello_ival_);
 		mid_timer_.resched(hello_ival_);
 		link_quality_timer_.resched(0.0);
+
+		useIndex = false;
+
 		if (use_mac())
 		{
 			linkLayerFeeback();
 		}
 		state_ptr=state_etx_ptr=new OLSR_ETX_state();
+		scheduleNextEvent();
+
 	}
 }
 
