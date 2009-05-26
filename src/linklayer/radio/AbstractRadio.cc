@@ -327,6 +327,18 @@ void AbstractRadio::handleCommand(int msgkind, cPolymorphic *ctrl)
                 setBitrate(newBitrate); // change bitrate right now
         }
     }
+    else if (msgkind==PHY_C_CHANGETRANSMITTERPOWER)
+    {
+    	 PhyControlInfo *phyCtrl = check_and_cast<PhyControlInfo *>(ctrl);
+    	 double newTransmitterPower = phyCtrl->getTransmitterPower();
+    	 if (newTransmitterPower!=-1)
+    	 {
+    	      if (newTransmitterPower > (double) (cc->par("pMax")))
+    	    	  transmitterPower = (double) (cc->par("pMax"));
+    	      else
+    	    	  transmitterPower = newTransmitterPower;
+    	 }
+    }
     else
     {
         error("unknown command (msgkind=%d)", msgkind);
