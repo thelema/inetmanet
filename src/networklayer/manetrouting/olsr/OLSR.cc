@@ -1741,19 +1741,13 @@ OLSR::mac_failed(IPDatagram* p) {
 		return;
 	}
 
-	nsaddr_t next_addr = omnet_exist_rte (dest_addr);
-	if (next_addr == (Uint128) IP_BROADCAST)
-		return;
-
 	deleteIpEntry(dest_addr);
 	OLSR_link_tuple* link_tuple = state_.find_link_tuple(next_addr);
 	if (link_tuple != NULL) {
 		link_tuple->lost_time()	= now + OLSR_NEIGHB_HOLD_TIME;
 		link_tuple->time()	= now + OLSR_NEIGHB_HOLD_TIME;
 		nb_loss(link_tuple);
-
 	}
-
 }
 
 ///
