@@ -20,5 +20,5 @@ simple BasicBattery
         // capacity of the used battery in mAh
         double batteryCapacity; // capacity of the used battery in mAh
     gates:
-        input emptyIn;
+        input emptyIn[];
 }

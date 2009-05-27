@@ -131,8 +131,13 @@ void BasicBattery::HandleSelfMsg(cMessage* apMsg)
 	{
 		if (getParentModule()->gate("radioIn") != NULL)
 		{
-			getParentModule()->gate("radioIn")->disconnect();
-			getParentModule()->gate("radioIn")->connectTo(this->gate("emptyIn"));
+			int size = getParentModule()->gateSize("radioIn");
+			this->setGateSize("emptyIn",size);
+			for (int i=0;i<size;i++)
+			{
+				getParentModule()->gate("radioIn",i)->disconnect();
+				getParentModule()->gate("radioIn",i)->connectTo(this->gate("emptyIn",i));
+			}
 		}
 		else
 		{
