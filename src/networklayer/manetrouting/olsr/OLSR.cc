@@ -1732,6 +1732,7 @@ void
 OLSR::mac_failed(IPDatagram* p) {
 	double now		= CURRENT_TIME;
 
+
 	nsaddr_t dest_addr = p->getDestAddress().getInt();
 
 	ev <<"Node " << OLSR::node_id(ra_addr()) << "MAC Layer detects a breakage on link to "  <<
@@ -1741,13 +1742,17 @@ OLSR::mac_failed(IPDatagram* p) {
 		return;
 	}
 
-	deleteIpEntry(dest_addr);
-	OLSR_link_tuple* link_tuple = state_.find_link_tuple(next_addr);
-	if (link_tuple != NULL) {
-		link_tuple->lost_time()	= now + OLSR_NEIGHB_HOLD_TIME;
-		link_tuple->time()	= now + OLSR_NEIGHB_HOLD_TIME;
-		nb_loss(link_tuple);
+	OLSR_rt_entry*	entry = rtable_.lookup(dest_addr);
+	if(entry)
+	{
+		OLSR_link_tuple* link_tuple = state_.find_link_tuple(entry->next_addr());
+		if (link_tuple != NULL) {
+			link_tuple->lost_time()	= now + OLSR_NEIGHB_HOLD_TIME;
+			link_tuple->time()	= now + OLSR_NEIGHB_HOLD_TIME;
+			nb_loss(link_tuple);
+		}
 	}
+	deleteIpEntry(dest_addr);
 }
 
 ///
@@ -2257,7 +2262,6 @@ OLSR::~OLSR()
 		cancelAndDelete(&mid_timer_);
 */
 	cancelAndDelete(timerMessage);
-	int size = timerQueuePtr->size();
 	for  (TimerQueue::iterator it = timerQueuePtr->begin();it!=timerQueuePtr->end();it++)
 	{
 		OLSR_Timer * timer = it->second;
@@ -2341,7 +2345,6 @@ void OLSR::scheduleNextEvent()
 	}
 	else
 	{
-		double time = SIMTIME_DBL(e->first);
 		scheduleAt(e->first,timerMessage);
 	}
 }
