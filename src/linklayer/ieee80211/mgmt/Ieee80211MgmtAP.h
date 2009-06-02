@@ -52,6 +52,7 @@ class INET_API Ieee80211MgmtAP : public Ieee80211MgmtAPBase
 
   protected:
     // configuration
+    bool isConnected;
     std::string ssid;
     int channelNumber;
     simtime_t beaconInterval;

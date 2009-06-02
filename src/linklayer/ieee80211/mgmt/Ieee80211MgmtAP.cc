@@ -50,6 +50,7 @@ void Ieee80211MgmtAP::initialize(int stage)
         WATCH(beaconInterval);
         WATCH(numAuthSteps);
         WATCH_MAP(staList);
+        isConnected = gate("uppergateOut")->getPathEndGate()->isConnected();
 
         //TBD fill in supportedRates
 
@@ -213,12 +214,16 @@ void Ieee80211MgmtAP::handleDataFrame(Ieee80211DataFrame *frame)
         if (hasRelayUnit) {
         	// if we have relayUnit, encap the packet in a ethernet frame
             send(convertToEtherFrame((Ieee80211DataFrame *)frame->dup()), "uppergateOut");
-        } else {
+        }
+        else if (isConnected)
+        {
         	// JcM add: we dont have a relayunit, so, send the decap packet
         	cPacket* payload = frame->decapsulate();
         	delete frame;
 			send(payload,"uppergateOut");
         }
+        else
+        	distributeReceivedDataFrame(frame);
         // JcM Fix: avoid the redistribution of the message to the radio
         //distributeReceivedDataFrame(frame);
         return;
