@@ -62,6 +62,14 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 		 Uint128	hostAddress;
 		 Uint128	routerId;
 		 static const int maxInterfaces = 3;
+		 double xPosition;
+		 double yPosition;
+		 double xPositionPrev;
+		 double yPositionPrev;
+		 simtime_t posTimer;
+		 simtime_t posTimerPrev;
+		 bool   regPosition;
+
 
 
 		 typedef struct InterfaceIdentification
@@ -80,7 +88,7 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 		 cMessage *timerMessagePtr;
 	protected:
 		~ManetRoutingBase();
-		ManetRoutingBase(){mac_layer_ = false;timerMessagePtr=NULL;timerMultiMapPtr=NULL;}
+		ManetRoutingBase(){regPosition=false; mac_layer_ = false;timerMessagePtr=NULL;timerMultiMapPtr=NULL;}
 
 ////////////////////////////////////////////
 ////////////////////////////////////////////
@@ -157,6 +165,12 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 //
 		virtual void linkFullPromiscuous();
 //
+//     activate the register position. For position protocols
+//     this method must be activated in the stage 0 to register the initial node position
+//
+		virtual void registerPosition();
+
+//
 // Link layer feedback routines
 //
 		virtual void receiveChangeNotification(int category, const cPolymorphic *details);
@@ -230,6 +244,13 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 //
 		void setTimeToLiveRoutingEntry(simtime_t a){inet_rt->setTimeToLiveRoutingEntry(a);}
 		simtime_t getTimeToLiveRoutingEntry()  const {return inet_rt->getTimeToLiveRoutingEntry();}
+
+//
+//     Access to the node position
+//
+		double getXPos();
+		double getYPos();
+		double getSpeed();
 
 	public:
 // Routing information access

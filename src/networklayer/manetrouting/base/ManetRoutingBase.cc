@@ -28,6 +28,8 @@
 #include "Ieee802Ctrl_m.h"
 #include "RoutingTableAccess.h"
 #include "InterfaceTableAccess.h"
+#include "Coord.h"
+
 
 #define IP_DEF_TTL 32
 #define UDP_HDR_LEN	8
@@ -181,6 +183,12 @@ void ManetRoutingBase::linkPromiscuous()
 void ManetRoutingBase::linkFullPromiscuous()
 {
 	nb->subscribe(this, NF_LINK_FULL_PROMISCUOUS);
+}
+
+void ManetRoutingBase::registerPosition()
+{
+	regPosition = true;
+	nb->subscribe(this, NF_HOSTPOSITION_UPDATED);
 }
 
 void ManetRoutingBase::sendToIp (cPacket *msg, int srcPort, const Uint128& destAddr, int destPort,int ttl,const Uint128 &interface)
@@ -686,6 +694,16 @@ void ManetRoutingBase::receiveChangeNotification(int category, const cPolymorphi
 	{
 		processFullPromiscuous(details);
 	}
+	else if (category == NF_HOSTPOSITION_UPDATED)
+	{
+		Coord *pos = check_and_cast<Coord*>(details);
+		xPositionPrev=xPosition;
+		yPositionPrev=yPosition;
+		posTimerPrev = posTimer;
+		xPosition = pos->x;
+		yPosition = pos->y;
+		posTimer = simTime();
+	}
 }
 
 /*
@@ -839,3 +857,33 @@ bool ManetRoutingBase::checkTimer(cMessage *msg)
 	return false;
 }
 
+//
+// Access to node position
+//
+double ManetRoutingBase::getXPos()
+{
+
+	if (regPosition)
+		error("this node doesn't have activated the register position");
+	return xPosition;
+}
+
+double ManetRoutingBase::getYPos()
+{
+
+	if (regPosition)
+		error("this node doesn't have activated the register position");
+	return yPosition;
+}
+
+double ManetRoutingBase::getSpeed()
+{
+
+	if (regPosition)
+		error("this node doesn't have activated the register position");
+	double x =  xPosition-xPositionPrev;
+	double y =  yPosition-yPositionPrev;
+	double time = SIMTIME_DBL(posTimer-posTimerPrev);
+	double distance = sqrt((x*x)+(y*y));
+	return distance/time;
+}
