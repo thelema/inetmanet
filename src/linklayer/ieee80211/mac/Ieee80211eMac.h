@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2006 Andras Varga, Levente M�z�os and Ahmed Ayadi
+// Copyright (C) 2006 Andras Varga and Levente M�sz�ros
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -16,25 +16,27 @@
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 
-#ifndef IEEE_80211A_MAC_H
-#define IEEE_80211A_MAC_H
+#ifndef IEEE_80211e_MAC_H
+#define IEEE_80211e_MAC_H
 
 // uncomment this if you do not want to log state machine transitions
 #define FSM_DEBUG
-#define IEEE80211A
+
 #include <list>
 #include "WirelessMacBase.h"
 #include "IPassiveQueue.h"
 #include "Ieee80211Frame_m.h"
-#include "Ieee80211aConsts.h"
+#include "Ieee80211Consts.h"
 #include "NotificationBoard.h"
 #include "RadioState.h"
 #include "FSMA.h"
-
-
+#include "TCPSegment.h"
+#include "IPDatagram.h"
+#include "ICMPMessage.h"
+#include "UDPPacket.h"
 
 /**
- * IEEE 802.11a Media Access Control Layer.
+ * IEEE 802.11b Media Access Control Layer.
  *
  * Various comments in the code refer to the Wireless LAN Medium Access
  * Control (MAC) and Physical Layer(PHY) Specifications
@@ -54,30 +56,23 @@
  *
  * @ingroup macLayer
  */
-class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
+class INET_API Ieee80211eMac : public WirelessMacBase, public INotifiable
 {
-    typedef std::list<Ieee80211DataOrMgmtFrame*> Ieee80211DataOrMgmtFrameList;
+  typedef std::list<Ieee80211DataOrMgmtFrame*> Ieee80211DataOrMgmtFrameList;
 
-    /**
-     * This is used to populate fragments and identify duplicated messages. See spec 9.2.9.
-    */
-    struct Ieee80211ASFTuple
-    {
-        MACAddress address;
-        int sequenceNumber;
-        int fragmentNumber;
-    };
+  /**
+   * This is used to populate fragments and identify duplicated messages. See spec 9.2.9.
+   */
+  struct Ieee80211ASFTuple
+  {
+      MACAddress address;
+      int sequenceNumber;
+      int fragmentNumber;
+  };
 
-    enum
-    {
-        RATE_ARF,   // Auto Rate Fallback
-        RATE_AARF,  // Adaptatice ARF
-        RATE_CR,    // Constant Rate
-    }rateControlMode;
+  typedef std::list<Ieee80211ASFTuple*> Ieee80211ASFTupleList;
 
-    typedef std::list<Ieee80211ASFTuple*> Ieee80211ASFTupleList;
-
-    protected:
+  protected:
     /**
      * @name Configuration parameters
      * These are filled in during the initialization phase and not supposed to change afterwards.
@@ -85,9 +80,6 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     //@{
     /** MAC address */
     MACAddress address;
-
-    char opMode;
-    short int AIFSN;
 
     /** The bitrate is used to send data and mgmt frames; be sure to use a valid 802.11 bitrate */
     double bitrate;
@@ -104,39 +96,41 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
      */
     int rtsThreshold;
 
-    /** Maximum number of retries. */
-    int retryLimit;
+    /**
+     * Maximum number of transmissions for a message.
+     * This includes the initial transmission and all subsequent retransmissions.
+     * Thus a value 0 is invalid and a value 1 means no retransmissions.
+     * See: dot11ShortRetryLimit on page 484.
+     *   'This attribute shall indicate the maximum number of
+     *    transmission attempts of a frame, the length of which is less
+     *    than or equal to dot11RTSThreshold, that shall be made before a
+     *    failure condition is indicated. The default value of this
+     *    attribute shall be 7'
+     */
+    int transmissionLimit;
+
+    /**
+     * Arbitration interframe space number.
+     * The duration AIFS[AC] is a duration derived from the value AIFSN[AC] by the relation
+     * AIFS[AC] = AIFSN[AC] × aSlotTime + aSIFSTime.
+     * See spec 7.3.2.29
+     *
+     */
+    int AIFSN[4];
 
     /** Minimum contention window. */
     int cwMinData;
+    int cwMin[4];
+
+    /** Maximum contention window. */
+    int cwMaxData;
+    int cwMax[4];
 
     /** Contention window size for broadcast messages. */
     int cwMinBroadcast;
 
     /** Messages longer than this threshold will be sent in multiple fragments. see spec 361 */
     static const int fragmentationThreshold = 2346;
-
-    int i;
-    int j;
-    int samplingCoeff;
-    double recvdThroughput;
-    int autoBitrate;
-    int rateIndex;
-    int successCounter;
-    int failedCounter;
-    bool recovery;
-    int timer;
-    int successThreshold;
-    int maxSuccessThreshold;
-    int timerTimeout;
-    int minSuccessThreshold;
-    int minTimerTimeout;
-    double successCoeff;
-    double timerCoeff;
-    double _snr;
-    double snr;
-    double lossRate;
-    simtime_t timeStampLastMessageReceived;
     //@}
 
   public:
@@ -145,15 +139,15 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
      * Various state information checked and modified according to the state machine.
      */
     //@{
+    // don't forget to keep synchronized the C++ enum and the runtime enum definition
     /** the 80211 MAC state machine */
     enum State {
         IDLE,
         DEFER,
-        WAITDIFS,
+        WAITAIFS,
         BACKOFF,
         WAITACK,
         WAITBROADCAST,
-        WAITMULTICAST,
         WAITCTS,
         WAITSIFS,
         RECEIVE,
@@ -176,38 +170,45 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     /**
      * Indicates that the last frame received had bit errors in it or there was a
      * collision during receiving the frame. If this flag is set, then the MAC
-     * will wait EIFS instead of DIFS period of time in WAITDIFS state.
+     * will wait EIFS - DIFS + AIFS  instead of AIFS period of time in WAITAIFS state.
      */
     bool lastReceiveFailed;
 
     /** True if backoff is enabled */
-    bool backoff;
-    /** True if empty there is no frame in the transmit queue */
-    bool noFrame;
+    bool backoff[4];
 
     /** True during network allocation period. This flag is present to be able to watch this state. */
     bool nav;
 
+    /** Indicates which queue is acite. Depends on access category. */
+    int currentAC;
+
+    /** Remember currentAC. We need this to figure out internal colision. */
+    int oldcurrentAC;
+
+    /** XXX Remember for which AC we wait for ACK. */
+    //int ACKcurrentAC;
+
     /** Remaining backoff period in seconds */
-    simtime_t backoffPeriod;
+    simtime_t backoffPeriod[4];
 
     /**
      * Number of frame retransmission attempts, this is a simpification of
      * SLRC and SSRC, see 9.2.4 in the spec
      */
-    int retryCounter;
+    int retryCounter[4];
 
     /** Physical radio (medium) state copied from physical layer */
     RadioState::State radioState;
+
 	// Use to distinguish the radio module that send the event
 	int radioModule;
 
 	int getRadioModuleId(){return radioModule;}
-
     /** Messages received from upper layer and to be transmitted later */
-    Ieee80211DataOrMgmtFrameList transmissionQueue;
+    Ieee80211DataOrMgmtFrameList transmissionQueue[4];
 
-    /**
+     /**
      * A list of last sender, sequence and fragment number tuples to identify
      * duplicates, see spec 9.2.9.
      * TODO: this is not yet used
@@ -233,8 +234,11 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     /** End of the Data Inter-Frame Time period */
     cMessage *endDIFS;
 
+    /** End of the Arbitration Inter-Frame Time period */
+    cMessage *endAIFS[4];
+
     /** End of the backoff period */
-    cMessage *endBackoff;
+    cMessage *endBackoff[4];
 
     /** Timeout after the transmission of an RTS, a CTS, or a DATA frame */
     cMessage *endTimeout;
@@ -249,25 +253,19 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
   protected:
     /** @name Statistics */
     //@{
-    long numRetry;
-    long numSentWithoutRetry;
-    long numGivenUp;
+    long numRetry[4];
+    long numSentWithoutRetry[4];
+    long numGivenUp[4];
     long numCollision;
-    long numSent;
+    long numSent[4];
     long numReceived;
     long numSentBroadcast;
     long numReceivedBroadcast;
     long numAckSend;
-	long numReceivedOther;
+    long numReceivedOther;
+    long numDropped[4];
     cOutVector stateVector;
     cOutVector radioStateVector;
-    cOutVector receiveBroadcastVector;
-    cOutVector cwVector;
-    cOutVector receivedThroughput;
-    cOutVector sendThroughput;
-    cOutVector PHYRateVector;
-    cStdDev cwStats;
-    cStdDev thStats;
     //@}
 
   public:
@@ -275,8 +273,8 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
      * @name Construction functions
      */
     //@{
-    Ieee80211aMac();
-    virtual ~Ieee80211aMac();
+    Ieee80211eMac();
+    virtual ~Ieee80211eMac();
     //@}
 
   protected:
@@ -316,7 +314,6 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     /** @brief Handle all kinds of messages and notifications with the state machine */
     virtual void handleWithFSM(cMessage *msg);
     //@}
-    virtual void finishReception();
 
   protected:
     /**
@@ -327,6 +324,7 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     virtual simtime_t getSIFS();
     virtual simtime_t getSlotTime();
     virtual simtime_t getDIFS();
+    virtual simtime_t getAIFS(int AccessCategory);
     virtual simtime_t getEIFS();
     virtual simtime_t getPIFS();
     virtual simtime_t computeBackoffPeriod(Ieee80211Frame *msg, int r);
@@ -343,9 +341,13 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     virtual void scheduleDIFSPeriod();
     virtual void cancelDIFSPeriod();
 
+    virtual void scheduleAIFSPeriod();
+    virtual void rescheduleAIFSPeriod(int AccessCategory);
+    virtual void cancelAIFSPeriod();
+//XXX    virtual void checkInternalColision();
+
     virtual void scheduleDataTimeoutPeriod(Ieee80211DataOrMgmtFrame *frame);
     virtual void scheduleBroadcastTimeoutPeriod(Ieee80211DataOrMgmtFrame *frame);
-    virtual void scheduleMulticastTimeoutPeriod(Ieee80211DataOrMgmtFrame *frameToSend);
     virtual void cancelTimeoutPeriod();
 
     virtual void scheduleCTSTimeoutPeriod();
@@ -360,6 +362,8 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     virtual void decreaseBackoffPeriod();
     virtual void scheduleBackoffPeriod();
     virtual void cancelBackoffPeriod();
+
+    virtual void finishReception();
     //@}
 
   protected:
@@ -375,7 +379,6 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     virtual void sendDataFrameOnEndSIFS(Ieee80211DataOrMgmtFrame *frameToSend);
     virtual void sendDataFrame(Ieee80211DataOrMgmtFrame *frameToSend);
     virtual void sendBroadcastFrame(Ieee80211DataOrMgmtFrame *frameToSend);
-    virtual void sendMulticastFrame(Ieee80211DataOrMgmtFrame *frameToSend);
     //@}
 
   protected:
@@ -388,7 +391,6 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     virtual Ieee80211RTSFrame *buildRTSFrame(Ieee80211DataOrMgmtFrame *frameToSend);
     virtual Ieee80211CTSFrame *buildCTSFrame(Ieee80211RTSFrame *rtsFrame);
     virtual Ieee80211DataOrMgmtFrame *buildBroadcastFrame(Ieee80211DataOrMgmtFrame *frameToSend);
-    virtual Ieee80211DataOrMgmtFrame *buildMulticastFrame(Ieee80211DataOrMgmtFrame *frameToSend);
     //@}
 
     /**
@@ -405,6 +407,10 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     virtual void finishCurrentTransmission();
     virtual void giveUpCurrentTransmission();
     virtual void retryCurrentTransmission();
+	virtual bool transmissionQueueEmpty();
+
+    /** @brief Mapping to access categories. */
+    virtual int MappingAccessCategory(Ieee80211DataOrMgmtFrame *frame);
 
    /** @brief Send down the change channel message to the physical layer if there is any. */
     virtual void sendDownPendingRadioConfigMsg();
@@ -428,17 +434,14 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
     /** @brief Returns true if message is a broadcast message */
     virtual bool isBroadcast(Ieee80211Frame *msg);
 
-    /** @brief Returns true if message is a multicast message */
-    virtual bool isMulticast(Ieee80211Frame *msg); //ahmed
-
-    /** @brief Returns true if message source address is ours */
-    virtual bool isSentByUs(Ieee80211Frame *msg);
-
     /** @brief Returns true if message destination address is ours */
     virtual bool isForUs(Ieee80211Frame *msg);
 
     /** @brief Checks if the frame is a data or management frame */
     virtual bool isDataOrMgmtFrame(Ieee80211Frame *frame);
+
+    /** @brief Checks if the message is endAIFS and set currentAC */
+    virtual bool isMsgAIFS(cMessage *msg);
 
     /** @brief Returns the last frame received before the SIFS period. */
     virtual Ieee80211Frame *getFrameReceivedBeforeSIFS();
@@ -459,35 +462,8 @@ class INET_API Ieee80211aMac : public WirelessMacBase, public INotifiable
 
     /** @brief Produce a readable name of the given MAC operation mode */
     const char *modeName(int mode);
-
     //@}
-
-    int getTimeout(void);
-    virtual int getMaxBitrate(void);
-    virtual int getMinBitrate(void);
-
-    virtual void reportDataOk(void);
-    virtual void reportDataFailed (void);
-
-    virtual int getMinTimerTimeout (void);
-    virtual int getMinSuccessThreshold (void);
-
-    virtual int getTimerTimeout (void);
-    virtual int getSuccessThreshold (void);
-
-    virtual void setTimerTimeout (int timer_timeout);
-    virtual void setSuccessThreshold (int success_threshold);
-
-    virtual void reportRecoveryFailure (void);
-    virtual void reportFailure (void);
-
-    virtual bool needRecoveryFallback (void);
-    virtual bool needNormalFallback (void);
-
-    virtual double getBitrate();
-    virtual void setBitrate(double b_rate);
 };
 
 #endif
-
 
