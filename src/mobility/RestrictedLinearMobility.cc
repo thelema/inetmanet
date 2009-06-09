@@ -25,7 +25,8 @@ Define_Module(RestrictedLinearMobility);
 
 void RestrictedLinearMobility::initialize(int stage)
 {
-    if (stage == 0)
+	LinearMobility::initialize(stage);
+    if (stage == 1)
     {
         x1 = par("x1");
         y1 = par("y1");
@@ -50,10 +51,12 @@ void RestrictedLinearMobility::initialize(int stage)
         	x2=getPlaygroundSizeX();
         if (y2>getPlaygroundSizeY())
         	y2=getPlaygroundSizeY();
+        if (pos.x<x1 || pos.x>x2 || pos.y<y1 || pos.y>y2)
+        {
+        	pos = getRandomPosition();
+        	updatePosition();
+        }
     }
-	LinearMobility::initialize(stage);
-	if (pos.x<x1 || pos.x>x2 || pos.y<y1 || pos.y>y2)
-		pos = getRandomPosition();
     EV << "initializing RestrictedLinearMobility stage " << stage << endl;
 }
 
