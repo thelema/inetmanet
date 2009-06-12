@@ -40,7 +40,7 @@ class INET_API RestrictedLinearMobility : public LinearMobility
   protected:
     /** @brief Initializes mobility model parameters.*/
     virtual void initialize(int);
-    Coord getRandomPosition();
+    virtual Coord getRandomPosition();
     virtual void reflectIfOutside(Coord& targetPos, Coord& step, double& angle);
 };
 
