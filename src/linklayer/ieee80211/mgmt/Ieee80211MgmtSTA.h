@@ -101,6 +101,7 @@ class INET_API Ieee80211MgmtSTA : public Ieee80211MgmtBase
     bool isAssociated;
     cMessage *assocTimeoutMsg; // if non-NULL: association is in progress
     AssociatedAPInfo assocAP;
+    int radioId;
 
   protected:
     virtual int numInitStages() const {return 2;}

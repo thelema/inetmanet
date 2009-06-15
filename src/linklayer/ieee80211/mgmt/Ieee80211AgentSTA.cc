@@ -19,6 +19,7 @@
 #include "Ieee80211AgentSTA.h"
 #include "Ieee80211Primitives_m.h"
 #include "NotifierConsts.h"
+#include "InterfaceTableAccess.h"
 
 
 
@@ -53,6 +54,26 @@ void Ieee80211AgentSTA::initialize(int stage)
 
         // JcM Fix: start up: send scan request according the starting time
         scheduleAt(simTime()+startingTime, new cMessage("startUp", MK_STARTUP));
+
+    }
+    else if (stage==1)
+    {
+        // obtain our address from MAC
+        cModule *mac = getParentModule()->getSubmodule("mac");
+        if (!mac)
+            error("MAC module not found; it is expected to be next to this submodule and called 'mac'");
+        MACAddress myAddress;
+        myAddress.setAddress(mac->par("address").stringValue());
+        myEntry = NULL;
+        IInterfaceTable *ift = InterfaceTableAccess().getIfExists();
+        if (ift)
+        {
+        	for (int i = 0; i < ift->getNumInterfaces(); i++)
+        	{
+        		if (ift->getInterface(i)->getMacAddress()==myAddress)
+        			myEntry = ift->getInterface(i);
+        	}
+    	}
     }
 }
 
@@ -107,6 +128,8 @@ void Ieee80211AgentSTA::receiveChangeNotification(int category, const cPolymorph
 
     if (category == NF_L2_BEACON_LOST)
     {
+    	if ((cPolymorphic *)myEntry != details)
+    		return;
         //XXX should check details if it's about this NIC
         EV << "beacon lost, starting scanning again\n";
         getParentModule()->getParentModule()->bubble("Beacon lost!");

@@ -107,6 +107,8 @@ void Ieee80211MgmtSTA::initialize(int stage)
         WATCH(scanning);
         WATCH(assocAP);
         WATCH_LIST(apList);
+        cModule *moduleRadio = getParentModule()->getSubmodule("radio");
+        radioId = moduleRadio->getId();
     }
 }
 
@@ -326,7 +328,10 @@ void Ieee80211MgmtSTA::receiveChangeNotification(int category, const cPolymorphi
     // Note that we are only subscribed during scanning!
     if (category==NF_RADIOSTATE_CHANGED)
     {
-        RadioState::State radioState = check_and_cast<RadioState *>(details)->getState();
+    	RadioState * rstate = check_and_cast<RadioState *>(details);
+    	if (rstate->getRadioId()!=radioId)
+    		return;
+        RadioState::State radioState = rstate->getState();
         if (radioState==RadioState::RECV)
         {
             EV << "busy radio channel detected during scanning\n";

@@ -61,6 +61,8 @@ void Ieee80211MgmtAP::initialize(int stage)
         // start beacon timer (randomize startup time)
         beaconTimer = new cMessage("beaconTimer");
         scheduleAt(simTime()+uniform(0,beaconInterval), beaconTimer);
+        cModule *moduleRadio = getParentModule()->getSubmodule("radio");
+        radioId = moduleRadio->getId();
     }
 }
 
@@ -161,8 +163,11 @@ void Ieee80211MgmtAP::receiveChangeNotification(int category, const cPolymorphic
 
     if (category == NF_RADIO_CHANNEL_CHANGED)
     {
+    	RadioState * rstate = check_and_cast<RadioState *>(details);
+    	if (rstate->getRadioId()!=radioId)
+        	return;
         EV << "updating channel number\n";
-        channelNumber = check_and_cast<RadioState *>(details)->getChannelNumber();
+        channelNumber = rstate->getChannelNumber();
     }
 }
 

@@ -22,6 +22,7 @@
 #include <omnetpp.h>
 #include "Ieee80211Primitives_m.h"
 #include "NotificationBoard.h"
+#include "IInterfaceTable.h"
 
 
 /**
@@ -55,6 +56,7 @@ class INET_API Ieee80211AgentSTA : public cSimpleModule, public INotifiable
 
     // JcM add: default ssid to connect with.
     std::string default_ssid;
+    InterfaceEntry * myEntry;
 
   protected:
     virtual int numInitStages() const {return 2;}
