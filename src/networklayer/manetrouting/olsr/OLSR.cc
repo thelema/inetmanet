@@ -1343,6 +1343,7 @@ OLSR::send_pkt() {
 
 	for (int i = 0; i < num_pkts; i++) {
 		OLSR_pkt* op		= new OLSR_pkt;
+		op->setName("OLSR Pkt");
 
 		op->setByteLength( OLSR_PKT_HDR_SIZE );
 		op->setPkt_seq_num( pkt_seq());

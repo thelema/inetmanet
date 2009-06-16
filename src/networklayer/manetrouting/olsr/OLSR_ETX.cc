@@ -1464,6 +1464,7 @@ OLSR_ETX::send_pkt() {
       // We are going to use link delay extension
       // to define routes to be selected
 			OLSR_pkt* op1	= new OLSR_pkt;
+			op1->setName("OLSR_ETX pkt");
       // Duplicated packet...
 			OLSR_pkt* op2;
 			op1->setPkt_seq_num( pkt_seq());
@@ -1473,6 +1474,7 @@ OLSR_ETX::send_pkt() {
 
         // Allocate room for a duplicated packet...
 				op2 = new OLSR_pkt;
+				op2->setName("OLSR_ETX pkt");
 				op2->setByteLength(OLSR_ETX_CAPPROBE_PACKET_SIZE);
         // duplicated packet sequence no ...
 				op2->setPkt_seq_num(op1->pkt_seq_num());
@@ -1491,13 +1493,13 @@ OLSR_ETX::send_pkt() {
 				op1->setMsgArraySize(j+1);
 				op1->setMsg(j++,*it);
 
-        			if (i != 0)
-						op1->setByteLength(op1->getByteLength()+(*it).size());
-        			else /* if (i == 0) */ {
-						op2->setMsgArraySize(j+1);
-						op2->setMsg(j++,*it);
-					}
-
+				if (i != 0)
+					op1->setByteLength(op1->getByteLength()+(*it).size());
+				else /* if (i == 0) */
+				{
+					op2->setMsgArraySize(j+1);
+					op2->setMsg(j++,*it);
+				}
 				it = msgs_.erase(it);
 			}
 
