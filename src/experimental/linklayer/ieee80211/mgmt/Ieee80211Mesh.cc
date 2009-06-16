@@ -1763,7 +1763,7 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 	uint64_t dest = MacToUint64(frame->getAddress4());
 	uint64_t src = MacToUint64(frame->getAddress3());
 	uint64_t prev = MacToUint64(frame->getTransmitterAddress());
-	uint32_t next = mplsData->getForwardingMacKey(src,dest,prev);
+	uint64_t next = mplsData->getForwardingMacKey(src,dest,prev);
 
 	if (next)
 	{
@@ -1774,7 +1774,6 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 		Uint128 add[20];
 		int dist=0;
 		if (routingModuleProactive)
-
 			dist = routingModuleProactive->getRoute(dest,add);
 
 		if (dist==0 && routingModuleReactive)
@@ -1806,6 +1805,10 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 		}
 		else
 		{
+			if (routingModuleReactive)
+			{
+				routingModuleReactive->setRefreshRoute(src,dest,add[0],prev);
+			}
 			frame->setReceiverAddress(add[0].getMACAddress());
 		}
 
