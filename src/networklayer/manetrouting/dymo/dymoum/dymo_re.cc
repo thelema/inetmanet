@@ -883,15 +883,15 @@ void NS_CLASS re_answer(RE *re,u_int32_t ifindex)
 
 	if (sizeVector>0 && !no_path_acc)
 	{
-		rrep_src->newBocks(sizeVector+1);
+		rrep_src->newBocks(sizeVector);
 		for (int i = sizeVector-1;i>0;i--)
 		{
-			rrep_src->re_blocks[i+1].g		= 0;
-			rrep_src->re_blocks[i+1].prefix		= 0;
-			rrep_src->re_blocks[i+1].res		= 0;
-			rrep_src->re_blocks[i+1].re_hopcnt	= i;
-			rrep_src->re_blocks[i+1].re_node_seqnum	= 0;
-			rrep_src->re_blocks[i+1].re_node_addr	=controlInfo->getVectorAddress(i);
+			rrep_src->re_blocks[i].g		= 0;
+			rrep_src->re_blocks[i].prefix		= 0;
+			rrep_src->re_blocks[i].res		= 0;
+			rrep_src->re_blocks[i].re_hopcnt	= i;
+			rrep_src->re_blocks[i].re_node_seqnum	= 0;
+			rrep_src->re_blocks[i].re_node_addr	=controlInfo->getVectorAddress(i);
 			rrep_src->len += RE_BLOCK_SIZE;
 		}
 		rrep_src->re_blocks[sizeVector].g		= this_host.is_gw;
