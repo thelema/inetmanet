@@ -161,7 +161,7 @@ void UDPBasicBurst2::initialize(int stage)
                   if (strstr (this->getFullPath().c_str(),node->getModule()->getFullPath().c_str())==NULL)
                   {
                      destAddresses.push_back(IPAddressResolver().resolve(node->getModule()->getFullPath().c_str()));
-                     if (strcmp(name,fixNodeName)==0)
+                     if (strstr(node->getModule()->getFullPath().c_str(),fixNodeName)!=NULL)
 						 destName.push_back(true);
                      else
                     	 destName.push_back(false);
@@ -176,22 +176,33 @@ void UDPBasicBurst2::initialize(int stage)
               {
                   cTopology::Node *node = topo.getNode(i);
                   if (strstr (this->getFullPath().c_str(),node->getModule()->getFullPath().c_str())==NULL)
+                  {
                       destAddresses.push_back(IPAddressResolver().resolve(node->getModule()->getFullPath().c_str()));
+                      if (strstr(node->getModule()->getFullPath().c_str(),fixNodeName)!=NULL)
+ 						 destName.push_back(true);
+                      else
+                     	 destName.push_back(false);
+                  }
               }
            }
         }
         else if (strstr (token,"Broadcast")!=NULL)
            destAddresses.push_back(IPAddress::ALLONES_ADDRESS);
         else
+        {
            destAddresses.push_back(IPAddressResolver().resolve(token));
+           if (strstr(token,fixNodeName)!=NULL)
+        	   destName.push_back(true);
+           else
+        	   destName.push_back(false);
+        }
     }
-
     pktDelayMtoM = new cStdDev("burst pkt delay M to M");
     pktDelayMtoF = new cStdDev("burst pkt delay M to F");
     pktDelayFtoF = new cStdDev("burst pkt delay F to F");
     pktDelayFtoM = new cStdDev("burst pkt delay F to M");
 
-    if (strcmp(this->getFullPath().c_str(),fixNodeName)==0)
+    if (strstr(this->getFullPath().c_str(),fixNodeName)!=NULL)
     	fixName=true;
     else
     	fixName=false;
@@ -463,10 +474,10 @@ void UDPBasicBurst2::finish()
     	recordScalar("Global Total rec FtoM",totalRecFtoM);
     	recordScalar("Global Total rec MtoF",totalRecMtoF);
     	recordScalar("Global delay",totalDelay/totalRec);
-    	recordScalar("Global delay MtoM",totalDelayFtoF/totalRecFtoF);
+    	recordScalar("Global delay FtoF",totalDelayFtoF/totalRecFtoF);
     	recordScalar("Global delay MtoM",totalDelayMtoM/totalRecMtoM);
-    	recordScalar("Global delay MtoM",totalDelayFtoM/totalRecFtoM);
-    	recordScalar("Global delay MtoM",totalDelayMtoF/totalRecMtoF);
+    	recordScalar("Global delay FtoM",totalDelayFtoM/totalRecFtoM);
+    	recordScalar("Global delay MtoF",totalDelayMtoF/totalRecMtoF);
     }
 
     recordScalar("Total send", numSent);
