@@ -66,7 +66,7 @@ void UDPBasicBurst2::initialize(int stage)
     if (stage!=3)
         return;
 
-    totalSend;
+    totalSend=0;
     totalSendMtoM=0;
     totalSendFtoF=0;
     totalSendFtoM=0;
