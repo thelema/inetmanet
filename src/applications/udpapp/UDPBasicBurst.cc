@@ -29,10 +29,16 @@ Define_Module(UDPBasicBurst);
 
 int UDPBasicBurst::counter;
 
+static bool selectFunctionName(cModule *mod, void *name)
+{
+  return strcmp (mod->getName(),(char *)name)==0;
+}
+
 static bool selectFunction(cModule *mod, void *name)
 {
   return strstr (mod->getName(),(char *)name)!=NULL;
 }
+
 
 void UDPBasicBurst::initialize(int stage)
 {
@@ -96,7 +102,10 @@ void UDPBasicBurst::initialize(int stage)
            {
               char name[30];
               strcpy (name,nodetype.c_str());
-              topo.extractFromNetwork(selectFunction,name);
+              if ((random_add= strstr (token,"random_nameExact"))!=NULL)
+            	  topo.extractFromNetwork(selectFunctionName,name);
+              else
+            	  topo.extractFromNetwork(selectFunction,name);
               for (int i=0; i<topo.getNumNodes(); i++)
               {
                   cTopology::Node *node = topo.getNode(i);
@@ -159,6 +168,7 @@ cPacket *UDPBasicBurst::createPacket()
     payload->setByteLength(msgByteLength);
     payload->addPar("sourceId") = getId();
     payload->addPar("msgId")=numSent;
+
     return payload;
 }
 
