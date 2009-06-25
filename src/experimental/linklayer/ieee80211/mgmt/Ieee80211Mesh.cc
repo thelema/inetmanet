@@ -86,6 +86,7 @@ void Ieee80211Mesh::initialize(int stage)
 		useLwmpls = par("UseLwMpls");
 		bool useReactive = par("useReactive");
 		bool useProactive = par("useProactive");
+		proactiveFeedback  = par("ProactiveFeedback");
 
 		// Proactive protocol
 		if (useProactive)
@@ -525,7 +526,7 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 				else
 					controlInfo->setPreviousFix(false); // This node is not fix
 
-				if (dist!=0)
+				if (dist!=0 && proactiveFeedback)
 				{
 					controlInfo->setVectorAddressArraySize(dist);
 					for (int i=0;i<dist;i++)

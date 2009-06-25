@@ -210,8 +210,8 @@ void NS_CLASS re_process(RE *re,struct in_addr ip_src, u_int32_t ifindex)
 						rb_state = RB_FRESH;
 					else if (seqnum == entry->rt_seqnum && block->re_hopcnt < entry->rt_hopcnt)
 						rb_state = RB_FRESH;
-					else if (seqnum ==0)
-						rb_state = RB_FRESH; // Asume Olsr update
+					else if (seqnum ==0 &&  ((block->re_hopcnt < entry->rt_hopcnt)|| (entry->rt_hopcnt==0)))
+						rb_state = RB_FRESH; // Assume Olsr update
 					else
 						rb_state = RB_STALE;
 				}
@@ -387,9 +387,9 @@ int NS_CLASS re_process_block(struct re_block *block, u_int8_t is_rreq,
 			rb_state = RB_FRESH;
 		else if (seqnum > entry->rt_seqnum)
 			rb_state = RB_FRESH;
-		else if (seqnum == entry->rt_seqnum && block->re_hopcnt < entry->rt_hopcnt)
+		else if ((seqnum == entry->rt_seqnum) && (block->re_hopcnt < entry->rt_hopcnt))
 			rb_state = RB_FRESH;
-		else if (seqnum ==0)
+		else if ((seqnum ==0) && (block->re_hopcnt < entry->rt_hopcnt))
 			rb_state = RB_FRESH; // Asume Olsr update
 		else
 			rb_state = RB_STALE;
@@ -835,7 +835,7 @@ void NS_CLASS re_answer(RE *re,u_int32_t ifindex)
 			entry			= rtable_find(node_addr);
 			if (entry)
 			{
-				if (entry->rt_hopcnt>i)
+				if (entry->rt_hopcnt>i+1)
 				{
 					rtable_update(entry,node_addr,next_addr,ifindex,0,0,i+1,0);
 				}
@@ -880,7 +880,7 @@ void NS_CLASS re_answer(RE *re,u_int32_t ifindex)
 		rrep_src->re_blocks[0].re_hopcnt	= entry->rt_hopcnt;
 	else
 		rrep_src->re_blocks[0].re_hopcnt	= 0;
-
+#if 1
 	if (sizeVector>0 && !no_path_acc)
 	{
 		rrep_src->newBocks(sizeVector);
@@ -902,6 +902,47 @@ void NS_CLASS re_answer(RE *re,u_int32_t ifindex)
 		rrep_src->re_blocks[sizeVector].re_node_addr	= DEV_NR(ifindex).ipaddr.s_addr;
 		rrep_src->len += RE_BLOCK_SIZE;
 	}
+#else
+	rrep_src->newBocks(1);
+	rrep_src->re_blocks[1].g		= this_host.is_gw;
+	rrep_src->re_blocks[1].prefix		= this_host.prefix;
+	rrep_src->re_blocks[1].res		= 0;
+	rrep_src->re_blocks[1].re_hopcnt	= 0;
+	rrep_src->re_blocks[1].re_node_seqnum	= this_host.seqnum;
+	rrep_src->re_blocks[1].re_node_addr	= DEV_NR(ifindex).ipaddr.s_addr;
+	rrep_src->len += RE_BLOCK_SIZE;
+
+	if (entry->rt_hopcnt)
+		hopcnt=entry->rt_hopcnt;
+	else
+		hopcnt=0;
+
+	RE *rrep_dest = re_create_rrep(
+		target_addr,
+		ntohl(entry->rt_seqnum),
+		src_addr,
+		rev_rt->rt_seqnum,
+		rev_rt->rt_prefix,
+		rev_rt->rt_is_gw,
+		NET_DIAMETER,
+		hopcnt);
+
+	if (rev_rt->rt_hopcnt)
+		rrep_dest->re_blocks[0].re_hopcnt	= rev_rt->rt_hopcnt;
+	else
+		rrep_dest->re_blocks[0].re_hopcnt	= 0;
+
+
+	rrep_dest->newBocks(1);
+	rrep_dest->re_blocks[1].g		= this_host.is_gw;
+	rrep_dest->re_blocks[1].prefix		= this_host.prefix;
+	rrep_dest->re_blocks[1].res		= 0;
+	rrep_dest->re_blocks[1].re_hopcnt	= 0;
+	rrep_dest->re_blocks[1].re_node_seqnum	= this_host.seqnum;
+	rrep_dest->re_blocks[1].re_node_addr	= DEV_NR(ifindex).ipaddr.s_addr;
+	rrep_dest->len += RE_BLOCK_SIZE;
+	re_send_rrep(rrep_dest);
+#endif
 	re_send_rrep(rrep_src);
 }
 #endif

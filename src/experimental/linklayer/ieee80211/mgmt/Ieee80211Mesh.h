@@ -43,6 +43,7 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
   private:
 	cMessage WMPLSCHECKMAC;
 	NotificationBoard *nb;
+	bool proactiveFeedback;
 
 	ManetRoutingBase *routingModuleProactive;
 	ManetRoutingBase *routingModuleReactive;
