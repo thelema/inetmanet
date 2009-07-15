@@ -40,7 +40,7 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 {
 
 
-  private:
+  protected:
 	cMessage WMPLSCHECKMAC;
 	NotificationBoard *nb;
 	bool proactiveFeedback;
@@ -61,20 +61,20 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 
 	cPacket * decapsulateMpls(LWMPLSPacket *frame);
 	Ieee80211DataFrame *encapsulate(cPacket *msg,MACAddress dest);
-	void mplsSendAck(int label);
-	void mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
-	void mplsBreakPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
-	void mplsNotFoundPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
-	void mplsForwardData(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr,LWmpls_Forwarding_Structure *forwarding_data);
-	void mplsBasicSend (LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
-	void mplsAckPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
-	void mplsDataProcess(LWMPLSPacket * mpls_pk_ptr,MACAddress sta_addr);
-	void mplsBreakMacLink (MACAddress mac_id);
+	virtual void mplsSendAck(int label);
+	virtual void mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
+	virtual void mplsBreakPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
+	virtual void mplsNotFoundPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
+	virtual void mplsForwardData(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr,LWmpls_Forwarding_Structure *forwarding_data);
+	virtual void mplsBasicSend (LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
+	virtual void mplsAckPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr);
+	virtual void mplsDataProcess(LWMPLSPacket * mpls_pk_ptr,MACAddress sta_addr);
+	virtual void mplsBreakMacLink (MACAddress mac_id);
 	void mplsCheckRouteTime ();
-	void mplsInitializeCheckMac();
-	void mplsPurge (LWmpls_Forwarding_Structure *forwarding_ptr,bool purge_break);
-	bool forwardMessage (Ieee80211DataFrame *);
-	bool macLabelBasedSend (Ieee80211DataFrame *);
+	virtual void mplsInitializeCheckMac();
+	virtual void mplsPurge (LWmpls_Forwarding_Structure *forwarding_ptr,bool purge_break);
+	virtual bool forwardMessage (Ieee80211DataFrame *);
+	virtual bool macLabelBasedSend (Ieee80211DataFrame *);
 
 
 
@@ -126,6 +126,7 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
     virtual void sendUp(cMessage *msg);
 
     virtual bool isUpperLayer(cMessage *);
+    virtual cPacket * decapsulate(Ieee80211DataFrame *frame);
 };
 
 #endif

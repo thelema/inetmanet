@@ -27,6 +27,11 @@
 #include "aodv_msg_struct.h"
 #include "InterfaceTableAccess.h"
 #include "IPDatagram.h"
+#include "IPv6Datagram.h"
+#include "LinkStatePacket_m.h"
+#include "MPLSPacket.h"
+#include "ARPPacket_m.h"
+#include "OSPFPacket_m.h"
 #include <string.h>
 
 
@@ -1832,6 +1837,27 @@ bool Ieee80211Mesh::isUpperLayer(cMessage *msg)
 {
 	if (dynamic_cast<IPDatagram*>(msg))
 		return true;
+	else if (dynamic_cast<IPv6Datagram*>(msg))
+		return true;
+	else if (dynamic_cast<OSPFPacket*>(msg))
+		return true;
+	else if (dynamic_cast<MPLSPacket*>(msg))
+		return true;
+	else if (dynamic_cast<LinkStateMsg*>(msg))
+		return true;
+	else if (dynamic_cast<ARPPacket*>(msg))
+		return true;
 	return false;
+}
+
+cPacket *Ieee80211Mesh::decapsulate(Ieee80211DataFrame *frame)
+{
+    cPacket *payload = frame->decapsulate();
+    Ieee802Ctrl *ctrl = new Ieee802Ctrl();
+    ctrl->setSrc(frame->getTransmitterAddress());
+    ctrl->setDest(frame->getReceiverAddress());
+    payload->setControlInfo(ctrl);
+    delete frame;
+    return payload;
 }
 

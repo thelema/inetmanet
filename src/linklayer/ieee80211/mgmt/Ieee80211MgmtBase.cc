@@ -174,8 +174,8 @@ cPacket *Ieee80211MgmtBase::decapsulate(Ieee80211DataFrame *frame)
     cPacket *payload = frame->decapsulate();
 
     Ieee802Ctrl *ctrl = new Ieee802Ctrl();
-    //ctrl->setSrc(frame->getAddress3());
-    ctrl->setSrc(frame->getTransmitterAddress());
+    ctrl->setSrc(frame->getAddress3());
+    // ctrl->setSrc(frame->getTransmitterAddress());
     ctrl->setDest(frame->getReceiverAddress());
     payload->setControlInfo(ctrl);
 

@@ -118,4 +118,17 @@ void Ieee80211MgmtAdhoc::handleProbeResponseFrame(Ieee80211ProbeResponseFrame *f
     dropManagementFrame(frame);
 }
 
+cPacket *Ieee80211MgmtAdhoc::decapsulate(Ieee80211DataFrame *frame)
+{
+    cPacket *payload = frame->decapsulate();
+
+    Ieee802Ctrl *ctrl = new Ieee802Ctrl();
+    ctrl->setSrc(frame->getTransmitterAddress());
+    ctrl->setDest(frame->getReceiverAddress());
+    payload->setControlInfo(ctrl);
+
+    delete frame;
+    return payload;
+}
+
 

@@ -64,6 +64,8 @@ class INET_API Ieee80211MgmtAdhoc : public Ieee80211MgmtBase
     virtual void handleProbeRequestFrame(Ieee80211ProbeRequestFrame *frame);
     virtual void handleProbeResponseFrame(Ieee80211ProbeResponseFrame *frame);
     //@}
+    /** Redefine the decapsulate method */
+     virtual cPacket *decapsulate(Ieee80211DataFrame *frame);
 };
 
 #endif
