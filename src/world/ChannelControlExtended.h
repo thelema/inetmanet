@@ -51,10 +51,11 @@ class INET_API ChannelControlExtended : public ChannelControl
 
     // JcM add: Radio entry structure
     struct RadioEntry {
-        cModule* radioModule;
-        int channel;
-        int hostGateId; // gate id on the host compound radioIn gate array
-		double radioCarrier;
+    	cModule* radioModule;
+    	int channel;
+    	int hostGateId; // gate id on the host compound radioIn gate array
+    	double radioCarrier;
+    	cGate *radioInGate;
     };
     typedef std::list<RadioEntry> RadioList;
 
@@ -65,9 +66,6 @@ class INET_API ChannelControlExtended : public ChannelControl
 
 
     // JcM add: we handle radio list instead of host lists
-
-
-
     typedef std::list<cGate*> radioGatesList;
 
   protected:
@@ -140,9 +138,8 @@ class INET_API ChannelControlExtended : public ChannelControl
 
     static ChannelControlExtended * get();
 
-    /** @brief Registers the given host */
-    virtual HostRef registerHost(cModule *host, const Coord& initialPos);
-
+    /** @brief Registers the given host. If radioInGate==NULL, the "radioIn" gate is assumed */
+    virtual HostRef registerHost(cModule *host, const Coord& initialPos, cGate *radioInGate=NULL);
 
     /** @brief Unregisters the given host */
     virtual void unregisterHost(cModule *host);
@@ -151,7 +148,10 @@ class INET_API ChannelControlExtended : public ChannelControl
     virtual HostRef lookupHost(cModule *host);
 
     /** @brief Get the list of modules in range of the given host */
-    const ModuleList& getNeighbors(HostRef h);
+    const HostRefVector& getNeighbors(HostRef h);
+
+    /** @brief Called from ChannelAccess, to transmit a frame to the hosts in range, on the frame's channel */
+    virtual void sendToChannel(cSimpleModule *srcRadioMod, HostRef srcHost, AirFrame *airFrame);
 
     /** @brief Called when host switches channel (cModule* ca is the channel access (radio)) */
     //virtual void updateHostChannel(HostRef h, const int channel,cModule* ca);
