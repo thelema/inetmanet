@@ -23,8 +23,8 @@ simple DYMOUM
         volatile double broadCastDelay @unit("s") = default (uniform(0s,0.005s));
         volatile double uniCastDelay @unit("s") = default (0s);
         bool EqualDelay =default(true);
-        bool UseIndex=default(false);
-
+        bool UseIndex=default(false);// use the interface index instead the ip to identify the interface
+        string ExcludedInterfaces = default(""); // list of interfaces excluded by the manet routing protocol
     gates:
         input from_ip;
         output to_ip;

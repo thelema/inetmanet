@@ -109,6 +109,24 @@ void ManetRoutingBase::registerRoutingModule()
 			interfaceVector.push_back(interface);
 		}
 	}
+    const char *destAddrs = par("ExcludedInterfaces");
+    cStringTokenizer tokenizer(destAddrs);
+    const char *token;
+	if (tokenizer.hasMoreTokens())
+	{
+		while ((token = tokenizer.nextToken())!=NULL)
+		{
+			for (int i = 0;i<interfaceVector.size();i++)
+			{
+				name = interfaceVector[i].interfacePtr->getName();
+				if (strcmp(token,name)==0)
+				{
+					interfaceVector.erase(interfaceVector.begin()+i);
+					break;
+				}
+			}
+		}
+	}
 
 	routerId = inet_rt->getRouterId();
 

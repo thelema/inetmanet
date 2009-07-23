@@ -15,6 +15,8 @@ simple OLSR_ETX
         int Tc_redundancy = default(3);
         bool Link_delay = default(true);
         double C_alpha = default(0.2);
+        bool UseIndex = default(false); // use the interface index instead the ip to identify the interface EXPERIMENTAL
+        string ExcludedInterfaces = default(""); // list of interfaces excluded by the manet routing protocol        
 
     gates:
         input from_ip;

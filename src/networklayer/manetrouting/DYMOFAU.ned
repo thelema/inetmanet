@@ -40,7 +40,7 @@ simple DYMO
         int RREQ_TRIES = default(3);
         int BUFFER_SIZE_PACKETS = default(50); // maximum queue size in packets, -1 for no limit
         int BUFFER_SIZE_BYTES @unit("B") = default(75000B); // maximum queue size in bytes, -1 for no limit
-
+        string ExcludedInterfaces = default(""); // list of interfaces excluded by the manet routing protocol
     gates:
         input from_ip;
         output to_ip;
