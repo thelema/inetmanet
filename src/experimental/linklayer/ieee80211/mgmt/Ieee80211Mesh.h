@@ -44,6 +44,9 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 	cMessage WMPLSCHECKMAC;
 	NotificationBoard *nb;
 	bool proactiveFeedback;
+	int maxHopProactiveFeedback; // Maximun number of hops for to use the proactive feedback
+	int maxHopProactive; // Maximun number of hops in the fix part of the network with the proactive feedback
+	int maxHopReactive; // Maximun number of hops by the reactive part for to use the proactive feedback
 
 	ManetRoutingBase *routingModuleProactive;
 	ManetRoutingBase *routingModuleReactive;

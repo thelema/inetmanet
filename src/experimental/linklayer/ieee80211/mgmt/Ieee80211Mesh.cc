@@ -91,7 +91,17 @@ void Ieee80211Mesh::initialize(int stage)
 		useLwmpls = par("UseLwMpls");
 		bool useReactive = par("useReactive");
 		bool useProactive = par("useProactive");
-		proactiveFeedback  = par("ProactiveFeedback");
+
+		maxHopProactiveFeedback = par("maxHopProactiveFeedback");
+		maxHopProactive = par("maxHopProactive");
+		maxHopReactive = par("maxHopReactive");
+
+		if (useReactive && useProactive)
+		{
+			proactiveFeedback  = par("ProactiveFeedback");
+		}
+		else
+			proactiveFeedback = false;
 
 		// Proactive protocol
 		if (useProactive)
@@ -522,7 +532,7 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 				Uint128 add[20];
 				Uint128 src = controlInfo->getSrc();
 				int dist = 0;
-				if (routingModuleProactive)
+				if (routingModuleProactive && proactiveFeedback)
 				{
 					// int neig = routingModuleProactive))->getRoute(src,add);
 					controlInfo->setPreviousFix(true); // This node is fix
@@ -531,6 +541,8 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 				else
 					controlInfo->setPreviousFix(false); // This node is not fix
 
+				if (maxHopProactive>0 && dist>maxHopProactive)
+					dist = 0;
 				if (dist!=0 && proactiveFeedback)
 				{
 					controlInfo->setVectorAddressArraySize(dist);
