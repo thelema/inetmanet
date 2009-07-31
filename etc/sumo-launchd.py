@@ -81,8 +81,8 @@ class UnusedPortLock:
 
 def find_unused_port():
     """
-Return an unused port number.
-"""
+    Return an unused port number.
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
     sock.bind(('127.0.0.1', 0))
     sock.listen(socket.SOMAXCONN)
@@ -274,8 +274,8 @@ def run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket
  
 def copy_and_modify_files(basedir, copy_nodes, runpath, remote_port):
     """
-Copy (and modify) files, return config file name
-"""
+    Copy (and modify) files, return config file name
+    """
     
     config_file_name = None
     for copy_node in copy_nodes:
@@ -392,8 +392,8 @@ def handle_launch_configuration(sumo_command, launch_xml_string, client_socket):
  
 def read_launch_config(conn):
     """
-Read (and return) launch configuration from socket
-"""
+    Read (and return) launch configuration from socket
+    """
  
     # Get TraCI message length
     msg_len_buf = ""
@@ -453,8 +453,8 @@ Read (and return) launch configuration from socket
         
 def handle_connection(sumo_command, conn, addr):
     """
-Handle incoming connection.
-"""
+    Handle incoming connection.
+    """
  
     logging.debug("Handling connection from %s on port %d" % addr)
  
@@ -469,16 +469,21 @@ Handle incoming connection.
         conn.close()
  
  
-def wait_for_connections(sumo_command, sumo_port, bind_address):
+def wait_for_connections(sumo_command, sumo_port, bind_address, do_daemonize):
     """
-Open TCP socket, wait for connections, call handle_connection for each
-"""
+    Open TCP socket, wait for connections, call handle_connection for each
+    """
     
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listener.bind((bind_address, sumo_port))
     listener.listen(5)
     logging.info("Listening on port %d" % sumo_port)
+
+    if do_daemonize:
+        logging.info("Detaching to run as daemon")
+        daemonize()
+
     try:
         while True:
             conn, addr = listener.accept()
@@ -499,11 +504,40 @@ Open TCP socket, wait for connections, call handle_connection for each
         logging.info("Shutting down.")
         listener.close()
  
+def daemonize():
+    """
+    detach process, keep it running in the background
+    """
+ 
+    # fork and exit parent process
+    try:
+        child_pid = os.fork()
+        # parent can exit
+        if child_pid > 0:
+            sys.exit(0)
+    except OSError, e:
+        logging.error("Aborting. Failed to fork: %s" % e.strerror)
+        sys.exit(1)
+ 
+    # get rid of any outside influence
+    os.setsid()
+ 
+    # fork again to prevent zombies
+    try:
+        child_pid = os.fork()
+        # parent can exit
+        if child_pid > 0:
+            logging.info("Fork successful. Child PID is %d" % child_pid)
+            sys.exit(0)
+    except OSError, e:
+        logging.error("Aborting. Failed to fork: %s" % e.strerror)
+        sys.exit(1)
+ 
     
 def main():
     """
-Program entry point when run interactively.
-"""
+    Program entry point when run interactively.
+    """
  
     # Option handling
     parser = OptionParser()
@@ -513,6 +547,7 @@ Program entry point when run interactively.
     parser.add_option("-L", "--logfile", dest="logfile", default="sumo-launchd.log", help="log messages to LOGFILE [default: TMPDIR/%default]", metavar="LOGFILE")
     parser.add_option("-v", "--verbose", dest="count_verbose", default=0, action="count", help="increase verbosity [default: don't log infos, debug]")
     parser.add_option("-q", "--quiet", dest="count_quiet", default=0, action="count", help="decrease verbosity [default: log warnings, errors]")
+    parser.add_option("-d", "--daemon", dest="daemonize", default=False, action="store_true", help="detach and run as daemon [default: no]")
     (options, args) = parser.parse_args()
     _LOGLEVELS = (logging.ERROR, logging.WARN, logging.INFO, logging.DEBUG)
     loglevel = _LOGLEVELS[max(0, min(1 + options.count_verbose - options.count_quiet, len(_LOGLEVELS)-1))]
@@ -524,7 +559,7 @@ Program entry point when run interactively.
     logging.basicConfig(filename=os.path.join(tempfile.gettempdir(), options.logfile), level=loglevel)
  
     # this is where we'll spend our time
-    wait_for_connections(options.command, options.port, options.bind)
+    wait_for_connections(options.command, options.port, options.bind, options.daemonize)
  
  
 # Start main() when run interactively
