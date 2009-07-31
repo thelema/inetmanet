@@ -23,6 +23,7 @@ package inet.examples.adhoc.mobility;
 
 import inet.world.ChannelControl;
 import inet.world.ScenarioManager;
+import inet.nodes.adhoc.MobileHost;
 
 
 network MobileNet
@@ -32,7 +33,7 @@ network MobileNet
         double playgroundSizeX;
         double playgroundSizeY;
     submodules:
-        host[numHosts]: PlainMobilityHost {
+        host[numHosts]: MobileHost {
             parameters:
                 @display("r=,,#707070");
         }
