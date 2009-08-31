@@ -46,7 +46,7 @@ std::ostream& operator<<(std::ostream& os, const IPRoute& e)
 
 RoutingTable::RoutingTable()
 {
- // DSDV 
+ // DSDV
     timetolive_routing_entry = timetolive_routing_entry.getMaxTime();
 }
 
@@ -332,9 +332,8 @@ bool RoutingTable::isLocalMulticastAddress(const IPAddress& dest) const
     for (int i=0; i<ift->getNumInterfaces(); i++)
     {
         InterfaceEntry *ie = ift->getInterface(i);
-        for (unsigned int j=0; j < ie->ipv4Data()->getMulticastGroups().size(); j++)
-            if (dest.equals(ie->ipv4Data()->getMulticastGroups()[j]))
-                return true;
+        if (ie->ipv4Data()->isMemberOfMulticastGroup(dest))
+            return true;
     }
     return false;
 }
@@ -414,7 +413,7 @@ const IPRoute *RoutingTable::findBestMatchingRoute(const IPAddress& dest) const
            }
         }
     }
-    
+
     if (bestRoute && bestRoute->getSource()==IPRoute::MANET && bestRoute->getHost()!=dest)
     {
         bestRoute=NULL;

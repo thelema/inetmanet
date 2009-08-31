@@ -68,6 +68,7 @@ class INET_API IPv4InterfaceData : public InterfaceProtocolData
     int getMetric() const  {return metric;}
     const IPAddressVector& getMulticastGroups() const {return multicastGroups;}
     //@}
+    bool isMemberOfMulticastGroup(const IPAddress& multicastAddress) const;
 
     /** @name Setters */
     //@{
