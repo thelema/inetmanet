@@ -61,6 +61,7 @@ void AODV_msg:: clearExtension()
 	}
 	delete [] extension;
 	extensionsize=0;
+	extension = NULL;
 }
 
 AODV_msg::~AODV_msg()
@@ -81,21 +82,22 @@ AODV_ext * AODV_msg::addExtension(int type,int len,char *data)
 		 extension_aux[i].length=extension[i].length;
 		 extension_aux[i].pointer = extension[i].pointer;
 	}
-	delete [] extension;
+	if (extensionsize>0)
+		delete [] extension;
 	extension =  extension_aux;
 	extensionsize++;
-	extension[extensionsize].type = type;
-	extension[extensionsize].length = len;
-	extension[extensionsize].pointer  =  new char[len];
-	memcpy (extension_aux[extensionsize].pointer,data,len);
+	extension[extensionsize-1].type = type;
+	extension[extensionsize-1].length = len;
+	extension[extensionsize-1].pointer  =  new char[len];
+	memcpy (extension_aux[extensionsize-1].pointer,data,len);
 	setBitLength(getBitLength ()+((AODV_EXT_HDR_SIZE+len) *8));
-	return & extension[extensionsize];
+	return & extension[extensionsize-1];
 }
 
 
 AODV_ext * AODV_msg::getNexExtension(AODV_ext* aodv_ext)
 {
-	if ((extension+extensionsize)>aodv_ext+1)
+	if ((&extension[extensionsize-1]>aodv_ext+1) && (aodv_ext>= extension))
 	   return aodv_ext+1;
 	else
 	   return NULL;
