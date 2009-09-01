@@ -27,11 +27,8 @@ namespace INETFw // load headers into a namespace, to avoid conflicts with platf
 #include "headers/bsdint.h"
 #include "headers/in.h"
 #include "headers/in_systm.h"
-//#include "headers/ip.h"
 #include "headers/tcp.h"
 };
-
-//#include "TCPConnection.h"
 
 #if !defined(_WIN32) && !defined(__WIN32__) && !defined(WIN32) && !defined(__CYGWIN__) && !defined(_WIN64)
 #include <netinet/in.h>  // htonl, ntohl, ...
@@ -41,7 +38,7 @@ namespace INETFw // load headers into a namespace, to avoid conflicts with platf
 #endif
 
 using namespace INETFw;
-//#include "Checksum.h"
+
 /**
  * Converts between IPDatagram and binary (network byte order) IP header.
  */
@@ -60,7 +57,7 @@ class TCPSerializer
         /**
          * Puts a packet sniffed from the wire into an SCTPMessage.
          */
-//	void parse(unsigned char *buf, unsigned int bufsize, TCPSegment *dest);
+        //void parse(unsigned char *buf, unsigned int bufsize, TCPSegment *dest); // TODO implement
 
 	static unsigned short checksum(unsigned char *addr, unsigned int count);
 };

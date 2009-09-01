@@ -72,27 +72,24 @@ class TCPDumper
         ~TCPDumper();
         void ipDump(const char *label, IPDatagram *dgram, const char *comment=NULL);
         void sctpDump(const char *label, SCTPMessage *sctpmsg, const std::string& srcAddr, const std::string& destAddr, const char *comment=NULL);
-        // dumps arbitary text
         void dump(const char *label, const char *msg);
         void tcpDump(bool l2r, const char *label, IPDatagram *dgram, const char *comment=NULL);
         void tcpDump(bool l2r, const char *label, TCPSegment *tcpseg, const std::string& srcAddr, const std::string& destAddr, const char *comment=NULL);
         void dumpIPv6(bool l2r, const char *label, IPv6Datagram_Base *dgram, const char *comment=NULL);//FIXME: Temporary hack
         void udpDump(bool l2r, const char *label, IPDatagram *dgram, const char *comment);
-        const char* intToChunk(int32 type);
+        const char *intToChunk(int32 type);
         FILE *dumpfile;
-
 };
 
 
 /**
  * Dumps every packet using the TCPDumper class
  */
-class INET_API TCPDump : public cSimpleModule
+class TCPDump : public cSimpleModule
 {
     protected:
         TCPDumper tcpdump;
     public:
-
         TCPDump();
         ~TCPDump();
         TCPDump(const char *name, cModule *parent);

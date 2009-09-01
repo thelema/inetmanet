@@ -37,6 +37,9 @@
 //
 // helper functions
 //
+inline uint32 uint32rand() {
+	return (uint32)intrand(0xffff) << 16 + (uint32)intrand(0xffff);
+}
 
 void SCTPAssociation::printSctpPathMap()
 {
@@ -391,7 +394,7 @@ void SCTPAssociation::sendInit()
 	sctpmsg->setBitLength(SCTP_COMMON_HEADER*8);
 	SCTPInitChunk *initChunk = new SCTPInitChunk("INIT");
 	initChunk->setChunkType(INIT);
-	initChunk->setInitTag((uint32)(fmod(intrand(RAND_MAX), 1.0+(double)(unsigned)0xffffffffUL)) & 0xffffffffUL);
+	initChunk->setInitTag(uint32rand());
 
 	peerVTag = initChunk->getInitTag();
 	sctpEV3<<"INIT from "<<localAddr<<":InitTag="<<peerVTag<<"\n";
@@ -572,11 +575,11 @@ void SCTPAssociation::sendInitAck(SCTPInitChunk* initChunk)
 		cookie->setPeerTag(peerVTag);
 		for (int32 i=0; i<32; i++)
 		{
-			cookie->setPeerTieTag(i,(uint8)(intrand(RAND_MAX)%256));
+			cookie->setPeerTieTag(i,(uint8)intrand(256));
 			state->peerTieTag[i] = cookie->getPeerTieTag(i);
 			if (fsm->getState()==SCTP_S_COOKIE_ECHOED)
 			{
-				cookie->setLocalTieTag(i,(uint8)(intrand(RAND_MAX)%256));
+				cookie->setLocalTieTag(i,(uint8)intrand(256));
 				state->localTieTag[i] = cookie->getLocalTieTag(i);
 			}
 			else
@@ -591,7 +594,7 @@ void SCTPAssociation::sendInitAck(SCTPInitChunk* initChunk)
 		uint32 tag;
 		do
 		{
-			tag = (uint32)(fmod(intrand(RAND_MAX), 1.0+(double)(unsigned)0xffffffffUL)) & 0xffffffffUL;
+			tag = uint32rand();
 		} while (tag==0);
 		initAckChunk->setInitTag(tag);
 		initAckChunk->setInitTSN(state->nextTSN);
