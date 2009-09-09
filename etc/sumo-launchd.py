@@ -51,38 +51,40 @@ import thread
 import xml.dom.minidom
 import select
 import logging
+import atexit
 from optparse import OptionParser
  
  
 _CMD_FILE_SEND = 0x75
+ 
 class UnusedPortLock:
     lock = thread.allocate_lock()
-
+ 
     def __init__(self):
         self.acquired = False
-
+ 
     def __enter__(self):
         self.acquire()
-
+ 
     def __exit__(self):
         self.release()
-
+ 
     def acquire(self):
         if not self.acquired:
             logging.debug("Claiming lock on port")
             UnusedPortLock.lock.acquire()
             self.acquired = True
-
+ 
     def release(self):
         if self.acquired:
             logging.debug("Releasing lock on port")
             UnusedPortLock.lock.release()
             self.acquired = False
-
+ 
 def find_unused_port():
     """
-    Return an unused port number.
-    """
+Return an unused port number.
+"""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
     sock.bind(('127.0.0.1', 0))
     sock.listen(socket.SOMAXCONN)
@@ -93,15 +95,18 @@ def find_unused_port():
  
 def forward_connection(client_socket, server_socket, process):
     """
-    Proxy connections until either socket runs out of data or process terminates.
-    """
-
+Proxy connections until either socket runs out of data or process terminates.
+"""
+ 
     logging.debug("Starting proxy mode")
+ 
+    client_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    server_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
  
     do_exit = False
     while not do_exit:
  
-        (r, w, e) = select.select([client_socket, server_socket], [], [client_socket, server_socket], 0)
+        (r, w, e) = select.select([client_socket, server_socket], [], [client_socket, server_socket], 1)
         if client_socket in e:
             do_exit = True
             break
@@ -126,16 +131,19 @@ def forward_connection(client_socket, server_socket, process):
                 do_exit = True
             finally:
                 client_socket.send(data)
+ 
         rc = process.poll()
         if (rc != None):
             do_exit = True
             break
-        time.sleep(0.1)
+ 
     logging.debug("Done with proxy mode")
+ 
+ 
 def parse_launch_configuration(launch_xml_string):
     """
-    Returns tuple of options set in launch configuration
-    """
+Returns tuple of options set in launch configuration
+"""
     
     p = xml.dom.minidom.parseString(launch_xml_string)
     
@@ -158,12 +166,13 @@ def parse_launch_configuration(launch_xml_string):
     copy_nodes = [x for x in launch_node.getElementsByTagName("copy") if x.parentNode==launch_node]
     
     return (basedir, copy_nodes)
-
-def run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket, unused_port_lock):
+ 
+ 
+def run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket, unused_port_lock, keep_temp):
     """
-    Actually run SUMO.
-    """
-
+Actually run SUMO.
+"""
+ 
     # create log files
     sumoLogOut = open(os.path.join(runpath, 'sumo-launchd.out.log'), 'w')
     sumoLogErr = open(os.path.join(runpath, 'sumo-launchd.err.log'), 'w')
@@ -194,6 +203,7 @@ def run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket
                     raise
                 time.sleep(tries * 0.25)
                 tries += 1
+ 
         unused_port_lock.release()
         forward_connection(client_socket, sumo_socket, sumo)
  
@@ -274,8 +284,8 @@ def run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket
  
 def copy_and_modify_files(basedir, copy_nodes, runpath, remote_port):
     """
-    Copy (and modify) files, return config file name
-    """
+Copy (and modify) files, return config file name
+"""
     
     config_file_name = None
     for copy_node in copy_nodes:
@@ -346,11 +356,11 @@ def copy_and_modify_files(basedir, copy_nodes, runpath, remote_port):
     return config_file_name
  
  
-def handle_launch_configuration(sumo_command, launch_xml_string, client_socket):
+def handle_launch_configuration(sumo_command, launch_xml_string, client_socket, keep_temp):
     """
-    Process launch configuration in launch_xml_string.
-    """
-
+Process launch configuration in launch_xml_string.
+"""
+ 
     # create temporary directory
     logging.debug("Creating temporary directory...")
     runpath = tempfile.mkdtemp(prefix="sumo-launchd-tmp-")
@@ -359,41 +369,44 @@ def handle_launch_configuration(sumo_command, launch_xml_string, client_socket):
     if not os.path.exists(runpath):
         raise RuntimeError('Temporary directory "%s" does not exist, even though it should have been created' % runpath)
     logging.debug("Temporary dir is %s" % runpath)
-
+ 
     result_xml = None
     unused_port_lock = UnusedPortLock()
-    try:    
-        # parse launch configuration 
+    try:
+        # parse launch configuration
         (basedir, copy_nodes) = parse_launch_configuration(launch_xml_string)
-
+ 
         # find remote_port
         logging.debug("Finding free port number...")
         unused_port_lock.__enter__()
         remote_port = find_unused_port()
         logging.debug("...found port %d" % remote_port)
-
+ 
         # copy (and modify) files
         config_file_name = copy_and_modify_files(basedir, copy_nodes, runpath, remote_port)
         
         # run SUMO
-        result_xml = run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket, unused_port_lock)
-
+        result_xml = run_sumo(runpath, sumo_command, config_file_name, remote_port, client_socket, unused_port_lock, keep_temp)
+ 
     finally:
         unused_port_lock.__exit__()
-
+ 
         # clean up
-        logging.debug("Cleaning up")
-        shutil.rmtree(runpath)
-
+        if not keep_temp:
+            logging.debug("Cleaning up")
+            shutil.rmtree(runpath)
+        else:
+            logging.debug("Not cleaning up %s" % runpath)
+ 
         logging.debug('Result: "%s"' % result_xml)
-
+ 
     return result_xml
  
  
 def read_launch_config(conn):
     """
-    Read (and return) launch configuration from socket
-    """
+Read (and return) launch configuration from socket
+"""
  
     # Get TraCI message length
     msg_len_buf = ""
@@ -451,16 +464,17 @@ def read_launch_config(conn):
     return data
         
         
-def handle_connection(sumo_command, conn, addr):
+def handle_connection(sumo_command, conn, addr, keep_temp):
     """
-    Handle incoming connection.
-    """
+Handle incoming connection.
+"""
  
     logging.debug("Handling connection from %s on port %d" % addr)
  
     try:
         data = read_launch_config(conn)
-        handle_launch_configuration(sumo_command, data, conn)
+        handle_launch_configuration(sumo_command, data, conn, keep_temp)
+ 
     except Exception, e:
         logging.error("Aborting on error: %s" % e)
     
@@ -469,26 +483,29 @@ def handle_connection(sumo_command, conn, addr):
         conn.close()
  
  
-def wait_for_connections(sumo_command, sumo_port, bind_address, do_daemonize):
+def wait_for_connections(sumo_command, sumo_port, bind_address, do_daemonize, do_kill, pidfile, keep_temp):
     """
-    Open TCP socket, wait for connections, call handle_connection for each
-    """
+Open TCP socket, wait for connections, call handle_connection for each
+"""
+   
+    if do_kill:
+        check_kill_daemon(pidfile)
     
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listener.bind((bind_address, sumo_port))
     listener.listen(5)
     logging.info("Listening on port %d" % sumo_port)
-
+ 
     if do_daemonize:
         logging.info("Detaching to run as daemon")
-        daemonize()
-
+        daemonize(pidfile)
+ 
     try:
         while True:
             conn, addr = listener.accept()
             logging.debug("Connection from %s on port %d" % addr)
-            thread.start_new_thread(handle_connection, (sumo_command, conn, addr))
+            thread.start_new_thread(handle_connection, (sumo_command, conn, addr, keep_temp))
     
     except exceptions.SystemExit:
         logging.warning("Killed.")
@@ -504,17 +521,42 @@ def wait_for_connections(sumo_command, sumo_port, bind_address, do_daemonize):
         logging.info("Shutting down.")
         listener.close()
  
-def daemonize():
+ 
+def check_kill_daemon(pidfile):
+    # check pidfile, see if the daemon is still running
+    try:
+        pidfileh = open(pidfile, 'r')
+        old_pid = int(pidfileh.readline())
+        if old_pid:
+            logging.info("There might already be a daemon running with PID %d. Sending SIGTERM." % old_pid)
+            try:
+                os.kill(old_pid, signal.SIGTERM)
+                time.sleep(1)
+            except OSError, e:
+                pass
+ 
+        pidfileh.close()
+    except IOError, e:
+        pass
+ 
+ 
+def daemonize(pidfile):
     """
-    detach process, keep it running in the background
-    """
+detach process, keep it running in the background
+"""
  
     # fork and exit parent process
     try:
         child_pid = os.fork()
-        # parent can exit
         if child_pid > 0:
+            # parent can exit
             sys.exit(0)
+        elif child_pid == 0:
+            # child does nothing
+            pass
+        else:
+            logging.error("Aborting. Failed to fork: %s" % e.strerror)
+            sys.exit(1);
     except OSError, e:
         logging.error("Aborting. Failed to fork: %s" % e.strerror)
         sys.exit(1)
@@ -525,29 +567,43 @@ def daemonize():
     # fork again to prevent zombies
     try:
         child_pid = os.fork()
-        # parent can exit
         if child_pid > 0:
-            logging.info("Fork successful. Child PID is %d" % child_pid)
+            # parent can exit
             sys.exit(0)
+        elif child_pid == 0:
+            # child creates PIDFILE
+            logging.info("Fork successful. PID is %d" % os.getpid())
+            if pidfile:
+                pidfileh = open(pidfile, 'w')
+                pidfileh.write('%d\n' % os.getpid())
+                pidfileh.close()
+                atexit.register(os.remove, pidfile)
+        else:
+            logging.error("Aborting. Failed to fork: %s" % e.strerror)
+            sys.exit(1);
+ 
     except OSError, e:
         logging.error("Aborting. Failed to fork: %s" % e.strerror)
         sys.exit(1)
  
-    
+ 
 def main():
     """
-    Program entry point when run interactively.
-    """
+Program entry point when run interactively.
+"""
  
     # Option handling
     parser = OptionParser()
     parser.add_option("-c", "--command", dest="command", default="sumo", help="run SUMO as COMMAND [default: %default]", metavar="COMMAND")
     parser.add_option("-p", "--port", dest="port", type="int", default=9999, action="store", help="listen for connections on PORT [default: %default]", metavar="PORT")
     parser.add_option("-b", "--bind", dest="bind", default="127.0.0.1", help="bind to ADDRESS [default: %default]", metavar="ADDRESS")
-    parser.add_option("-L", "--logfile", dest="logfile", default="sumo-launchd.log", help="log messages to LOGFILE [default: TMPDIR/%default]", metavar="LOGFILE")
+    parser.add_option("-L", "--logfile", dest="logfile", default=os.path.join(tempfile.gettempdir(), "sumo-launchd.log"), help="log messages to LOGFILE [default: %default]", metavar="LOGFILE")
     parser.add_option("-v", "--verbose", dest="count_verbose", default=0, action="count", help="increase verbosity [default: don't log infos, debug]")
     parser.add_option("-q", "--quiet", dest="count_quiet", default=0, action="count", help="decrease verbosity [default: log warnings, errors]")
     parser.add_option("-d", "--daemon", dest="daemonize", default=False, action="store_true", help="detach and run as daemon [default: no]")
+    parser.add_option("-k", "--kill", dest="kill", default=False, action="store_true", help="send SIGTERM to running daemon first [default: no]")
+    parser.add_option("-P", "--pidfile", dest="pidfile", default=os.path.join(tempfile.gettempdir(), "sumo-launchd.pid"), help="if running as a daemon, write pid to PIDFILE [default: %default]", metavar="PIDFILE")
+    parser.add_option("-t", "--keep-temp", dest="keep_temp", default=False, action="store_true", help="keep all temporary files [default: no]")
     (options, args) = parser.parse_args()
     _LOGLEVELS = (logging.ERROR, logging.WARN, logging.INFO, logging.DEBUG)
     loglevel = _LOGLEVELS[max(0, min(1 + options.count_verbose - options.count_quiet, len(_LOGLEVELS)-1))]
@@ -556,18 +612,13 @@ def main():
     signal.signal(signal.SIGTERM, lambda signum, stack_frame: sys.exit(1))
     
     # configure logging
-    logging.basicConfig(filename=os.path.join(tempfile.gettempdir(), options.logfile), level=loglevel)
+    logging.basicConfig(filename=options.logfile, level=loglevel)
  
     # this is where we'll spend our time
-    wait_for_connections(options.command, options.port, options.bind, options.daemonize)
+    wait_for_connections(options.command, options.port, options.bind, options.daemonize, options.kill, options.pidfile, options.keep_temp)
  
  
 # Start main() when run interactively
 if __name__ == '__main__':
     main()
- 
- 
- 
- 
- 
  
