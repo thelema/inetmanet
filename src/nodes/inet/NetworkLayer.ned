@@ -45,6 +45,7 @@ module NetworkLayer
         input rsvpIn;
         input ospfIn;
         input pingIn;
+        input  MANETIn;        
         output ifOut[];
         output TCPOut;
         output udpOut;
@@ -52,7 +53,8 @@ module NetworkLayer
         output rsvpOut;
         output ospfOut;
         output pingOut;
-
+        output MANETOut;
+        
     submodules:
         ip: IP {
             parameters:
@@ -107,6 +109,9 @@ module NetworkLayer
 
         ip.transportOut[6] --> sctpOut;     //I.R.
         ip.transportIn[6] <-- sctpIn;
+        
+        ip.transportOut[7] --> MANETOut;
+        ip.transportIn[7] <-- MANETIn;        
 
         icmp.pingOut --> pingOut;
         icmp.pingIn <-- pingIn;
