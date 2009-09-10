@@ -43,6 +43,7 @@ module NetworkLayerGlobalArp
         input ifIn[];
         input tcpIn;
         input udpIn;
+        input sctpIn;   //I.R.        
         input rsvpIn;
         input ospfIn;
         input pingIn;
@@ -50,6 +51,7 @@ module NetworkLayerGlobalArp
         output ifOut[];
         output TCPOut;
         output udpOut;
+        output sctpOut; //I.R.
         output rsvpOut;
         output ospfOut;
         output pingOut;
@@ -61,11 +63,11 @@ module NetworkLayerGlobalArp
                 timeToLive = 32;
                 multicastTimeToLive = 32;
                 fragmentTimeout = 60s;
-                protocolMapping = "6:0,17:1,1:2,2:3,46:4,89:5,254:6,135:6";
+                protocolMapping = "6:0,17:1,1:2,2:3,46:4,89:5,132:6,254:7,135:7";
                 @display("p=85,95;q=queue");
             gates:
-                transportIn[7];
-                transportOut[7];
+                transportIn[8];
+                transportOut[8];
                 queueIn[sizeof(ifIn)];
         }
         arp: ARP {
@@ -108,8 +110,11 @@ module NetworkLayerGlobalArp
         ip.transportOut[5] --> ospfOut;
         ip.transportIn[5] <-- ospfIn;
 
-        ip.transportOut[6] --> MANETOut;
-        ip.transportIn[6] <-- MANETIn;
+        ip.transportOut[6] --> sctpOut;     //I.R.
+        ip.transportIn[6] <-- sctpIn;
+        
+        ip.transportOut[7] --> MANETOut;
+        ip.transportIn[7] <-- MANETIn;
 
         icmp.pingOut --> pingOut;
         icmp.pingIn <-- pingIn;
