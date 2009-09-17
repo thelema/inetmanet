@@ -178,16 +178,18 @@ void ControlPlaneBasestation::initialize(int stage) {
 
 //	module = parentModule()->submodule("cp_authorization");
 //	cps_auth = check_and_cast<CommonPartSublayerAuthorizationModule*>(module);
-		cpsSF_BS->setAvailableDownlinkDatarate( localBasestationInfo.downlink_per_second );
-		cpsSF_BS->setAvailableUplinkDatarate( localBasestationInfo.radioDatenrate - localBasestationInfo.downlink_per_second );
+	cpsSF_BS->setAvailableDownlinkDatarate( localBasestationInfo.downlink_per_second );
+	cpsSF_BS->setAvailableUplinkDatarate( localBasestationInfo.radioDatenrate - localBasestationInfo.downlink_per_second );
 
 
-		cvec_grant_capacity[MANAGEMENT].setName("Management grant capacity");
-		cvec_grant_capacity[UGS].setName("UGS grant capacity");
-		cvec_grant_capacity[RTPS].setName("rtPS grant capacity");
-		cvec_grant_capacity[ERTPS].setName("ertPS grant capacity");
-		cvec_grant_capacity[NRTPS].setName("nrtPS grant capacity");
-		cvec_grant_capacity[BE].setName("BE grant capacity");
+	cvec_grant_capacity[MANAGEMENT].setName("Management grant capacity");
+	cvec_grant_capacity[UGS].setName("UGS grant capacity");
+	cvec_grant_capacity[RTPS].setName("rtPS grant capacity");
+	cvec_grant_capacity[ERTPS].setName("ertPS grant capacity");
+	cvec_grant_capacity[NRTPS].setName("nrtPS grant capacity");
+	cvec_grant_capacity[BE].setName("BE grant capacity");
+
+	registerInterface();
 }
 
 /**
@@ -1552,10 +1554,15 @@ void ControlPlaneBasestation::registerInterface() {
 	if (!ift)
 		return;
 
+	char *interfaceName = new char[strlen(getParentModule()->getFullName()) + 1];
+	// Check if the interface is yet register
+	if (ift->getInterfaceByName(interfaceName)!=NULL)
+		return;
+
 	InterfaceEntry *e = new InterfaceEntry();
 
 	// interface name: NetworkInterface module's name without special characters ([])
-	char *interfaceName = new char[strlen(getParentModule()->getFullName()) + 1];
+
 	char *d = interfaceName;
 	for (const char *s = getParentModule()->getFullName(); *s; s++)
 		if (isalnum(*s))
