@@ -455,7 +455,10 @@ void NS_CLASS rreq_process(RREQ * rreq, int rreqlen, struct in_addr ip_src,
 //	    if (fwd_rt->dest_seqno != 0 &&
 //		(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno) {
 
-				lifetime = timeval_diff(&fwd_rt->rt_timer.timeout, &now);
+				if (fwd_rt->state==INMORTAL)
+					lifetime = 10000;
+				else
+					lifetime = timeval_diff(&fwd_rt->rt_timer.timeout, &now);
 				rrep = rrep_create(0, 0, fwd_rt->hcnt, fwd_rt->dest_addr,
 					   fwd_rt->dest_seqno, rev_rt->dest_addr,
 				   	lifetime);

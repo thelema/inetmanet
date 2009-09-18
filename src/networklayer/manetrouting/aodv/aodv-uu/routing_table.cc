@@ -194,14 +194,22 @@ rt_table_t *NS_CLASS rt_table_insert(struct in_addr dest_addr,
 //#endif
     /* In case there are buffered packets for this destination, we
      * send them on the new route. */
-	if (rt->state == VALID && seek_list_remove(seek_list_find(dest_addr))) {
+	if ((rt->state == VALID || rt->state == INMORTAL)  && seek_list_remove(seek_list_find(dest_addr))) {
 #ifdef NS_PORT
 		if (rt->flags & RT_INET_DEST)
 	 		packet_queue_set_verdict(dest_addr, PQ_ENC_SEND);
 		else
-	    		packet_queue_set_verdict(dest_addr, PQ_SEND);
+	    	packet_queue_set_verdict(dest_addr, PQ_SEND);
 #endif
 	}
+
+ 	if ( state == INMORTAL)
+ 	{
+ 		timer_remove(&rt->rt_timer);
+ 		timer_remove(&rt->ack_timer);
+ 		timer_remove(&rt->hello_timer);
+ 	}
+
 	return rt;
 }
 
@@ -213,12 +221,13 @@ rt_table_t *NS_CLASS rt_table_update(rt_table_t * rt, struct in_addr next,
 	struct in_addr nm;
 	nm.s_addr = 0;
 
-	if (rt->state == INVALID && state == VALID) {
+	if ((rt->state == INVALID && state == VALID) || (state == INMORTAL)){
 
 	/* If this previously was an expired route, but will now be
 	   active again we must add it to the kernel routing
 	   table... */
-		rt_tbl.num_active++;
+		if (rt->state == INVALID)
+			rt_tbl.num_active++;
 
 		if (rt->flags & RT_REPAIR)
 			flags &= ~RT_REPAIR;
@@ -285,10 +294,18 @@ rt_table_t *NS_CLASS rt_table_update(rt_table_t * rt, struct in_addr next,
 #endif
 
 //#ifdef NS_PORT
-	rt->rt_timer.handler = &NS_CLASS route_expire_timeout;
-
-	if (!(rt->flags & RT_INET_DEST))
-		rt_table_update_timeout(rt, lifetime);
+ 	if (state != INMORTAL)
+ 	{
+ 		rt->rt_timer.handler = &NS_CLASS route_expire_timeout;
+ 		if (!(rt->flags & RT_INET_DEST))
+ 			rt_table_update_timeout(rt, lifetime);
+ 	}
+ 	else
+ 	{
+ 		timer_remove(&rt->rt_timer);
+ 		timer_remove(&rt->ack_timer);
+ 		timer_remove(&rt->hello_timer);
+ 	}
 //#endif
 
     /* Finally, mark as VALID */
@@ -296,7 +313,7 @@ rt_table_t *NS_CLASS rt_table_update(rt_table_t * rt, struct in_addr next,
 
     /* In case there are buffered packets for this destination, we send
      * them on the new route. */
-	if (rt->state == VALID && seek_list_remove(seek_list_find(rt->dest_addr))) {
+	if ((rt->state == VALID || rt->state == INMORTAL)&& seek_list_remove(seek_list_find(rt->dest_addr))) {
 #ifdef NS_PORT
 		if (rt->flags & RT_INET_DEST)
 			packet_queue_set_verdict(rt->dest_addr, PQ_ENC_SEND);
@@ -314,6 +331,14 @@ NS_INLINE rt_table_t *NS_CLASS rt_table_update_timeout(rt_table_t * rt,
 
     if (!rt)
 	return NULL;
+
+    if (rt->state == INMORTAL)
+    {
+ 		timer_remove(&rt->rt_timer);
+ 		timer_remove(&rt->ack_timer);
+ 		timer_remove(&rt->hello_timer);
+    	return rt;
+    }
 
     if (rt->state == VALID) {
 	/* Check if the current valid timeout is larger than the new
@@ -341,16 +366,14 @@ void NS_CLASS rt_table_update_route_timeouts(rt_table_t * fwd_rt,
        6.2. */
 
     if (fwd_rt && fwd_rt->state == VALID) {
+    	if (llfeedback || fwd_rt->flags & RT_INET_DEST || fwd_rt->hcnt != 1 || fwd_rt->hello_timer.used)
+    		rt_table_update_timeout(fwd_rt, ACTIVE_ROUTE_TIMEOUT);
+    	next_hop_rt = rt_table_find(fwd_rt->next_hop);
 
-	if (llfeedback || fwd_rt->flags & RT_INET_DEST || fwd_rt->hcnt != 1 || fwd_rt->hello_timer.used)
-	    rt_table_update_timeout(fwd_rt, ACTIVE_ROUTE_TIMEOUT);
-
-	next_hop_rt = rt_table_find(fwd_rt->next_hop);
-
-	if (next_hop_rt && next_hop_rt->state == VALID &&
-	    next_hop_rt->dest_addr.s_addr != fwd_rt->dest_addr.s_addr &&
-	    (llfeedback || fwd_rt->hello_timer.used))
-	    rt_table_update_timeout(next_hop_rt, ACTIVE_ROUTE_TIMEOUT);
+    	if (next_hop_rt && next_hop_rt->state == VALID &&
+    			next_hop_rt->dest_addr.s_addr != fwd_rt->dest_addr.s_addr &&
+    			(llfeedback || fwd_rt->hello_timer.used))
+    		rt_table_update_timeout(next_hop_rt, ACTIVE_ROUTE_TIMEOUT);
 
     }
     /* Also update the reverse route and reverse next hop along the
@@ -358,15 +381,15 @@ void NS_CLASS rt_table_update_route_timeouts(rt_table_t * fwd_rt,
        are expected to be symmetric. */
     if (rev_rt && rev_rt->state == VALID) {
 
-	if (llfeedback || rev_rt->hcnt != 1 || rev_rt->hello_timer.used)
-	    rt_table_update_timeout(rev_rt, ACTIVE_ROUTE_TIMEOUT);
+    	if (llfeedback || rev_rt->hcnt != 1 || rev_rt->hello_timer.used)
+    		rt_table_update_timeout(rev_rt, ACTIVE_ROUTE_TIMEOUT);
 
-	next_hop_rt = rt_table_find(rev_rt->next_hop);
+    	next_hop_rt = rt_table_find(rev_rt->next_hop);
 
-	if (next_hop_rt && next_hop_rt->state == VALID && rev_rt &&
-	    next_hop_rt->dest_addr.s_addr != rev_rt->dest_addr.s_addr &&
-	    (llfeedback || rev_rt->hello_timer.used))
-	    rt_table_update_timeout(next_hop_rt, ACTIVE_ROUTE_TIMEOUT);
+    	if (next_hop_rt && next_hop_rt->state == VALID && rev_rt &&
+    			next_hop_rt->dest_addr.s_addr != rev_rt->dest_addr.s_addr &&
+    			(llfeedback || rev_rt->hello_timer.used))
+    		rt_table_update_timeout(next_hop_rt, ACTIVE_ROUTE_TIMEOUT);
 
 	/* Update HELLO timer of next hop neighbor if active */
 /* 	if (!llfeedback && next_hop_rt->hello_timer.used) { */
@@ -569,7 +592,7 @@ void NS_CLASS rt_table_delete(rt_table_t * rt)
 
     precursor_list_destroy(rt);
 
-    if (rt->state == VALID) {
+    if (rt->state == VALID || rt->state == INMORTAL) {
 
 #ifndef NS_PORT
 	nl_send_del_route_msg(rt->dest_addr, rt->next_hop);

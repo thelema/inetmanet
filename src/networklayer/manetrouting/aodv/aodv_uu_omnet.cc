@@ -986,3 +986,18 @@ bool NS_CLASS getDestAddress(cPacket *msg,Uint128 &dest)
 	return true;
 
 }
+
+void  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const int &ifaceIndex,const int &hops)
+{
+	struct in_addr destAddr;
+	struct in_addr nextAddr;
+	destAddr.s_addr = dest;
+	nextAddr.s_addr = add;
+	rt_table_t * fwd_rt = rt_table_find(destAddr);
+
+
+
+	if (!fwd_rt)
+		rt_table_delete(fwd_rt);
+	rt_table_insert(destAddr,nextAddr,hops,0xFFFF,0,INMORTAL,0, ifaceIndex);
+}

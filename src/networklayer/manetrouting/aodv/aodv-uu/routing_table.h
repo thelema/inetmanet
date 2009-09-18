@@ -73,6 +73,7 @@ struct rt_table {
 /* Route entry states */
 #define INVALID   0
 #define VALID     1
+#define INMORTAL  2
 
 
 #define RT_TABLESIZE 64		/* Must be a power of 2 */
