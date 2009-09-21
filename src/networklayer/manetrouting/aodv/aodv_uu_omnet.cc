@@ -987,7 +987,7 @@ bool NS_CLASS getDestAddress(cPacket *msg,Uint128 &dest)
 
 }
 
-void  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const int &ifaceIndex,const int &hops)
+bool  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const int &ifaceIndex,const int &hops)
 {
 	struct in_addr destAddr;
 	struct in_addr nextAddr;
@@ -1000,6 +1000,30 @@ void  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const int &iface
 	if (!fwd_rt)
 		rt_table_delete(fwd_rt);
 	if (add == (Uint128)0)
-		return;
-	rt_table_insert(destAddr,nextAddr,hops,0xFFFF,0,IMMORTAL,0, ifaceIndex);
+		return true;
+	if (ifaceIndex>=getNumInterfaces())
+		return false;
+	return (rt_table_insert(destAddr,nextAddr,hops,0xFFFF,0,IMMORTAL,0, ifaceIndex)!=NULL);
+}
+
+bool  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const char  *ifaceName,const int &hops)
+{
+	struct in_addr destAddr;
+	struct in_addr nextAddr;
+	destAddr.s_addr = dest;
+	nextAddr.s_addr = add;
+	rt_table_t * fwd_rt = rt_table_find(destAddr);
+
+	if (!fwd_rt)
+		rt_table_delete(fwd_rt);
+	if (add == (Uint128)0)
+		return true;
+	int index;
+	for (index = 0; index <getNumInterfaces(); index++)
+	{
+		if (strcmp(ifaceName, getInterfaceEntry(index)->getName())==0) break;
+	}
+	if (index>=getNumInterfaces())
+		return false;
+	return (rt_table_insert(destAddr,nextAddr,hops,0xFFFF,0,IMMORTAL,0, index)!=NULL);
 }

@@ -257,7 +257,8 @@ class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 		virtual uint32_t getRoute(const Uint128 &,Uint128 add[])= 0;
 		virtual bool getNextHop(const Uint128 &,Uint128 &add,int &iface)= 0;
 		virtual void setRefreshRoute(const Uint128 &, const Uint128 &,const Uint128&,const Uint128&)= 0;
-		virtual void setRoute(const Uint128 & destination,const Uint128 &nextHop,const int &ifaceIndex,const int &hops){error("setRoute is not supported in this protocol, overload the method");};
+		virtual bool setRoute(const Uint128 & destination,const Uint128 &nextHop,const int &ifaceIndex,const int &hops){error("setRoute is not supported in this protocol, overload the method");return false;};
+		virtual bool setRoute(const Uint128 & destination,const Uint128 &nextHop,const char *ifaceName,const int &hops){error("setRoute is not supported in this protocol, overload the method");return false;};
 		virtual bool isProactive()=0;
 		virtual bool isOurType(cPacket *)=0;
 		virtual bool getDestAddress(cPacket *,Uint128 &)=0;
