@@ -403,7 +403,7 @@ void NS_CLASS rreq_process(RREQ * rreq, int rreqlen, struct in_addr ip_src,
 		fwd_rt = rt_table_find(rreq_dest);
 
 
-		if (fwd_rt && fwd_rt->state == VALID && !rreq->d) {
+		if (fwd_rt && (fwd_rt->state == VALID || fwd_rt->state == IMMORTAL) && !rreq->d) {
 			struct timeval now;
 			u_int32_t lifetime;
 
@@ -446,16 +446,16 @@ void NS_CLASS rreq_process(RREQ * rreq, int rreqlen, struct in_addr ip_src,
 #endif				/* CONFIG_GATEWAY_DISABLED */
 
 	    /* Respond only if the sequence number is fresh enough... */
-//	    if (fwd_rt->dest_seqno != 0 &&
+//	    if ((fwd_rt->dest_seqno != 0 &&
 //		(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno &&
-//                (fwd_rt->hcnt>HCNT_LIMIT || (fwd_rt->hcnt==HCNT_LIMIT && uniform(0, 1)>0.8 ))) {
-			if (fwd_rt->dest_seqno != 0 &&
+//                (fwd_rt->hcnt>HCNT_LIMIT || (fwd_rt->hcnt==HCNT_LIMIT && uniform(0, 1)>0.8 ))) || fwd_rt->state==IMMORTAL) {
+			if ((fwd_rt->dest_seqno != 0 &&
 				(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno &&
-                		(fwd_rt->hcnt>HCNT_LIMIT)) {
+                		(fwd_rt->hcnt>HCNT_LIMIT))|| fwd_rt->state==IMMORTAL) {
 //	    if (fwd_rt->dest_seqno != 0 &&
 //		(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno) {
 
-				if (fwd_rt->state==INMORTAL)
+				if (fwd_rt->state==IMMORTAL)
 					lifetime = 10000;
 				else
 					lifetime = timeval_diff(&fwd_rt->rt_timer.timeout, &now);
@@ -489,7 +489,7 @@ void NS_CLASS rreq_process(RREQ * rreq, int rreqlen, struct in_addr ip_src,
 #endif
 	    /* Update the sequence number in case the maintained one is
 	     * larger */
-            		if (fwd_rt && fwd_rt->state == VALID && !rreq->d&& 0!=HCNT_LIMIT) {
+            		if (fwd_rt && (fwd_rt->state == VALID || fwd_rt->state == IMMORTAL) && !rreq->d&& 0!=HCNT_LIMIT) {
 	       			if (fwd_rt->dest_seqno != 0 &&
 		 			(int32_t) fwd_rt->dest_seqno >= (int32_t) rreq_dest_seqno && fwd_rt->hcnt==HCNT_LIMIT)
                       				ip_ttl = HCNT_LIMIT;

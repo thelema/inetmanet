@@ -194,7 +194,7 @@ rt_table_t *NS_CLASS rt_table_insert(struct in_addr dest_addr,
 //#endif
     /* In case there are buffered packets for this destination, we
      * send them on the new route. */
-	if ((rt->state == VALID || rt->state == INMORTAL)  && seek_list_remove(seek_list_find(dest_addr))) {
+	if ((rt->state == VALID || rt->state == IMMORTAL)  && seek_list_remove(seek_list_find(dest_addr))) {
 #ifdef NS_PORT
 		if (rt->flags & RT_INET_DEST)
 	 		packet_queue_set_verdict(dest_addr, PQ_ENC_SEND);
@@ -203,7 +203,7 @@ rt_table_t *NS_CLASS rt_table_insert(struct in_addr dest_addr,
 #endif
 	}
 
- 	if ( state == INMORTAL)
+ 	if ( state == IMMORTAL)
  	{
  		timer_remove(&rt->rt_timer);
  		timer_remove(&rt->ack_timer);
@@ -221,7 +221,7 @@ rt_table_t *NS_CLASS rt_table_update(rt_table_t * rt, struct in_addr next,
 	struct in_addr nm;
 	nm.s_addr = 0;
 
-	if ((rt->state == INVALID && state == VALID) || (state == INMORTAL)){
+	if ((rt->state == INVALID && state == VALID) || (state == IMMORTAL)){
 
 	/* If this previously was an expired route, but will now be
 	   active again we must add it to the kernel routing
@@ -294,7 +294,7 @@ rt_table_t *NS_CLASS rt_table_update(rt_table_t * rt, struct in_addr next,
 #endif
 
 //#ifdef NS_PORT
- 	if (state != INMORTAL)
+ 	if (state != IMMORTAL)
  	{
  		rt->rt_timer.handler = &NS_CLASS route_expire_timeout;
  		if (!(rt->flags & RT_INET_DEST))
@@ -313,7 +313,7 @@ rt_table_t *NS_CLASS rt_table_update(rt_table_t * rt, struct in_addr next,
 
     /* In case there are buffered packets for this destination, we send
      * them on the new route. */
-	if ((rt->state == VALID || rt->state == INMORTAL)&& seek_list_remove(seek_list_find(rt->dest_addr))) {
+	if ((rt->state == VALID || rt->state == IMMORTAL)&& seek_list_remove(seek_list_find(rt->dest_addr))) {
 #ifdef NS_PORT
 		if (rt->flags & RT_INET_DEST)
 			packet_queue_set_verdict(rt->dest_addr, PQ_ENC_SEND);
@@ -332,7 +332,7 @@ NS_INLINE rt_table_t *NS_CLASS rt_table_update_timeout(rt_table_t * rt,
     if (!rt)
 	return NULL;
 
-    if (rt->state == INMORTAL)
+    if (rt->state == IMMORTAL)
     {
  		timer_remove(&rt->rt_timer);
  		timer_remove(&rt->ack_timer);
@@ -592,7 +592,7 @@ void NS_CLASS rt_table_delete(rt_table_t * rt)
 
     precursor_list_destroy(rt);
 
-    if (rt->state == VALID || rt->state == INMORTAL) {
+    if (rt->state == VALID || rt->state == IMMORTAL) {
 
 #ifndef NS_PORT
 	nl_send_del_route_msg(rt->dest_addr, rt->next_hop);

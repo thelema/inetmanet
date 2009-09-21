@@ -999,5 +999,7 @@ void  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const int &iface
 
 	if (!fwd_rt)
 		rt_table_delete(fwd_rt);
-	rt_table_insert(destAddr,nextAddr,hops,0xFFFF,0,INMORTAL,0, ifaceIndex);
+	if (add == (Uint128)0)
+		return;
+	rt_table_insert(destAddr,nextAddr,hops,0xFFFF,0,IMMORTAL,0, ifaceIndex);
 }
