@@ -48,7 +48,7 @@ int NS_CLASS timer_init(struct timer *t, timeout_func_t f, void *data)
 		t->data		= data;
 		t->timeout.tv_sec	= 0;
 		t->timeout.tv_usec	= 0;
-		
+
 		return 0;
 	}
 	return -1;
@@ -69,7 +69,7 @@ int NS_CLASS timer_add(struct timer *t)
 	// Sanity checks
 	if (!t || !t->handler)
 		return -1;
-	
+
 	// If the timer is already in the queue we firstly remove it
 	if (t->used)
 		timer_remove(t);
@@ -140,20 +140,20 @@ int NS_CLASS timer_set_timeout(struct timer *t, long msec)
 	// Sanity checks
 	if (!t || msec < 0)
 		return -1;
-	
+
 	gettimeofday(&t->timeout, NULL);
-	
+
 	t->timeout.tv_usec += msec * 1000;
 	t->timeout.tv_sec += t->timeout.tv_usec / 1000000;
 	t->timeout.tv_usec = t->timeout.tv_usec % 1000000;
-	
+
 	return 0;
 }
 
 void NS_CLASS timer_timeout(struct timeval *now)
 {
 	dlist_head_t *pos, *tmp;
-	
+
 	dlist_for_each_safe(pos, tmp, &TQ)
 	{
 		struct timer *t = (struct timer *) pos;
@@ -165,8 +165,8 @@ void NS_CLASS timer_timeout(struct timeval *now)
 			t->used = 0;
 #ifdef OMNETPP
 			timer_elem--;
-			if (t->list_head.next==NULL)
-				(this->*t->handler)(t->data);
+			//if (t->list_head.next==NULL)
+//				(this->*t->handler)(t->data);
 #endif
 
 			dlist_del(&t->list_head);
@@ -176,7 +176,7 @@ void NS_CLASS timer_timeout(struct timeval *now)
 #else
 				t->handler(t->data);
 #endif	/* NS_PORT */
-		
+
 		}
 	}
 }
@@ -186,26 +186,26 @@ struct timeval *NS_CLASS timer_age_queue()
 	static struct timeval remaining;
 	struct timeval now;
 	struct timer *t;
-	
+
 	gettimeofday(&now, NULL);
-	
+
 	if (dlist_empty(&TQ))
 		return NULL;
-	
+
 	timer_timeout(&now);
-	
+
 	if (dlist_empty(&TQ))
 		return NULL;
-	
+
 	t = (struct timer *) TQ.next;
 	remaining.tv_usec	= (t->timeout.tv_usec - now.tv_usec);
 	remaining.tv_sec	= (t->timeout.tv_sec - now.tv_sec);
-	
+
 	if (remaining.tv_usec < 0)
 	{
 		remaining.tv_usec += 1000000;
 		remaining.tv_sec -= 1;
 	}
-	
+
 	return (&remaining);
 }
