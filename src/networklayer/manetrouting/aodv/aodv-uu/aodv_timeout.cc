@@ -136,6 +136,12 @@ void NS_CLASS local_repair_timeout(void *arg)
 	if (!rt)
 		return;
 
+    if (rt->state == IMMORTAL) {
+	DEBUG(LOG_DEBUG, 0, "Route %s is immortal!!!",
+	      ip_to_str(rt->dest_addr));
+	return;
+    }
+
 	rerr_dest.s_addr = AODV_BROADCAST;	/* Default destination */
 
     /* Unset the REPAIR flag */
@@ -199,6 +205,12 @@ void NS_CLASS route_expire_timeout(void *arg)
 	return;
     }
 
+    if (rt->state == IMMORTAL) {
+	DEBUG(LOG_DEBUG, 0, "Route %s is immortal!!!",
+	      ip_to_str(rt->dest_addr));
+	return;
+    }
+
     DEBUG(LOG_DEBUG, 0, "Route %s DOWN, seqno=%d",
 	  ip_to_str(rt->dest_addr), rt->dest_seqno);
 
@@ -222,6 +234,12 @@ void NS_CLASS route_delete_timeout(void *arg)
     if (!rt)
 	return;
 
+    if (rt->state == IMMORTAL) {
+	DEBUG(LOG_DEBUG, 0, "Route %s is immortal!!!",
+	      ip_to_str(rt->dest_addr));
+	return;
+    }
+
     DEBUG(LOG_DEBUG, 0, "%s", ip_to_str(rt->dest_addr));
 
     rt_table_delete(rt);
@@ -238,6 +256,13 @@ void NS_CLASS hello_timeout(void *arg)
 
     if (!rt)
 	return;
+
+    if (rt->state == IMMORTAL) {
+	DEBUG(LOG_DEBUG, 0, "Route %s is immortal!!!",
+	      ip_to_str(rt->dest_addr));
+	return;
+    }
+
 
     gettimeofday(&now, NULL);
 

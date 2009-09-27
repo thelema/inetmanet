@@ -491,6 +491,12 @@ int NS_CLASS rt_table_invalidate(rt_table_t * rt)
 	return -1;
     }
 
+    if (rt->state == IMMORTAL) {
+	DEBUG(LOG_DEBUG, 0, "Route %s is immortal!!!",
+	      ip_to_str(rt->dest_addr));
+	return -1;
+    }
+
     if (rt->hello_timer.used) {
 	DEBUG(LOG_DEBUG, 0, "last HELLO: %ld",
 	      timeval_diff(&now, &rt->last_hello_time));
