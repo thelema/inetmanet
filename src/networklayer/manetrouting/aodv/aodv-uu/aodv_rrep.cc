@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Authors: Erik Nordström, <erik.nordstrom@it.uu.se>
+ * Authors: Erik Nordstrï¿½m, <erik.nordstrom@it.uu.se>
  *
  *
  *****************************************************************************/
@@ -311,7 +311,7 @@ void NS_CLASS rrep_process(RREP * rrep, int rreplen, struct in_addr ip_src,
 		return;
 
         if (isLocalAddress(rrep_orig.s_addr))
-                DEBUG(LOG_DEBUG, 0, "rrep for us")
+                DEBUG(LOG_DEBUG, 0, "rrep for us");
 #endif
 
 	DEBUG(LOG_DEBUG, 0, "from %s about %s->%s",

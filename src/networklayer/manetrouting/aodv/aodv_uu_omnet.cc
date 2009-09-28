@@ -306,7 +306,7 @@ void NS_CLASS packetFailed(IPDatagram *dgram)
 	}
 
 
-	DEBUG(LOG_DEBUG, 0, "LINK FAILURE for next_hop=%s dest=%s uid=%d",ip_to_str(next_hop), ip_to_str(dest_addr), ch->uid());
+	DEBUG(LOG_DEBUG, 0, "LINK FAILURE for next_hop=%s dest=%s ",ip_to_str(next_hop), ip_to_str(dest_addr));
 
 	if (seek_list_find(dest_addr)) {
 		DEBUG(LOG_DEBUG, 0, "Ongoing route discovery, buffering packet...");
@@ -525,8 +525,8 @@ int NS_CLASS startAODVUUAgent()
 	/* Initialization complete */
 	initialized = 1;
 
-	DEBUG(LOG_DEBUG, 0, "Routing agent with IP = %s : %d started.",
-		  ip_to_str(DEV_NR(NS_DEV_NR).ipaddr), DEV_NR(NS_DEV_NR).ipaddr);
+	DEBUG(LOG_DEBUG, 0, "Routing agent with IP = %s  started.",
+		  ip_to_str(DEV_NR(NS_DEV_NR).ipaddr));
 
 	DEBUG(LOG_DEBUG, 0, "Settings:");
 	DEBUG(LOG_DEBUG, 0, "unidir_hack %s", unidir_hack ? "ON" : "OFF");

@@ -380,6 +380,7 @@ void NS_CLASS aodv_socket_send(AODV_msg * aodv_msg, struct in_addr dst,
 {
 
 	struct timeval now;
+	int retval = 0;
 	/* Rate limit stuff: */
 
 #ifdef OMNETPP

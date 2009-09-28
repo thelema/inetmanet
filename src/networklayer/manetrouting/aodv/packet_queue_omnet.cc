@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Authors: Erik Nordström, <erik.nordstrom@it.uu.se>
+ * Authors: Erik Nordstrï¿½m, <erik.nordstrom@it.uu.se>
  *
  *****************************************************************************/
 
@@ -123,8 +123,8 @@ void NS_CLASS packet_queue_add(cPacket * p, struct in_addr dest_addr)
 
 	PQ.len++;
 
-	DEBUG(LOG_INFO, 0, "buffered pkt to %s uid=%d qlen=%u",
-	  ip_to_str(dest_addr), ch->uid(), PQ.len);
+	DEBUG(LOG_INFO, 0, "buffered pkt to %s qlen=%u",
+	  ip_to_str(dest_addr), PQ.len);
 }
 
 int NS_CLASS packet_queue_set_verdict(struct in_addr dest_addr, int verdict)
