@@ -22,13 +22,14 @@
 #ifndef _DEBUG_H
 #define _DEBUG_H
 
-#ifndef  _WIN32
-#include <syslog.h>
-#else
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__) || defined(_WIN64)
 #define LOG_DEBUG 0
 #define LOG_NOTICE 0
 #define LOG_ERR 0
 #define LOG_WARNING 0
+#define LOG_INFO 0
+#else
+#include <syslog.h>
 #endif
 
 
