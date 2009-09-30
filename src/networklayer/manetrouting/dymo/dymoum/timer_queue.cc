@@ -20,6 +20,7 @@
 #define NS_PORT
 #define OMNETPP
 
+
 #ifdef NS_PORT
 #ifndef OMNETPP
 #include "ns/dymo_um.h"
@@ -37,6 +38,137 @@
 static DLIST_HEAD(TQ);
 #endif	/* NS_PORT */
 
+#if defined(OMNETPP) && defined(TIMERMAPLIST)
+
+int NS_CLASS timer_init(struct timer *t, timeout_func_t f, void *data)
+{
+	// Sanity check
+	if (t)
+	{
+		t->used		= 0;
+		t->handler	= f;
+		t->data		= data;
+		t->timeout.tv_sec	= 0;
+		t->timeout.tv_usec	= 0;
+		return 0;
+	}
+	return -1;
+}
+
+int NS_CLASS timer_is_queued(struct timer *t)
+{
+	if (t)
+		for (DymoTimerMap::iterator i = dymoTimerList.begin();i != dymoTimerList.end();i++)
+		{
+			if ((*i).second == t)return 1;
+		}
+	return 0;
+}
+
+int NS_CLASS timer_add(struct timer *t)
+{
+	// Sanity checks
+	if (!t || !t->handler)
+		return -1;
+
+	// If the timer is already in the queue we firstly remove it
+	if (t->used)
+		timer_remove(t);
+	t->used = 1;
+
+	simtime_t timeout = t->timeout.tv_sec;
+	timeout += ((double)(t->timeout.tv_usec)/1000000.0);
+
+	dymoTimerList.insert(std::make_pair(timeout,t));
+	return DLIST_SUCCESS;
+}
+
+int NS_CLASS timer_remove(struct timer *t)
+{
+	// Sanity check
+	if (!t)
+		return -1;
+
+	t->used = 0;
+	for (DymoTimerMap::iterator i = dymoTimerList.begin();i != dymoTimerList.end();i++)
+	{
+		if ((*i).second == t)
+		{
+			dymoTimerList.erase(i);
+			return DLIST_SUCCESS;
+		}
+	}
+	return DLIST_FAILURE;
+}
+
+int NS_CLASS timer_set_timeout(struct timer *t, long msec)
+{
+	// Sanity checks
+	if (!t || msec < 0)
+		return -1;
+
+	gettimeofday(&t->timeout, NULL);
+
+	t->timeout.tv_usec += msec * 1000;
+	t->timeout.tv_sec += t->timeout.tv_usec / 1000000;
+	t->timeout.tv_usec = t->timeout.tv_usec % 1000000;
+
+	return 0;
+}
+
+void NS_CLASS timer_timeout(struct timeval *now)
+{
+
+	while (!dymoTimerList.empty() && (timeval_diff(&(dymoTimerList.begin()->second->timeout), now) <= 0))
+	{
+		struct timer * t = dymoTimerList.begin()->second;
+		dymoTimerList.erase(dymoTimerList.begin());
+		if (t==NULL)
+			opp_error ("timer ower is bad");
+		else
+		{
+			if (t->handler)
+				(this->*t->handler)(t->data);
+		}
+	}
+}
+
+struct timeval *NS_CLASS timer_age_queue()
+{
+	struct timer *t;
+	static struct timeval remaining;
+	struct timeval now;
+	gettimeofday(&now, NULL);
+
+	while (!dymoTimerList.empty())
+	{
+		t = dymoTimerList.begin()->second;
+		if (t==NULL)
+			opp_error ("timer ower is bad");
+		if (timeval_diff(&(t->timeout), &now)>0)
+			break;
+		dymoTimerList.erase(dymoTimerList.begin());
+		if (t->handler)
+			(this->*t->handler)(t->data);
+	}
+
+	if (dymoTimerList.empty())
+		return NULL;
+
+	t = dymoTimerList.begin()->second;
+	if (timeval_diff(&(dymoTimerList.begin()->second->timeout), &now)<=0)
+		opp_error("Dymo Time queue error");
+	remaining.tv_usec	= (t->timeout.tv_usec - now.tv_usec);
+	remaining.tv_sec	= (t->timeout.tv_sec - now.tv_sec);
+	if (remaining.tv_usec < 0)
+	{
+		remaining.tv_usec += 1000000;
+		remaining.tv_sec -= 1;
+	}
+
+	return (&remaining);
+}
+#else
 int NS_CLASS timer_init(struct timer *t, timeout_func_t f, void *data)
 {
 	// Sanity check
@@ -209,3 +341,4 @@ struct timeval *NS_CLASS timer_age_queue()
 
 	return (&remaining);
 }
+#endif

@@ -60,7 +60,9 @@ void NS_CLASS dlog_fini()
 void NS_CLASS dlog(int pri, int errnum, const char *func, const char *format, ...)
 {
 	va_list ap;
-	char msg[256];
+	char msg[1024];
+
+	return;
 
 	memset(msg, 0, sizeof(msg));
 
@@ -77,14 +79,23 @@ void NS_CLASS dlog(int pri, int errnum, const char *func, const char *format, ..
 #ifndef OMNETPP
 	debug("node %s: %s: %s\n", ip2str(ra_addr_), func, msg);
 #else
-	ev << "node "<< ipNodeId->str() << " function " << func << "   " << msg << "\n";
+	EV << "node "<< nodeName << " function " << func << "   " << msg << "\n";
 #endif
 #endif
 }
+#ifdef OMNETPP
+const char *NS_CLASS ip2str(Uint128 &ipaddr)
+{
+	if (isInMacLayer())
+		return ipaddr.getMACAddress().str().c_str();
+	else
+		return ipaddr.getIPAddress().str().c_str();
 
+}
+
+#else
 char *NS_CLASS ip2str(u_int32_t ipaddr)
 {
-#ifndef OMNETPP
 #ifndef NS_PORT
 	struct in_addr addr;
 
@@ -93,8 +104,5 @@ char *NS_CLASS ip2str(u_int32_t ipaddr)
 #else
 	return Address::getInstance().print_nodeaddr(ipaddr);
 #endif
-#else
-	return NULL;
-#endif
-
 }
+#endif

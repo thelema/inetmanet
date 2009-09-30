@@ -59,7 +59,11 @@ void dlog_fini();
 void dlog(int pri, int errnum, const char *func,const char *format, ...);
 
 /* Return a string representing a given IP address */
+#ifdef OMNETPP
+const char *ip2str(Uint128 &ipaddr);
+#else
 char *ip2str(u_int32_t ipaddr);
+#endif
 
 #endif	/* NS_NO_DECLARATIONS */
 

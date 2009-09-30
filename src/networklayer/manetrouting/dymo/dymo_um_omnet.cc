@@ -255,14 +255,14 @@ DYMOUM::~ DYMOUM()
 	free(progname);
 
 	macToIpAdress.clear();
-	/*
-	while (!macToIpAdress.empty())
+
+	while (!dymoTimerList.empty())
 	{
-		MacToIpAddress::iterator i = macToIpAdress.begin();
-		// delete (*i).second;
-		macToIpAdress.erase(i);
+		DymoTimerMap::iterator i = dymoTimerList.begin();
+		delete (*i).second;
+		dymoTimerList.erase(i);
 	}
-	*/
+
 }
 
 /*

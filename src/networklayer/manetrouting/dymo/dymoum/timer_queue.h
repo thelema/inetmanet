@@ -33,6 +33,18 @@
 
 typedef void (NS_CLASS*timeout_func_t) (void *);
 
+#if defined(OMNETPP) && defined(TIMERMAPLIST)
+
+struct timer
+{
+	int		used;
+	struct timeval	timeout;
+	timeout_func_t	handler;
+	void		*data;
+};
+
+#else
+
 struct timer
 {
 	dlist_head_t	list_head;
@@ -41,6 +53,8 @@ struct timer
 	timeout_func_t	handler;
 	void		*data;
 };
+
+#endif
 
 NS_STATIC NS_INLINE long timeval_diff(struct timeval *t1, struct timeval *t2)
 {

@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (C) 2002 Uppsala University.
+ * Copyright (C) 2007 Malaga university
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Authors: Bj�n Wiberg <bjorn.wiberg@home.se>
+ * Authors: Alfonso Ariza Quintana
  *
  *****************************************************************************/
 
 #ifndef _DYMO_UM_OMNET_H
 #define _DYMO_UM_OMNET_H
+
+// This define activate the new queue timer
+//#define TIMERMAPLIST
 
 /* Constants for interface queue packet buffering/dropping */
 #define IFQ_BUFFER 0
@@ -135,8 +138,10 @@ private:
 	// cMessage messageEvent;
 
 	typedef std::map<mac_address, unsigned int> MacToIpAddress;
+	typedef std::multimap<simtime_t, struct timer*> DymoTimerMap;
 
 	MacToIpAddress macToIpAdress;
+	DymoTimerMap dymoTimerList;
 
 
 	char nodeName[50];
