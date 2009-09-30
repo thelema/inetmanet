@@ -116,7 +116,7 @@ void ManetRoutingBase::registerRoutingModule()
 	{
 		while ((token = tokenizer.nextToken())!=NULL)
 		{
-			for (int i = 0;i<interfaceVector.size();i++)
+			for (unsigned int i = 0;i<interfaceVector.size();i++)
 			{
 				name = interfaceVector[i].interfacePtr->getName();
 				if (strcmp(token,name)==0)
@@ -753,7 +753,7 @@ int ManetRoutingBase::gettimeofday(struct timeval *tv, struct timezone *tz)
 //
 int ManetRoutingBase::getWlanInterfaceIndexByAddress (Uint128 add)
 {
-	if (add==0)
+	if (add==(Uint128)0)
 		return interfaceVector[0].index;
 
 	for (unsigned int i=0;i<interfaceVector.size();i++)
@@ -777,7 +777,7 @@ int ManetRoutingBase::getWlanInterfaceIndexByAddress (Uint128 add)
 //
 InterfaceEntry * ManetRoutingBase::getInterfaceWlanByAddress(Uint128 add) const
 {
-	if (add==0)
+	if (add==(Uint128)0)
 		return interfaceVector[0].interfacePtr;
 
 	for (unsigned int i=0;i<interfaceVector.size();i++)
