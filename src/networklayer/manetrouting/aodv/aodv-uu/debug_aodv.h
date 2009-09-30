@@ -70,10 +70,10 @@ const char *state_to_str(u_int8_t state);
 #endif
 */
 
-//#ifdef DEBUG
-//#undef DEBUG
-//#endif
-#define DEBUG
+#ifdef DEBUG
+#undef DEBUG
+#endif
+//#define DEBUG
 
 #ifdef DEBUG
 #undef DEBUG
