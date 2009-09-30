@@ -997,7 +997,7 @@ bool  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const int &iface
 
 
 
-	if (!fwd_rt)
+	if (fwd_rt!=NULL)
 		rt_table_delete(fwd_rt);
 	if (add == (Uint128)0)
 		return true;
@@ -1014,7 +1014,7 @@ bool  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const char  *ifa
 	nextAddr.s_addr = add;
 	rt_table_t * fwd_rt = rt_table_find(destAddr);
 
-	if (!fwd_rt)
+	if (fwd_rt!=NULL)
 		rt_table_delete(fwd_rt);
 	if (add == (Uint128)0)
 		return true;
