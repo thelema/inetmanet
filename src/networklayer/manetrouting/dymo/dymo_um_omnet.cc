@@ -255,13 +255,7 @@ DYMOUM::~ DYMOUM()
 	free(progname);
 
 	macToIpAdress.clear();
-
-	while (!dymoTimerList.empty())
-	{
-		DymoTimerMap::iterator i = dymoTimerList.begin();
-		delete (*i).second;
-		dymoTimerList.erase(i);
-	}
+	dymoTimerList.clear();
 
 }
 
