@@ -96,6 +96,14 @@ void Ieee80211Mesh::initialize(int stage)
 		maxHopProactive = par("maxHopProactive");
 		maxHopReactive = par("maxHopReactive");
 
+		//
+		// cambio para evitar que puedan estar los dos protocolos simultaneamente
+		// cuidado con esto
+		//
+
+		if (useReactive)
+			useProactive = false;
+
 		if (useReactive && useProactive)
 		{
 			proactiveFeedback  = par("ProactiveFeedback");
@@ -120,6 +128,7 @@ void Ieee80211Mesh::initialize(int stage)
 		}
 
 		// Reactive protocol
+
 		if (useReactive)
 		{
 			moduleType = cModuleType::find("inet.networklayer.manetrouting.DYMOUM");
