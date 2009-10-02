@@ -398,12 +398,12 @@ void NS_CLASS handleMessage (cMessage *msg)
 				delete ctrl;
 			}
 
-
 			EV << "Aodv rec datagram  " << ipDgram->getName() << " with dest=" << ipDgram->getDestAddress().str() << "\n";
 			processPacket(ipDgram,ifindex);   // Data path
 		}
 		else if (control->getOptionCode()== MANET_ROUTE_UPDATE)
 		{
+			DEBUG(LOG_DEBUG, 0, "forwarding packers, actualize time outs");
  			src_addr.s_addr = control->getSrcAddress();
 			dest_addr.s_addr = control->getDestAddress();
 			rt_table_t * fwd_rt = rt_table_find(dest_addr);
