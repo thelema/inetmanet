@@ -409,6 +409,8 @@ void NS_CLASS handleMessage (cMessage *msg)
 			rt_table_t * fwd_rt = rt_table_find(dest_addr);
 			rt_table_t * rev_rt = rt_table_find(src_addr);
 			rt_table_update_route_timeouts(fwd_rt, rev_rt);
+			/* When forwarding data, make sure we are sending HELLO messages */
+			gettimeofday(&this_host.fwd_time, NULL);
 		}
 		delete msg;
 		scheduleNextEvent();
