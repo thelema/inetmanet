@@ -179,6 +179,12 @@ void Ieee80211Mesh::handleMessage(cMessage *msg)
         // process incoming frame
         EV << "Frame arrived from MAC: " << msg << "\n";
         Ieee80211DataOrMgmtFrame *frame = check_and_cast<Ieee80211DataOrMgmtFrame *>(msg);
+        if (routingModuleReactive && frame)
+        {
+        	uint64_t src = MacToUint64(frame->getAddress3());
+        	uint64_t prev = MacToUint64(frame->getTransmitterAddress());
+        	routingModuleReactive->setRefreshRoute(src,0,0,prev);
+        }
         processFrame(frame);
     }
 	//else if (msg->arrivedOn("agentIn"))
@@ -1882,3 +1888,17 @@ cPacket *Ieee80211Mesh::decapsulate(Ieee80211DataFrame *frame)
     return payload;
 }
 
+void Ieee80211Mesh::sendOrEnqueue(cPacket *frame)
+{
+	if (routingModuleReactive)
+	{
+		Ieee80211DataFrame * framedata = dynamic_cast<Ieee80211DataFrame*> (frame);
+		if (framedata)
+		{
+			uint64_t dest = MacToUint64(framedata->getAddress4());
+			uint64_t next = MacToUint64(framedata->getReceiverAddress());
+			routingModuleReactive->setRefreshRoute(0,dest,next,0);
+		}
+	}
+    PassiveQueueBase::handleMessage(frame);
+}

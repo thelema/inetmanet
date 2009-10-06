@@ -1298,11 +1298,14 @@ void DYMOUM::setRefreshRoute(const Uint128 &src,const Uint128 &dest,const Uint12
 		struct in_addr dest_addr, src_addr, next_hop;
 	 	src_addr.s_addr = src;
 		dest_addr.s_addr = dest;
+		rtable_entry_t *rev_rt = NULL;
+		rtable_entry_t *fwd_rt = NULL;
+		if (src==(Uint128)0)
+			rev_rt	= rtable_find(src_addr);
+		if (dest==(Uint128)0)
+			fwd_rt	= rtable_find(dest_addr);
 
-		rtable_entry_t *rev_rt	= rtable_find(src_addr);
-		rtable_entry_t *fwd_rt	= rtable_find(dest_addr);
-
-		if (!rev_rt)
+		if (!rev_rt && prev!=(Uint128)0)
 		{
 		// Gratuitous Return Path
 
