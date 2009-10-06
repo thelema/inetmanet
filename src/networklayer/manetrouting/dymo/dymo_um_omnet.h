@@ -53,7 +53,7 @@
 /* System-dependent datatypes */
 /* Needed by some network-related datatypes */
 #include "ManetRoutingBase.h"
-
+#include "Ieee80211Frame_m.h"
 #include "dymoum/dlist.h"
 #include "dymo_msg_struct.h"
 #include "IPDatagram.h"
@@ -199,6 +199,7 @@ public:
 	DYMOUM(){attachPacket=false; is_init =false; log_file_fd_init=false;ipNodeId=NULL;gateWayAddress=NULL;numInterfacesActive=0;timer_elem=0;sendMessageEvent = new cMessage();/*&messageEvent;*/}
 	~DYMOUM();
 	void packetFailed(IPDatagram *);
+	void packetFailedMac(Ieee80211DataFrame *);
 	virtual std::string detailedInfo() const;
 
 	// Routing information access

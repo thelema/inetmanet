@@ -29,7 +29,8 @@
 #include "RoutingTableAccess.h"
 #include "InterfaceTableAccess.h"
 #include "Coord.h"
-
+#include "ControlInfoBreakLink_m.h"
+#include "Ieee80211Frame_m.h"
 
 #define IP_DEF_TTL 32
 #define UDP_HDR_LEN	8
@@ -702,7 +703,19 @@ void ManetRoutingBase::receiveChangeNotification(int category, const cPolymorphi
 	{
 		if (details==NULL)
 			return;
-		processLinkBreak(details);
+		Ieee80211DataFrame *frame  = check_and_cast<Ieee80211DataFrame *>(details);
+		if (!mac_layer_ && frame->getEncapsulatedMsg())
+		{
+			cMessage *pkt = frame->getEncapsulatedMsg()->dup();
+			ControlInfoBreakLink *add = new ControlInfoBreakLink;
+			add->setDest(frame->getTransmitterAddress());
+			pkt->setControlInfo(add);
+			processLinkBreak(details);
+			delete pkt;
+	    }
+		else
+			processLinkBreak(details);
+
 	}
 	else if (category == NF_LINK_PROMISCUOUS)
 	{

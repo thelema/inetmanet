@@ -825,13 +825,24 @@ void DYMOUM::processLinkBreak (const cPolymorphic *details)
 {
 	IPDatagram	*dgram=NULL;
 	if (dynamic_cast<IPDatagram *>(const_cast<cPolymorphic*> (details)))
-		dgram = check_and_cast<IPDatagram *>(details);
+	{
+		dgram = check_and_cast<IPDatagram *>(const_cast<cPolymorphic*>(details));
+		if (hello_ival<=0)
+		{
+		     	packetFailed(dgram);
+		}
+	}
+	else if (dynamic_cast<Ieee80211DataFrame *>(const_cast<cPolymorphic*> (details)))
+	{
+		Ieee80211DataFrame *frame = dynamic_cast<Ieee80211DataFrame *>(const_cast<cPolymorphic*>(details));
+		if (hello_ival<=0)
+		{
+		     	packetFailedMac(frame);
+		}
+	}
 	else
 		return;
-	if (hello_ival<=0)
-	{
-	     	packetFailed(dgram);
-	}
+
 }
 
 void DYMOUM::processPromiscuous(const cPolymorphic *details)
@@ -1182,6 +1193,34 @@ void DYMOUM::packetFailed(IPDatagram *dgram)
 	}
 	else
 		omnet_chg_rte(dest_addr,dest_addr, dest_addr,0,true);
+	scheduleNextEvent();
+}
+
+/* Called for packets whose delivery fails at the link layer */
+void DYMOUM::packetFailedMac(Ieee80211DataFrame *dgram)
+{
+	struct in_addr dest_addr, src_addr, next_hop;
+	if (dgram->getReceiverAddress().isBroadcast())
+		return;
+
+	next_hop.s_addr = dgram->getReceiverAddress();
+
+	dlist_head_t *pos;
+	int count = 0;
+
+	dlist_for_each(pos, &rtable.l)
+	{
+		rtable_entry_t *entry = (rtable_entry_t *) pos;
+		if (entry->rt_nxthop_addr.s_addr == next_hop.s_addr &&
+			entry->rt_ifindex == NS_IFINDEX)
+		{
+#ifdef RERRPACKETFAILED
+			rerr_send(entry->rt_dest_addr, NET_DIAMETER, entry);
+#endif
+			count += rtable_expire_timeout(entry);
+		}
+	}
+	/* We don't care about link failures for broadcast or non-data packets */
 	scheduleNextEvent();
 }
 

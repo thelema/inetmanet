@@ -21,7 +21,6 @@
 #include "IInterfaceTable.h"
 #include "InterfaceTableAccess.h"
 #include "PhyControlInfo_m.h"
-#include "ControlInfoBreakLink_m.h"
 
 Define_Module(Ieee80211Mac);
 
@@ -1032,17 +1031,7 @@ void Ieee80211Mac::finishCurrentTransmission()
 void Ieee80211Mac::giveUpCurrentTransmission()
 {
     Ieee80211DataOrMgmtFrame *temp = (Ieee80211DataOrMgmtFrame*) transmissionQueue.front();
-    cMessage *pkt = temp->decapsulate();
-
-    if (pkt!=NULL)
-    {
-       ControlInfoBreakLink *add = new ControlInfoBreakLink;
-       add->setDest(temp->getTransmitterAddress());
-       pkt->setControlInfo(add);
-       nb->fireChangeNotification(NF_LINK_BREAK, pkt);
-       delete pkt;
-    }
-
+    nb->fireChangeNotification(NF_LINK_BREAK, temp);
     popTransmissionQueue();
     resetStateVariables();
 

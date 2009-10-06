@@ -731,8 +731,9 @@ void DSRUU::receiveChangeNotification(int category, const cPolymorphic *details)
     if (category == NF_LINK_BREAK)
     {
 		Enter_Method("Dsr Link Break");
-		if (dynamic_cast<IPDatagram *>(const_cast<cPolymorphic*>(details)))
-			dgram = check_and_cast<IPDatagram *>(details);
+		Ieee80211DataFrame *frame  = check_and_cast<Ieee80211DataFrame *>(details);
+		if (dynamic_cast<IPDatagram *>(frame->getEncapsulatedMsg()))
+			dgram = check_and_cast<IPDatagram *>(frame->getEncapsulatedMsg());
 		else
 			return;
 		if (!get_confval(UseNetworkLayerAck))
