@@ -304,6 +304,11 @@ void UDPBasicBurst2::handleMessage(cMessage *msg)
 
 void UDPBasicBurst2::processPacket(cPacket *msg)
 {
+	if (msg->getKind()== UDP_I_ERROR)
+	{
+		delete msg;
+		return;
+	}
     if (msg->hasPar("sourceId"))
     {
     // duplicate control
