@@ -1184,7 +1184,7 @@ void DYMOUM::packetFailed(IPDatagram *dgram)
 
 		dlist_head_t *pos;
 		int count = 0;
-
+#ifndef MAPROUTINGTABLE
 		dlist_for_each(pos, &rtable.l)
 		{
 			rtable_entry_t *entry = (rtable_entry_t *) pos;
@@ -1197,8 +1197,16 @@ void DYMOUM::packetFailed(IPDatagram *dgram)
 				count += rtable_expire_timeout(entry);
 			}
 		}
-
-
+#else
+		for (DymoRoutingTable::iterator it = dymoRoutingTable.begin();it != dymoRoutingTable.end();it++)
+		{
+				entry = it->second;
+#ifdef RERRPACKETFAILED
+				rerr_send(entry->rt_dest_addr, NET_DIAMETER, entry);
+#endif
+				count += rtable_expire_timeout(entry);
+		}
+#endif
 	}
 	else
 		omnet_chg_rte(dest_addr,dest_addr, dest_addr,0,true);
@@ -1210,25 +1218,43 @@ void DYMOUM::packetFailedMac(Ieee80211DataFrame *dgram)
 {
 	struct in_addr dest_addr, src_addr, next_hop;
 	if (dgram->getReceiverAddress().isBroadcast())
+	{
+		scheduleNextEvent();
 		return;
+	}
 
-	next_hop.s_addr = dgram->getReceiverAddress();
+	src_addr.s_addr = dgram->getAddress3();
+	dest_addr.s_addr = dgram->getAddress4();
 
 	dlist_head_t *pos;
 	int count = 0;
-
-	dlist_for_each(pos, &rtable.l)
+	rtable_entry_t *rt = rtable_find(dest_addr);
+	if (rt)
 	{
-		rtable_entry_t *entry = (rtable_entry_t *) pos;
-		if (entry->rt_nxthop_addr.s_addr == next_hop.s_addr &&
-			entry->rt_ifindex == NS_IFINDEX)
+		next_hop.s_addr = rt->rt_nxthop_addr.s_addr;
+#ifndef MAPROUTINGTABLE
+		dlist_for_each(pos, &rtable.l)
 		{
+			rtable_entry_t *entry = (rtable_entry_t *) pos;
+			if (entry->rt_nxthop_addr.s_addr == next_hop.s_addr)
+			{
 #ifdef RERRPACKETFAILED
-			rerr_send(entry->rt_dest_addr, NET_DIAMETER, entry);
+				rerr_send(entry->rt_dest_addr, NET_DIAMETER, entry);
 #endif
-			count += rtable_expire_timeout(entry);
+				count += rtable_expire_timeout(entry);
+			}
 		}
-	}
+#else
+		for (DymoRoutingTable::iterator it = dymoRoutingTable.begin();it != dymoRoutingTable.end();it++)
+		{
+				entry = it->second;
+#ifdef RERRPACKETFAILED
+				rerr_send(entry->rt_dest_addr, NET_DIAMETER, entry);
+#endif
+				count += rtable_expire_timeout(entry);
+		}
+#endif
+    }
 	/* We don't care about link failures for broadcast or non-data packets */
 	scheduleNextEvent();
 }
@@ -1236,8 +1262,6 @@ void DYMOUM::packetFailedMac(Ieee80211DataFrame *dgram)
 
 void DYMOUM::finish()
 {
-
-
     simtime_t t = simTime();
     packet_queue_destroy();
 

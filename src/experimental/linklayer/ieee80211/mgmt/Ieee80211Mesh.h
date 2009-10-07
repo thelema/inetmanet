@@ -130,8 +130,6 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 
     virtual bool isUpperLayer(cMessage *);
     virtual cPacket * decapsulate(Ieee80211DataFrame *frame);
-
-    virtual void sendOrEnqueue(cPacket *);
 };
 
 #endif

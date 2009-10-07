@@ -176,14 +176,23 @@ void Ieee80211Mesh::handleMessage(cMessage *msg)
     //if (msg->arrivedOn("macIn"))
 	if (strstr(gateName,"macIn")!=NULL)
     {
-        // process incoming frame
-        EV << "Frame arrived from MAC: " << msg << "\n";
-        Ieee80211DataOrMgmtFrame *frame = check_and_cast<Ieee80211DataOrMgmtFrame *>(msg);
+		// process incoming frame
+		EV << "Frame arrived from MAC: " << msg << "\n";
+        Ieee80211DataFrame *frame = dynamic_cast<Ieee80211DataFrame *>(msg);
         if (routingModuleReactive && frame)
         {
         	uint64_t src = MacToUint64(frame->getAddress3());
-        	uint64_t prev = MacToUint64(frame->getTransmitterAddress());
-        	routingModuleReactive->setRefreshRoute(src,0,0,prev);
+        	uint64_t dest = MacToUint64(frame->getAddress4());
+        	Uint128 next;
+        	int iface;
+        	if (routingModuleReactive->getNextHop(dest,next,iface))
+        	{
+        		ControlManetRouting *ctrlmanet = new ControlManetRouting();
+        		ctrlmanet->setOptionCode(MANET_ROUTE_UPDATE);
+        		ctrlmanet->setDestAddress(dest);
+        		ctrlmanet->setSrcAddress(src);
+        		send(ctrlmanet,"routingOutReactive");
+        	}
         }
         processFrame(frame);
     }
@@ -467,6 +476,25 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg)
 
     if (frame->getReceiverAddress().isUnspecified())
            ASSERT(!frame->getReceiverAddress().isUnspecified());
+
+
+    if (routingModuleReactive )
+    {
+    	uint64_t src = MacToUint64(frame->getAddress3());
+    	uint64_t dest = MacToUint64(frame->getAddress4());
+    	Uint128 next;
+    	int iface;
+     	if (routingModuleReactive->getNextHop(dest,next,iface))
+    	{
+    		//routingModuleReactive->setRefreshRoute(src,0,0,prev);
+    		ControlManetRouting *ctrlmanet = new ControlManetRouting();
+    		ctrlmanet->setOptionCode(MANET_ROUTE_UPDATE);
+    		ctrlmanet->setDestAddress(dest);
+    		ctrlmanet->setSrcAddress(src);
+    		send(ctrlmanet,"routingOutReactive");
+    	}
+    }
+
 	return frame;
 }
 
@@ -1891,17 +1919,3 @@ cPacket *Ieee80211Mesh::decapsulate(Ieee80211DataFrame *frame)
     return payload;
 }
 
-void Ieee80211Mesh::sendOrEnqueue(cPacket *frame)
-{
-	if (routingModuleReactive)
-	{
-		Ieee80211DataFrame * framedata = dynamic_cast<Ieee80211DataFrame*> (frame);
-		if (framedata)
-		{
-			uint64_t dest = MacToUint64(framedata->getAddress4());
-			uint64_t next = MacToUint64(framedata->getReceiverAddress());
-			routingModuleReactive->setRefreshRoute(0,dest,next,0);
-		}
-	}
-    PassiveQueueBase::handleMessage(frame);
-}
