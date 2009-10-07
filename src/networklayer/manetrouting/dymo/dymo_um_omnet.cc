@@ -1171,7 +1171,7 @@ void DYMOUM::packetFailed(IPDatagram *dgram)
 		scheduleNextEvent();
 		return;
 	}
-	ev << "LINK FAILURE for dest=" << dgram->getSrcAddress();
+	ev << "LINK FAILURE for dest=" << dgram->getDestAddress();
 	rt = rtable_find(dest_addr);
 	if (rt)
 	{

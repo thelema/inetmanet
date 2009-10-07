@@ -708,7 +708,7 @@ void ManetRoutingBase::receiveChangeNotification(int category, const cPolymorphi
 		{
 			cMessage *pkt = frame->getEncapsulatedMsg()->dup();
 			ControlInfoBreakLink *add = new ControlInfoBreakLink;
-			add->setDest(frame->getTransmitterAddress());
+			add->setDest(frame->getReceiverAddress());
 			pkt->setControlInfo(add);
 			processLinkBreak(details);
 			delete pkt;

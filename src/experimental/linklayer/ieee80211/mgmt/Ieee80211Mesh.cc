@@ -499,9 +499,10 @@ void Ieee80211Mesh::receiveChangeNotification(int category, const cPolymorphic *
 
 	if (category == NF_LINK_BREAK)
 	{
-		cMessage *msg  = check_and_cast<cMessage*>(details);
-		ControlInfoBreakLink *info = (ControlInfoBreakLink*) msg->getControlInfo();
-		MACAddress add = info->getDest();
+		if (details==NULL)
+			return;
+		Ieee80211DataFrame *frame  = check_and_cast<Ieee80211DataFrame *>(details);
+		MACAddress add = frame->getReceiverAddress();
 		mplsBreakMacLink(add);
 	}
 	else if (category == NF_LINK_REFRESH)

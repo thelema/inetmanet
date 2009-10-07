@@ -835,7 +835,7 @@ void NS_CLASS re_answer(RE *re,u_int32_t ifindex)
 			entry			= rtable_find(node_addr);
 			if (entry)
 			{
-				if (entry->rt_hopcnt>i+1)
+				if (entry->rt_hopcnt>i+1 || entry->rt_hopcnt==0)
 				{
 					rtable_update(entry,node_addr,next_addr,ifindex,0,0,i+1,0);
 				}
