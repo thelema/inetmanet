@@ -297,7 +297,16 @@ void DYMOUM::handleMessage (cMessage *msg)
 				if (msgAux)
 					processMacPacket(PK(msgAux),control->getDestAddress(),control->getSrcAddress(),NS_IFINDEX);
 				else
+				{
+					if (!isLocalAddress(control->getSrcAddress()))
+					{
+						struct in_addr dest_addr;
+						dest_addr.s_addr = control->getDestAddress();
+						rtable_entry_t *entry	= rtable_find(dest_addr);
+						rerr_send(dest_addr, NET_DIAMETER, entry);
+					}
 					delete control;
+				}
 			}
 			else
 			{
@@ -1300,6 +1309,7 @@ void DYMOUM::setRefreshRoute(const Uint128 &src,const Uint128 &dest,const Uint12
 		dest_addr.s_addr = dest;
 		rtable_entry_t *rev_rt = NULL;
 		rtable_entry_t *fwd_rt = NULL;
+		bool change = false;
 		if (src==(Uint128)0)
 			rev_rt	= rtable_find(src_addr);
 		if (dest==(Uint128)0)
@@ -1321,26 +1331,43 @@ void DYMOUM::setRefreshRoute(const Uint128 &src,const Uint128 &dest,const Uint12
 				0,	// prefix
 				0,	// hop count
 				0);	// is gw
+			change = true;
 		}
 		if (gtw!=0)
 		{
 			if ((fwd_rt &&(fwd_rt->rt_nxthop_addr.s_addr==gtw))|| (rev_rt&&(rev_rt->rt_nxthop_addr.s_addr==gtw)))
 			{
 				if (fwd_rt)
+				{
 					rtable_update_timeout(fwd_rt);
+					change = true;
+				}
 				if (rev_rt)
+				{
 					rtable_update_timeout(rev_rt);
+					change = true;
+				}
 			}
 		}
 		else
 		{
 			if (fwd_rt)
+			{
 				rtable_update_timeout(fwd_rt);
+				change = true;
+			}
 			if (rev_rt)
+			{
 				rtable_update_timeout(rev_rt);
+				change = true;
+			}
 		}
-
-
+		/* We don't care about link failures for broadcast or non-data packets */
+		if (change)
+		{
+			Enter_Method_Silent();
+			scheduleNextEvent();
+		}
 }
 
 bool DYMOUM::isOurType(cPacket * msg)

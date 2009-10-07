@@ -44,6 +44,8 @@
 #include <arpa/inet.h>
 #endif	/* NS_PORT */
 
+#ifndef MAPROUTINGTABLE
+
 void NS_CLASS rtable_init()
 {
 	INIT_DLIST_HEAD(&rtable.l);
@@ -311,4 +313,234 @@ int NS_CLASS rtable_expire_timeout_all(struct in_addr nxthop_addr, u_int32_t ifi
 }
 
 
+#else
+
+// Map routing table
+
+void NS_CLASS rtable_init()
+{
+	dymoRoutingTable.clear();
+}
+
+void NS_CLASS rtable_destroy()
+{
+
+	while (!dymoRoutingTable.empty())
+	{
+		if (dymoRoutingTable.begin()->second)
+		{
+			delete dymoTimerList.begin()->second;
+		}
+		dymoRoutingTable.erase(dymoRoutingTable.begin());
+	}
+}
+
+rtable_entry_t *NS_CLASS rtable_find(struct in_addr dest_addr)
+{
+	DymoRoutingTable::iterator it = dymoRoutingTable.find(dest_addr.s_addr);
+	if (it != dymoRoutingTable.end())
+	{
+		if ((*it).second)
+		{
+			return (*it).second;
+		}
+	}
+	return NULL;
+}
+
+rtable_entry_t *NS_CLASS rtable_insert(struct in_addr dest_addr,
+			struct in_addr nxthop_addr,
+			u_int32_t ifindex,
+			u_int32_t seqnum,
+			u_int8_t prefix,
+			u_int8_t hopcnt,
+			u_int8_t is_gw)
+{
+	rtable_entry_t *entry;
+	struct in_addr netmask;
+
+	// Create the new entry
+	if ((entry = (rtable_entry_t *) malloc(sizeof(rtable_entry_t)))
+		== NULL)
+	{
+		dlog(LOG_ERR, errno, __FUNCTION__, "malloc() failed");
+		exit(EXIT_FAILURE);
+	}
+	memset(entry, 0, sizeof(rtable_entry_t));
+
+	entry->rt_ifindex	= ifindex;
+	entry->rt_seqnum	= seqnum;
+	entry->rt_prefix	= prefix;
+	entry->rt_hopcnt	= hopcnt;
+	entry->rt_is_gw		= is_gw;
+	entry->rt_is_used	= 0;
+	entry->rt_state		= RT_VALID;
+	netmask.s_addr		= 0;
+	entry->rt_dest_addr.s_addr	= dest_addr.s_addr;
+	entry->rt_nxthop_addr.s_addr	= nxthop_addr.s_addr;
+
+	timer_init(&entry->rt_validtimer, &NS_CLASS route_valid_timeout, entry);
+	timer_set_timeout(&entry->rt_validtimer, ROUTE_TIMEOUT);
+	timer_add(&entry->rt_validtimer);
+
+	timer_init(&entry->rt_deltimer, &NS_CLASS route_del_timeout, entry);
+	/*timer_set_timeout(&entry->rt_deltimer, ROUTE_DELETE_TIMEOUT);
+	timer_add(&entry->rt_deltimer);*/
+
+	// Add the entry to the routing table
+
+	dymoRoutingTable.insert(std::make_pair(dest_add.s_addr,entry));
+	/* Add route to omnet inet routing table ... */
+	netmask.s_addr = IPAddress((uint32_t)nxthop_addr.s_addr).getNetworkMask().getInt();
+    if (useIndex)
+    	omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,ifindex);
+    else
+    	omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,DEV_NR(ifindex).ipaddr);
+	// If there are buffered packets for this destination
+	// now we send them
+	if (pending_rreq_remove(pending_rreq_find(dest_addr)))
+	{
+		packet_queue_set_verdict(dest_addr, PQ_SEND);
+	}
+	return entry;
+}
+
+rtable_entry_t *NS_CLASS rtable_update(rtable_entry_t *entry,
+			struct in_addr dest_addr,
+			struct in_addr nxthop_addr,
+			u_int32_t ifindex,
+			u_int32_t seqnum,
+			u_int8_t prefix,
+			u_int8_t hopcnt,
+			u_int8_t is_gw)
+{
+
+	struct in_addr netmask;
+	/* Add route to omnet inet routing table ... */
+	netmask.s_addr = IPAddress((uint32_t)nxthop_addr.s_addr).getNetworkMask().getInt();
+	if (useIndex)
+		omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,ifindex);
+	else
+		omnet_chg_rte(dest_addr, nxthop_addr, netmask, hopcnt,false,DEV_NR(ifindex).ipaddr);
+
+	timer_remove(&entry->rt_validtimer);
+	timer_remove(&entry->rt_deltimer);
+
+	entry->rt_ifindex	= ifindex;
+	entry->rt_seqnum	= seqnum;
+	entry->rt_prefix	= prefix;
+	entry->rt_hopcnt	= hopcnt;
+	entry->rt_is_gw		= is_gw;
+	entry->rt_state		= RT_VALID;
+	if (entry->rt_dest_addr.s_addr	!= dest_addr.s_addr)
+	{
+		DymoRoutingTable::iterator it = dymoRoutingTable.find(entry->rt_dest_addr.s_addr);
+		if (it != dymoRoutingTable.end())
+			dymoRoutingTable.erase(it);
+		entry->rt_dest_addr.s_addr	= dest_addr.s_addr;
+		dymoRoutingTable.insert(std::make_pair(dest_add.s_addr,entry));
+	}
+
+	entry->rt_nxthop_addr.s_addr	= nxthop_addr.s_addr;
+
+	timer_set_timeout(&entry->rt_validtimer, ROUTE_TIMEOUT);
+	timer_add(&entry->rt_validtimer);
+
+	/*timer_set_timeout(&entry->rt_deltimer, ROUTE_DELETE_TIMEOUT);
+	timer_add(&entry->rt_deltimer);*/
+//	timer_remove(&entry->rt_deltimer);
+	// If there are buffered packets for this destination
+	// now we send them
+	if (pending_rreq_remove(pending_rreq_find(dest_addr)))
+	{
+		packet_queue_set_verdict(dest_addr, PQ_SEND);
+	}
+	return entry;
+}
+
+void NS_CLASS rtable_delete(rtable_entry_t *entry)
+{
+	if (!entry)
+		return;
+
+	struct in_addr netmask;
+	/* delete route in the omnet inet routing table ... */
+	omnet_chg_rte(entry->rt_dest_addr,entry->rt_nxthop_addr, netmask,0,true);
+	timer_remove(&entry->rt_deltimer);
+	timer_remove(&entry->rt_validtimer);
+	DymoRoutingTable::iterator it = dymoRoutingTable.find(entry->rt_dest_addr.s_addr);
+	if (it != dymoRoutingTable.end())
+	{
+		if ((*it).second == entry)
+		{
+			dymoRoutingTable.erase(it);
+		}
+		else
+			opp_error("Error in dymo routing table");
+
+	}
+	free(entry);
+}
+
+void NS_CLASS rtable_invalidate(rtable_entry_t *entry)
+{
+	if (!entry)
+		return;
+
+
+	struct in_addr netmask;
+	/* delete route in the omnet inet routing table ... */
+	omnet_chg_rte(entry->rt_dest_addr,entry->rt_nxthop_addr, netmask, 0,true);
+	entry->rt_state = RT_INVALID;
+
+	timer_set_timeout(&entry->rt_deltimer, ROUTE_DELETE_TIMEOUT);
+	timer_add(&entry->rt_deltimer);
+}
+
+int NS_CLASS rtable_update_timeout(rtable_entry_t *entry)
+{
+	if (entry && entry->rt_state == RT_VALID) // this comparison seems ok
+	{
+		timer_set_timeout(&entry->rt_validtimer, ROUTE_TIMEOUT);
+		timer_add(&entry->rt_validtimer);
+
+		/*timer_set_timeout(&entry->rt_deltimer, ROUTE_DELETE_TIMEOUT);
+		timer_add(&entry->rt_deltimer);*/
+
+		// Mark the entry as used
+		entry->rt_is_used = 1;
+
+		return 1;
+	}
+	return 0;
+}
+
+int NS_CLASS rtable_expire_timeout(rtable_entry_t *entry)
+{
+	if (!entry)
+		return 0;
+
+	timer_set_timeout(&entry->rt_validtimer, 0);
+	timer_add(&entry->rt_validtimer);
+
+	return 1;
+}
+
+int NS_CLASS rtable_expire_timeout_all(struct in_addr nxthop_addr, u_int32_t ifindex)
+{
+	dlist_head_t *pos;
+	int count = 0;
+
+	dlist_for_each(pos, &rtable.l)
+	{
+		rtable_entry_t *entry = (rtable_entry_t *) pos;
+		if (entry->rt_nxthop_addr.s_addr == nxthop_addr.s_addr &&
+			entry->rt_ifindex == ifindex)
+			count += rtable_expire_timeout(entry);
+	}
+
+	return count;
+}
+
+#endif
 

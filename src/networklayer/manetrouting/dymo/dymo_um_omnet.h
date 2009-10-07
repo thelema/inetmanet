@@ -25,6 +25,8 @@
 
 // This define activate the new queue timer
 //#define TIMERMAPLIST
+// This define activate the new routing table
+// #define MAPROUTINGTABLE
 
 /* Constants for interface queue packet buffering/dropping */
 #define IFQ_BUFFER 0
@@ -139,9 +141,11 @@ private:
 
 	typedef std::map<mac_address, unsigned int> MacToIpAddress;
 	typedef std::multimap<simtime_t, struct timer*> DymoTimerMap;
+	typedef std::map<Uint128, rtable_entry_t *> DymoRoutingTable;
 
 	MacToIpAddress macToIpAdress;
 	DymoTimerMap dymoTimerList;
+	DymoRoutingTable dymoRoutingTable;
 
 
 	char nodeName[50];
