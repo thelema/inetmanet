@@ -480,7 +480,11 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg,MACAddress dest)
    frame->encapsulate(msg);
 
    if (frame->getReceiverAddress().isUnspecified())
-     opp_error ("Ieee80211Mesh::encapsulate Bad Address");
+   {
+	   char name[50];
+	   strcpy(name,msg->getName());
+	   opp_error ("Ieee80211Mesh::encapsulate Bad Address");
+   }
    return frame;
 }
 
@@ -738,10 +742,14 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 
 			mpls_pk_ptr->setLabel(usedOutLabel);
 			frame->setReceiverAddress(nextMacAddress);
+			frame->setAddress4(mpls_pk_ptr->getDest());
+			frame->setAddress3(mpls_pk_ptr->getSource());
+
 			label_in = usedIntLabel;
 
 			if (mpls_pk_ptr->getControlInfo())
 				delete mpls_pk_ptr->removeControlInfo();
+
 			frame->encapsulate(mpls_pk_ptr);
 			if (frame->getReceiverAddress().isUnspecified())
 				ASSERT(!frame->getReceiverAddress().isUnspecified());
@@ -773,19 +781,19 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 					if (dist==0)
 					{
 		// Destination unreachable
+						if (routingModuleReactive)
+						{
+							ControlManetRouting *ctrlmanet = new ControlManetRouting();
+							ctrlmanet->setOptionCode(MANET_ROUTE_NOROUTE);
+							ctrlmanet->setDestAddress(mpls_pk_ptr->getDest());
+							ctrlmanet->setSrcAddress(mpls_pk_ptr->getSource());
+							send(ctrlmanet,"routingOutReactive");
+						}
 						mplsData->deleteForwarding(forwarding_ptr);
 						delete mpls_pk_ptr;
 						return;
 					}
 					forwarding_ptr->mac_address=MacToUint64(add[0]);
-					if (routingModuleReactive)
-					{
-						Uint128 src(mpls_pk_ptr->getSource());
-						Uint128 dst(mpls_pk_ptr->getDest());
-						Uint128 prev(sta_addr);
-
-						routingModuleReactive->setRefreshRoute(src,dst,add[0],prev);
-					}
 				}
 				else
 				{
@@ -820,16 +828,17 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 						if (dist==0)
 						{
 						// Destination unreachable
+							if (routingModuleReactive)
+							{
+								ControlManetRouting *ctrlmanet = new ControlManetRouting();
+								ctrlmanet->setOptionCode(MANET_ROUTE_NOROUTE);
+								ctrlmanet->setDestAddress(mpls_pk_ptr->getDest());
+								ctrlmanet->setSrcAddress(mpls_pk_ptr->getSource());
+								send(ctrlmanet,"routingOutReactive");
+							}
 							mplsData->deleteForwarding(forwarding_ptr);
 							delete mpls_pk_ptr;
 							return;
-						}
-						if (routingModuleReactive)
-						{
-							Uint128 src(mpls_pk_ptr->getSource());
-							Uint128 dst(mpls_pk_ptr->getDest());
-							Uint128 prev(sta_addr);
-							routingModuleReactive->setRefreshRoute(src,dst,add[0],prev);
 						}
 						forwarding_ptr->mac_address=MacToUint64(add[0]);
 						mpls_pk_ptr->setVectorAddressArraySize(0);
@@ -845,19 +854,13 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 			mpls_pk_ptr->setLabelReturn(0);
 			Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
 			frame->setReceiverAddress(Uint64ToMac(forwarding_ptr->mac_address));
-
-			if (routingModuleReactive)
-			{
-				Uint128 src(mpls_pk_ptr->getSource());
-				Uint128 dst(mpls_pk_ptr->getDest());
-				Uint128 next(forwarding_ptr->mac_address);
-				Uint128 prev(sta_addr);
-				routingModuleReactive->setRefreshRoute(src,dst,next,prev);
-			}
-
+			frame->setAddress4(mpls_pk_ptr->getDest());
+			frame->setAddress3(mpls_pk_ptr->getSource());
 
 			if (mpls_pk_ptr->getControlInfo())
 				delete mpls_pk_ptr->removeControlInfo();
+
+
 			frame->encapsulate(mpls_pk_ptr);
 			if (frame->getReceiverAddress().isUnspecified())
 				ASSERT(!frame->getReceiverAddress().isUnspecified());
@@ -925,6 +928,15 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 			if (dist==0)
 			{
 			// Destination unreachable
+				if (routingModuleReactive)
+				{
+					ControlManetRouting *ctrlmanet = new ControlManetRouting();
+					ctrlmanet->setOptionCode(MANET_ROUTE_NOROUTE);
+					ctrlmanet->setDestAddress(mpls_pk_ptr->getDest());
+					ctrlmanet->setSrcAddress(mpls_pk_ptr->getSource());
+					send(ctrlmanet,"routingOutReactive");
+				}
+
 				mplsData->deleteForwarding(forwarding_ptr);
 				delete mpls_pk_ptr;
 				return;
@@ -969,6 +981,14 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 				if (dist==0)
 				{
 				// Destination unreachable
+					if (routingModuleReactive)
+					{
+						ControlManetRouting *ctrlmanet = new ControlManetRouting();
+						ctrlmanet->setOptionCode(MANET_ROUTE_NOROUTE);
+						ctrlmanet->setDestAddress(mpls_pk_ptr->getDest());
+						ctrlmanet->setSrcAddress(mpls_pk_ptr->getSource());
+						send(ctrlmanet,"routingOutReactive");
+					}
 					mplsData->deleteForwarding(forwarding_ptr);
 					delete mpls_pk_ptr;
 					return;
@@ -979,18 +999,11 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 			}
 		}
 
-		if (routingModuleReactive)
-		{
-			Uint128 src(mpls_pk_ptr->getSource());
-			Uint128 dst(mpls_pk_ptr->getDest());
-			Uint128 next(forwarding_ptr->mac_address);
-			Uint128 prev(sta_addr);
-			routingModuleReactive->setRefreshRoute(src,dst,next,prev);
-		}
-
 // Send to next node
 		Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
 		frame->setReceiverAddress(Uint64ToMac(forwarding_ptr->mac_address));
+		frame->setAddress4(mpls_pk_ptr->getDest());
+		frame->setAddress3(mpls_pk_ptr->getSource());
 
 // The reverse path label
 		forwarding_ptr->return_label_input = mplsData->getLWMPLSLabel();
@@ -1005,6 +1018,7 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 
 		if (mpls_pk_ptr->getControlInfo())
 			delete mpls_pk_ptr->removeControlInfo();
+
 		frame->encapsulate(mpls_pk_ptr);
 		if (frame->getReceiverAddress().isUnspecified())
 			ASSERT(!frame->getReceiverAddress().isUnspecified());
@@ -1017,15 +1031,7 @@ void Ieee80211Mesh::mplsBasicSend (LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr
 {
 	if (mpls_pk_ptr->getDest()==myAddress)
 	{
-		if (routingModuleReactive)
-		{
-			Uint128 src(mpls_pk_ptr->getSource());
-			Uint128 dst(mpls_pk_ptr->getDest());
-			Uint128 prev(sta_addr);
-			routingModuleReactive->setRefreshRoute(src,dst,0,prev);
-		}
 		sendUp(decapsulateMpls(mpls_pk_ptr));
-
 	}
 	else
 	{
@@ -1045,16 +1051,16 @@ void Ieee80211Mesh::mplsBasicSend (LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr
 		if (dist==0)
 		{
 		// Destination unreachable
+			if (routingModuleReactive)
+			{
+				ControlManetRouting *ctrlmanet = new ControlManetRouting();
+				ctrlmanet->setOptionCode(MANET_ROUTE_NOROUTE);
+				ctrlmanet->setDestAddress(mpls_pk_ptr->getDest());
+				ctrlmanet->setSrcAddress(mpls_pk_ptr->getSource());
+				send(ctrlmanet,"routingOutReactive");
+			}
 			delete mpls_pk_ptr;
 			return;
-		}
-
-		if (routingModuleReactive)
-		{
-			Uint128 src(mpls_pk_ptr->getSource());
-			Uint128 dst(mpls_pk_ptr->getDest());
-			Uint128 prev(sta_addr);
-			routingModuleReactive->setRefreshRoute(src,dst,add[0],prev);
 		}
 
 		mpls_pk_ptr->setType(WMPLS_SEND);
@@ -1064,6 +1070,10 @@ void Ieee80211Mesh::mplsBasicSend (LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr
 		if (pk)
 			mpls_pk_ptr->encapsulate(pk);
    		Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
+		frame->setAddress4(mpls_pk_ptr->getDest());
+		frame->setAddress3(mpls_pk_ptr->getSource());
+
+
 		if (dist>1)
 			frame->setReceiverAddress(add[0]);
 		else
@@ -1111,6 +1121,8 @@ void Ieee80211Mesh::mplsBreakPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress
 	{
 		Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
 		frame->setReceiverAddress(send_mac_addr);
+		frame->setAddress4(mpls_pk_ptr->getDest());
+		frame->setAddress3(mpls_pk_ptr->getSource());
 		if (mpls_pk_ptr->getControlInfo())
 			delete mpls_pk_ptr->removeControlInfo();
 		frame->encapsulate(mpls_pk_ptr);
@@ -1156,6 +1168,8 @@ void Ieee80211Mesh::mplsNotFoundPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddr
 		{
 			Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
 			frame->setReceiverAddress(send_mac_addr);
+			frame->setAddress4(mpls_pk_ptr->getDest());
+			frame->setAddress3(mpls_pk_ptr->getSource());
 			if (mpls_pk_ptr->getControlInfo())
 				delete mpls_pk_ptr->removeControlInfo();
 			frame->encapsulate(mpls_pk_ptr);
@@ -1211,15 +1225,6 @@ void Ieee80211Mesh::mplsForwardData(int label,LWMPLSPacket *mpls_pk_ptr,MACAddre
 		// Enviar al mac
 				// polling = wlan_poll_list_member_find (send_mac_addr);
 				// wlan_hlpk_enqueue (mpls_pk_ptr, send_mac_addr, polling,false);
-
-		if (routingModuleReactive)
-		{
-			Uint128 src(mpls_pk_ptr->getSource());
-			Uint128 dst(mpls_pk_ptr->getDest());
-			Uint128 nextHop(send_mac_addr);
-			Uint128 prev(sta_addr);
-			routingModuleReactive->setRefreshRoute(src,dst,nextHop,prev);
-		}
 
 		sendOrEnqueue(encapsulate(mpls_pk_ptr,send_mac_addr));
 		return;
@@ -1824,7 +1829,8 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 				ControlManetRouting *ctrlmanet = new ControlManetRouting();
 				ctrlmanet->setOptionCode(MANET_ROUTE_NOROUTE);
 				ctrlmanet->setDestAddress(dest);
-				ctrlmanet->setSrcAddress(myAddress);
+			//	ctrlmanet->setSrcAddress(myAddress);
+				ctrlmanet->setSrcAddress(src);
 				ctrlmanet->encapsulate(frame->decapsulate());
 				delete frame;
 				frame = NULL;
@@ -1838,10 +1844,6 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 		}
 		else
 		{
-			if (routingModuleReactive)
-			{
-				routingModuleReactive->setRefreshRoute(src,dest,add[0],prev);
-			}
 			frame->setReceiverAddress(add[0].getMACAddress());
 		}
 
