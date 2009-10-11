@@ -76,6 +76,7 @@ RE *NS_CLASS re_create_rreq(struct in_addr target_addr,
 	re->re_blocks[0].re_hopcnt	= 0;
 	re->re_blocks[0].re_node_addr	= re_node_addr.s_addr;
 	re->re_blocks[0].re_node_seqnum	= htonl(re_node_seqnum);
+	re->re_blocks[0].from_proactive=0;
 
 	return re;
 }
@@ -115,6 +116,7 @@ RE *NS_CLASS re_create_rrep(struct in_addr target_addr,
 	re->re_blocks[0].re_hopcnt	= 0;
 	re->re_blocks[0].re_node_addr	=  re_node_addr.s_addr;
 	re->re_blocks[0].re_node_seqnum	= htonl(re_node_seqnum);
+	re->re_blocks[0].from_proactive=0;
 
 	return re;
 }
@@ -186,7 +188,7 @@ void NS_CLASS re_process(RE *re,struct in_addr ip_src, u_int32_t ifindex)
 	{
 		node_addr.s_addr	= re->re_blocks[i].re_node_addr;
 		entry			= rtable_find(node_addr);
-#if 1
+#if 0
 		if (entry)
 		{
 			struct re_block *block;
@@ -200,26 +202,8 @@ void NS_CLASS re_process(RE *re,struct in_addr ip_src, u_int32_t ifindex)
 			{
 				dest_addr.s_addr	= block->re_node_addr;
 				seqnum			= block->re_node_seqnum;
-				if (isInMacLayer())
-				{
-					if (isLocalAddress (block->re_node_addr))
-						rb_state = RB_SELF_GEN;
-					else if (!entry)
-						rb_state = RB_FRESH;
-					else if (seqnum > entry->rt_seqnum)
-						rb_state = RB_FRESH;
-					else if (seqnum == entry->rt_seqnum && block->re_hopcnt < entry->rt_hopcnt)
-						rb_state = RB_FRESH;
-					else if (seqnum ==0 &&  ((block->re_hopcnt < entry->rt_hopcnt)|| (entry->rt_hopcnt==0)))
-						rb_state = RB_FRESH; // Assume Olsr update
-					else
-						rb_state = RB_STALE;
-				}
-				else
-				{
-					rb_state = re_info_type(block, entry, is_rreq);
-				}
-				if (rb_state==RB_FRESH)
+				rb_state = re_info_type(block, entry, is_rreq);
+				if (rb_state==RB_FRESH || rb_state==RB_PROACTIVE)
 					EV <<"Error <\n";
 			}
 		}
@@ -335,6 +319,7 @@ void NS_CLASS re_process(RE *re,struct in_addr ip_src, u_int32_t ifindex)
 			re->re_blocks[n].res		= 0;
 			re->re_blocks[n].re_hopcnt	= 0;
 			re->re_blocks[n].re_node_seqnum	= htonl(this_host.seqnum);
+			re->re_blocks[n].from_proactive=0;
 
 			re->len += RE_BLOCK_SIZE;
 
@@ -378,30 +363,8 @@ int NS_CLASS re_process_block(struct re_block *block, u_int8_t is_rreq,
 	// Increment block hop count
 	block->re_hopcnt++;
 
-#ifdef OMNETPP
-	if (isInMacLayer())
-	{
-		if (isLocalAddress (block->re_node_addr))
-			rb_state = RB_SELF_GEN;
-		else if (!entry)
-			rb_state = RB_FRESH;
-		else if (seqnum > entry->rt_seqnum)
-			rb_state = RB_FRESH;
-		else if ((seqnum == entry->rt_seqnum) && (block->re_hopcnt < entry->rt_hopcnt))
-			rb_state = RB_FRESH;
-		else if ((seqnum ==0) && (block->re_hopcnt < entry->rt_hopcnt))
-			rb_state = RB_FRESH; // Asume Olsr update
-		else
-			rb_state = RB_STALE;
-	}
-	else
-	{
-		rb_state = re_info_type(block, entry, is_rreq);
-	}
-#else
 	rb_state = re_info_type(block, entry, is_rreq);
-#endif
-	if (rb_state != RB_FRESH)
+	if (rb_state != RB_FRESH && rb_state != RB_PROACTIVE)
 	{
 		dlog(LOG_DEBUG, 0, __FUNCTION__, "ignoring a %s RE block",
 			(rb_state == RB_STALE ? "stale" : (rb_state == RB_LOOP_PRONE ?
@@ -410,6 +373,9 @@ int NS_CLASS re_process_block(struct re_block *block, u_int8_t is_rreq,
 		return -1;
 	}
 	// Create/update a route towards RENodeAddress
+	if (entry &&  rb_state == RB_PROACTIVE && (((int32_t) seqnum) - ((int32_t) entry->rt_seqnum))<0)
+		seqnum = entry->rt_seqnum;
+
 	if (entry)
 		rtable_update(
 			entry,			// routing table entry
@@ -717,6 +683,7 @@ void NS_CLASS re_intermediate_rrep (struct in_addr src_addr,struct in_addr dest_
 			rrep_src->re_blocks[1].re_hopcnt	= 0;
 			rrep_src->re_blocks[1].re_node_seqnum	= this_host.seqnum;
 			rrep_src->re_blocks[1].re_node_addr	= DEV_NR(ifindex).ipaddr.s_addr;
+			rrep_src->re_blocks[1].from_proactive=0;
 			rrep_src->len += RE_BLOCK_SIZE;
 	}
 	re_send_rrep(rrep_src);
@@ -753,6 +720,7 @@ void NS_CLASS re_intermediate_rrep (struct in_addr src_addr,struct in_addr dest_
 			rrep_dest->re_blocks[1].re_hopcnt	= 0;
 			rrep_dest->re_blocks[1].re_node_seqnum	= this_host.seqnum;
 			rrep_dest->re_blocks[1].re_node_addr	= DEV_NR(ifindex).ipaddr.s_addr;
+			rrep_dest->re_blocks[1].from_proactive=0;
 			rrep_dest->len += RE_BLOCK_SIZE;
 		}
 		re_send_rrep(rrep_dest);
@@ -837,7 +805,7 @@ void NS_CLASS re_answer(RE *re,u_int32_t ifindex)
 			{
 				if (entry->rt_hopcnt>i+1 || entry->rt_hopcnt==0)
 				{
-					rtable_update(entry,node_addr,next_addr,ifindex,0,0,i+1,0);
+					rtable_update(entry,node_addr,next_addr,ifindex,entry->rt_seqnum,entry->rt_prefix,i+1,0);
 				}
 			}
 			else
@@ -846,7 +814,7 @@ void NS_CLASS re_answer(RE *re,u_int32_t ifindex)
 						node_addr,		// dest
 						next_addr,		// nxt hop
 					ifindex,	// iface
-					0,		// seqnum
+					1,		// seqnum
 					0,		// prefix
 					i+1,		// hop count
 					0);		// is gw
@@ -892,6 +860,7 @@ void NS_CLASS re_answer(RE *re,u_int32_t ifindex)
 			rrep_src->re_blocks[i].re_hopcnt	= i;
 			rrep_src->re_blocks[i].re_node_seqnum	= 0;
 			rrep_src->re_blocks[i].re_node_addr	=controlInfo->getVectorAddress(i);
+			rrep_src->re_blocks[i].from_proactive=1;
 			rrep_src->len += RE_BLOCK_SIZE;
 		}
 		rrep_src->re_blocks[sizeVector].g		= this_host.is_gw;
@@ -900,6 +869,7 @@ void NS_CLASS re_answer(RE *re,u_int32_t ifindex)
 		rrep_src->re_blocks[sizeVector].re_hopcnt	= 0;
 		rrep_src->re_blocks[sizeVector].re_node_seqnum	= this_host.seqnum;
 		rrep_src->re_blocks[sizeVector].re_node_addr	= DEV_NR(ifindex).ipaddr.s_addr;
+		rrep_src->re_blocks[sizeVector].from_proactive=0;
 		rrep_src->len += RE_BLOCK_SIZE;
 	}
 #else

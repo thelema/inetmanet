@@ -212,6 +212,7 @@ DYMOUM::~ DYMOUM()
     }
 
 // Routing table
+#ifndef MAPROUTINGTABLE
 	pos = tmp = NULL;
 	dlist_for_each_safe(pos, tmp, &rtable.l)
 	{
@@ -221,7 +222,13 @@ DYMOUM::~ DYMOUM()
 		dlist_del(&e->l);
 		free(e);
 	}
-
+#else
+	while (!dymoRoutingTable.empty())
+	{
+		delete dymoRoutingTable.begin()->second;
+		dymoRoutingTable.erase(dymoRoutingTable.begin());
+	}
+#endif
 	pos = tmp = NULL;
 // RREQ table
 	dlist_for_each_safe(pos, tmp, &PENDING_RREQ)
@@ -292,6 +299,11 @@ void DYMOUM::handleMessage (cMessage *msg)
 		{
 			if (isInMacLayer())
 			{
+				if (control->getDestAddress().getMACAddress().isBroadcast())
+				{
+					delete control;
+					return;
+				}
 				cMessage* msgAux = control->decapsulate();
 
 				if (msgAux)
@@ -305,7 +317,6 @@ void DYMOUM::handleMessage (cMessage *msg)
 						rtable_entry_t *entry	= rtable_find(dest_addr);
 						rerr_send(dest_addr, NET_DIAMETER, entry);
 					}
-					delete control;
 				}
 			}
 			else
@@ -1200,11 +1211,14 @@ void DYMOUM::packetFailed(IPDatagram *dgram)
 #else
 		for (DymoRoutingTable::iterator it = dymoRoutingTable.begin();it != dymoRoutingTable.end();it++)
 		{
-				entry = it->second;
+			rtable_entry_t * entry = it->second;
+			if (entry->rt_nxthop_addr.s_addr == next_hop.s_addr)
+			{
 #ifdef RERRPACKETFAILED
-				rerr_send(entry->rt_dest_addr, NET_DIAMETER, entry);
+					rerr_send(entry->rt_dest_addr, NET_DIAMETER, entry);
 #endif
-				count += rtable_expire_timeout(entry);
+					count += rtable_expire_timeout(entry);
+			}
 		}
 #endif
 	}
@@ -1244,15 +1258,19 @@ void DYMOUM::packetFailedMac(Ieee80211DataFrame *dgram)
 				count += rtable_expire_timeout(entry);
 			}
 		}
+		rerr_send(rt->rt_dest_addr, NET_DIAMETER, rt);
 #else
 		for (DymoRoutingTable::iterator it = dymoRoutingTable.begin();it != dymoRoutingTable.end();it++)
 		{
-				entry = it->second;
+			rtable_entry_t *entry = it->second;
+			if (entry->rt_nxthop_addr.s_addr == next_hop.s_addr){
 #ifdef RERRPACKETFAILED
-				rerr_send(entry->rt_dest_addr, NET_DIAMETER, entry);
+					rerr_send(entry->rt_dest_addr, NET_DIAMETER, entry);
 #endif
-				count += rtable_expire_timeout(entry);
+					count += rtable_expire_timeout(entry);
+			}
 		}
+		rerr_send(rt->rt_dest_addr, NET_DIAMETER, rt);
 #endif
     }
 	/* We don't care about link failures for broadcast or non-data packets */
@@ -1328,17 +1346,56 @@ bool DYMOUM::isProactive()
 
 void DYMOUM::setRefreshRoute(const Uint128 &src,const Uint128 &dest,const Uint128 &gtw,const Uint128& prev)
 {
-		struct in_addr dest_addr, src_addr, next_hop;
+		struct in_addr dest_addr, src_addr, next_hop, prev_hop;
 	 	src_addr.s_addr = src;
 		dest_addr.s_addr = dest;
+	 	next_hop.s_addr = gtw;
+	 	prev_hop.s_addr = prev;
+
+
 		rtable_entry_t *rev_rt = NULL;
 		rtable_entry_t *fwd_rt = NULL;
+		rtable_entry_t *rev_pre_rt = NULL;
+		rtable_entry_t *fwd_pre_rt = NULL;
+
 		bool change = false;
-		if (src==(Uint128)0)
+		if (src!=(Uint128)0)
 			rev_rt	= rtable_find(src_addr);
-		if (dest==(Uint128)0)
+		if (dest!=(Uint128)0)
 			fwd_rt	= rtable_find(dest_addr);
 
+		if (gtw!=(Uint128)0)
+			fwd_pre_rt	= rtable_find(next_hop);
+		if (prev!=(Uint128)0)
+			rev_pre_rt	= rtable_find(prev_hop);
+
+		if (fwd_rt)
+		{
+			rtable_update_timeout(fwd_rt);
+			change = true;
+		}
+		if (rev_rt)
+		{
+			rtable_update_timeout(rev_rt);
+			change = true;
+		}
+		if (rev_pre_rt)
+		{
+			rtable_update_timeout(rev_pre_rt);
+			change = true;
+		}
+		if (fwd_pre_rt)
+		{
+			rtable_update_timeout(fwd_pre_rt);
+			change = true;
+		}
+		if (change)
+		{
+					Enter_Method_Silent();
+					scheduleNextEvent();
+		}
+		return;
+		/*
 		if (!rev_rt && prev!=(Uint128)0)
 		{
 		// Gratuitous Return Path
@@ -1386,6 +1443,7 @@ void DYMOUM::setRefreshRoute(const Uint128 &src,const Uint128 &dest,const Uint12
 				change = true;
 			}
 		}
+		*/
 		/* We don't care about link failures for broadcast or non-data packets */
 		if (change)
 		{

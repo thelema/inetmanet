@@ -45,6 +45,7 @@
 #define RB_INFERIOR	2
 #define RB_FRESH	3
 #define RB_SELF_GEN	4
+#define RB_PROACTIVE 5
 
 #ifndef OMNETPP
 /* Routing blocks advertised in a RE message */
@@ -205,6 +206,15 @@ NS_STATIC NS_INLINE int re_info_type(struct re_block *b, rtable_entry_t *e, u_in
 	{
 		node_seqnum	= ntohl(b->re_node_seqnum);
 		sub		= ((int32_t) node_seqnum) - ((int32_t) e->rt_seqnum);
+
+		if (b->from_proactive)
+		{
+			if (e->rt_state != RT_VALID)
+				return RB_PROACTIVE;
+
+			if (sub < 0 && e->rt_hopcnt != 0 && b->re_hopcnt != 0 && b->re_hopcnt < e->rt_hopcnt)
+				return RB_PROACTIVE;
+		}
 
 		if (sub < 0)
 			return RB_STALE;

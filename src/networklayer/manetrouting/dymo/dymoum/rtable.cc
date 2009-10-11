@@ -389,7 +389,7 @@ rtable_entry_t *NS_CLASS rtable_insert(struct in_addr dest_addr,
 
 	// Add the entry to the routing table
 
-	dymoRoutingTable.insert(std::make_pair(dest_add.s_addr,entry));
+	dymoRoutingTable.insert(std::make_pair(dest_addr.s_addr,entry));
 	/* Add route to omnet inet routing table ... */
 	netmask.s_addr = IPAddress((uint32_t)nxthop_addr.s_addr).getNetworkMask().getInt();
     if (useIndex)
@@ -438,7 +438,7 @@ rtable_entry_t *NS_CLASS rtable_update(rtable_entry_t *entry,
 		if (it != dymoRoutingTable.end())
 			dymoRoutingTable.erase(it);
 		entry->rt_dest_addr.s_addr	= dest_addr.s_addr;
-		dymoRoutingTable.insert(std::make_pair(dest_add.s_addr,entry));
+		dymoRoutingTable.insert(std::make_pair(dest_addr.s_addr,entry));
 	}
 
 	entry->rt_nxthop_addr.s_addr	= nxthop_addr.s_addr;

@@ -75,6 +75,7 @@ void NS_CLASS rerr_send(struct in_addr addr, int ttl, rtable_entry_t *entry)
 		dlist_head_t *pos;
 
 		blocks[0].unode_seqnum = entry->rt_seqnum;
+#ifndef MAPROUTINGTABLE
 		dlist_for_each(pos, &rtable.l)
 		{
 			if (i >= MAX_RERR_BLOCKS)
@@ -89,6 +90,24 @@ void NS_CLASS rerr_send(struct in_addr addr, int ttl, rtable_entry_t *entry)
 				blocks[i-1].unode_seqnum	= e->rt_seqnum;
 			}
 		}
+#else
+		for (DymoRoutingTable::iterator it = dymoRoutingTable.begin();it != dymoRoutingTable.end();it++)
+		{
+			if (i >= MAX_RERR_BLOCKS)
+				continue;
+			rtable_entry_t *e = it->second;
+			if (e != entry && (e->rt_nxthop_addr.s_addr
+				== entry->rt_nxthop_addr.s_addr) &&
+				(e->rt_ifindex == entry->rt_ifindex))
+			{
+				i++;
+				blocks[i-1].unode_addr		= e->rt_dest_addr.s_addr;
+				blocks[i-1].unode_seqnum	= e->rt_seqnum;
+			}
+		}
+
+#endif
+
 	}
 	else
 		blocks[0].unode_seqnum = 0;
@@ -245,8 +264,8 @@ void NS_CLASS rerr_send(struct in_addr addr, int ttl, rtable_entry_t *entry,stru
 	if (entry)
 	{
 		dlist_head_t *pos;
-
 		blocks[0].unode_seqnum = entry->rt_seqnum;
+#ifndef MAPROUTINGTABLE
 		dlist_for_each(pos, &rtable.l)
 		{
 			rtable_entry_t *e = (rtable_entry_t *) pos;
@@ -259,6 +278,21 @@ void NS_CLASS rerr_send(struct in_addr addr, int ttl, rtable_entry_t *entry,stru
 				blocks[i-1].unode_seqnum	= e->rt_seqnum;
 			}
 		}
+#else
+		for (DymoRoutingTable::iterator it = dymoRoutingTable.begin();it != dymoRoutingTable.end();it++)
+		{
+			rtable_entry_t *e = it->second;
+			if (e != entry && (e->rt_nxthop_addr.s_addr
+				== entry->rt_nxthop_addr.s_addr) &&
+				(e->rt_ifindex == entry->rt_ifindex))
+			{
+				i++;
+				blocks[i-1].unode_addr		= e->rt_dest_addr.s_addr;
+				blocks[i-1].unode_seqnum	= e->rt_seqnum;
+			}
+		}
+#endif
+
 	}
 	else
 		blocks[0].unode_seqnum = 0;

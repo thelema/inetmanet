@@ -81,6 +81,7 @@ struct re_block {
 	u_int16_t	prefix : 7;
 	Uint128		re_node_addr;
 	u_int32_t	re_node_seqnum;
+	unsigned char from_proactive;
 };
 
 #define MAX_RERR_BLOCKS	50L
