@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 
+ * Copyright (C) 2008
  * DSDV simple example for INET (add-on)
  * Version 2.0
  * Diogo Ant�o & Pedro Menezes
@@ -51,9 +51,10 @@ class INET_API DSDV_2 : public cSimpleModule
 		DSDV_HelloMessage *Hello;
 		InterfaceEntry *interface80211ptr;
 		int interfaceId;
- 
+		unsigned int sequencenumber;
+
 	protected:
-		simtime_t hellomsgperiod_DSDV;	
+		simtime_t hellomsgperiod_DSDV;
 		IInterfaceTable *ift;
 		IRoutingTable *rt;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 
+ * Copyright (C) 2008
  * DSDV simple example for INET (add-on)
  * Version 2.0
  * Diogo Ant�o & Pedro Menezes
@@ -24,6 +24,7 @@ void DSDV_2::initialize(int stage)
 	//reads from omnetpp.ini
 	if (stage==4)
 	{
+		sequencenumber=0;
 		ift=NULL;
 		rt=NULL;
 		ift = InterfaceTableAccess ().get();
@@ -53,14 +54,14 @@ void DSDV_2::initialize(int stage)
 	// schedules a random periodic event: the hello message broadcast from DSDV module
 		rt = RoutingTableAccess().get();
 		rt->setTimeToLiveRoutingEntry(par("timetolive_routing_entry"));
-		
+
 	//reads from omnetpp.ini
 		hellomsgperiod_DSDV = (simtime_t) par("hellomsgperiod_DSDV");
 	//HelloForward = new DSDV_HelloMessage("HelloForward");
 	// schedules a random periodic event: the hello message broadcast from DSDV module
 		forwardList = new list<forwardHello>;
 		event = new cMessage("event");
-		scheduleAt( uniform(0, par("MaxVariance_DSDV"), par("RNGseed_DSDV") ) , event);		
+		scheduleAt( uniform(0, par("MaxVariance_DSDV"), par("RNGseed_DSDV") ) , event);
 
 	}
 }
@@ -89,7 +90,7 @@ DSDV_2::~DSDV_2()
 {
 	// Dispose of dynamically allocated the objects
 	cancelAndDelete(event);
-	
+
 	delete forwardList;
 	delete Hello;
 }
@@ -115,8 +116,8 @@ void DSDV_2::handleMessage(cMessage *msg)
 				ift = InterfaceTableAccess().get();
 			if (!rt)
 				rt = RoutingTableAccess().get();
-		
-                        rt->dsdvTestAndDelete();
+
+            rt->dsdvTestAndDelete();
 
 			// count non-loopback interfaces
 			// int numIntf = 0;
@@ -124,41 +125,41 @@ void DSDV_2::handleMessage(cMessage *msg)
 			//for (int k=0; k<ift->getNumInterfaces(); k++)
 			//	if (!ift->getInterface(k)->isLoopback())
 			//	{ie = ift->getInterface(k); numIntf++;}
-									
+
 			// Filling the DSDV_HelloMessage fields
 			// IPAddress source = (ie->ipv4()->getIPAddress());
 			IPAddress source = (interface80211ptr->ipv4Data()->getIPAddress());
 			Hello->setBitLength(128);///size of Hello message in bits
 			Hello->setSrcIPAddress(source);
-			IPRoute *entrada_routing = const_cast<IPRoute *> (rt->findBestMatchingRoute(source));
-			entrada_routing->setSequencenumber (entrada_routing->getSequencenumber()+2);
-			Hello->setSequencenumber(entrada_routing->getSequencenumber());
+			sequencenumber+=2;
+			Hello->setSequencenumber(sequencenumber);
 			Hello->setNextIPAddress(source);
 			Hello->setHopdistance(1);
-		
+
 			/*http://www.cs.ucsb.edu/~ebelding/txt/bc.txt
 			The IPv4 address for "limited broadcast" is 255.255.255.255, and is not supposed to be forwarded.
-			Since the nodes in an ad hoc network are asked to forward the flooded packets, the limited broadcast 
+			Since the nodes in an ad hoc network are asked to forward the flooded packets, the limited broadcast
 			address is a poor choice.  The other available choice, the "directed broadcast" address, would presume a
 			choice of routing prefix for the ad hoc network and thus is not a reasonable choice.
 			(...)
-			Limited Broadcast - Sent to all NICs on the some network segment as the source NIC. It is represented with 
-			the 255.255.255.255 TCP/IP address. This broadcast is not forwarded by routers so will only appear on one 
-			network segment. 
+			Limited Broadcast - Sent to all NICs on the some network segment as the source NIC. It is represented with
+			the 255.255.255.255 TCP/IP address. This broadcast is not forwarded by routers so will only appear on one
+			network segment.
 			Direct broadcast - Sent to all hosts on a network. Routers may be configured to forward directed broadcasts
-			on large networks. For network 192.168.0.0, the broadcast is 192.168.255.255.        
+			on large networks. For network 192.168.0.0, the broadcast is 192.168.255.255.
 			*/
 			//new control info for DSDV_HelloMessage
 			IPControlInfo *controlInfo = new IPControlInfo();
 			controlInfo->setDestAddr(IPAddress(255,255,255,255));//let's try the limited broadcast 255.255.255.255 but multicast goes from 224.0.0.0 to 239.255.255.255
 			controlInfo->setSrcAddr(source);//let's try the limited broadcast
 			controlInfo->setProtocol(IP_PROT_MANET);
+			controlInfo->setInterfaceId(interface80211ptr->getInterfaceId());
 			Hello->setControlInfo(controlInfo);
-		
+
 			//broadcast to other nodes the hello message
 			send(Hello, "DSDV_toip");
 			Hello=NULL;
-		
+
 			//schedule new brodcast hello message event
 			scheduleAt(simTime()+hellomsgperiod_DSDV, event);
 			bubble("Sending new hello message");
@@ -181,29 +182,31 @@ void DSDV_2::handleMessage(cMessage *msg)
 			}
 		}
 	}
-	else {
+	else if (dynamic_cast<DSDV_HelloMessage *>(msg)) {
 
 		// When DSDV module receives DSDV_HelloMessage from other host
 		// it adds/replaces the information in routing table for the one contained in the message
 		// but only if it's useful/up-to-date. If not the DSDV module ignores the message.
 		try{
 			fhp = new forwardHello();
-			if( msg->getControlInfo() == NULL )
-				error("Apanha-o nulo quando recebi");
+			//if( msg->getControlInfo() == NULL )
+			//	error("Apanha-o nulo quando recebi");
 			fhp->hello = (DSDV_HelloMessage *) (dynamic_cast<DSDV_HelloMessage *>(msg))->dup();
 			IPControlInfo *controlInfo = new IPControlInfo();
 			controlInfo->setDestAddr(IPAddress(255,255,255,255));//let's try the limited broadcast 255.255.255.255 but multicast goes from 224.0.0.0 to 239.255.255.255
-			
+
 			// int numIntf = 0;
-			ift = InterfaceTableAccess().get();
+			if (ift!=NULL)
+				ift = InterfaceTableAccess().get();
 			//InterfaceEntry *ie = NULL;
 			//for (int k=0; k<ift->getNumInterfaces(); k++)
 			//	if (!ift->getInterface(k)->isLoopback())
 			//	{ie = ift->getInterface(k); numIntf++;}
-			
+
 			//controlInfo->setSrcAddr(ie->ipv4()->getIPAddress());
 			controlInfo->setSrcAddr(interface80211ptr->ipv4Data()->getIPAddress());
 			controlInfo->setProtocol(IP_PROT_MANET);
+			controlInfo->setInterfaceId(interface80211ptr->getInterfaceId());
 			fhp->hello->setControlInfo(controlInfo);
 			if( fhp->hello->getControlInfo() == NULL )
 				error("Nulo quando copiei");
@@ -211,26 +214,26 @@ void DSDV_2::handleMessage(cMessage *msg)
 			error(e.what());
 		}
 		if (msg->arrivedOn("ip_toDSDV") && fhp->hello){
-		
+
 			bubble("Received hello message");
-			
+
 			//pointer to interface and routing table
 			//rt = RoutingTableAccess_DSDV().get(); // RoutingTable *rt = nodeInfo[i].rt;
 			//ift = InterfaceTableAccess().get();//InterfaceTable *ift = nodeInfo[i].ift;
-			
+
 			//reads DSDV hello message fields
 			IPAddress src = fhp->hello->getSrcIPAddress();
 			unsigned int msgsequencenumber = fhp->hello->getSequencenumber();
 			IPAddress next = fhp->hello->getNextIPAddress();
 			int numHops = fhp->hello->getHopdistance();
-			
+
 			// count non-loopback interfaces
 			//int numIntf = 0;
 			//InterfaceEntry *ie = NULL;
 			//for (int k=0; k<ift->getNumInterfaces(); k++)
 			//	if (!ift->getInterface(k)->isLoopback())
 			//	{ie = ift->getInterface(k); numIntf++;}
-			//	
+			//
 			//Tests if the DSDV hello message that arrived is originally from another node
 			//IPAddress source = (ie->ipv4()->getIPAddress());
 			IPAddress source = interface80211ptr->ipv4Data()->getIPAddress();
@@ -245,17 +248,17 @@ void DSDV_2::handleMessage(cMessage *msg)
 				}
 				return;
 			}
-			
+
 			IPRoute *entrada_routing =const_cast<IPRoute *> (rt->findBestMatchingRoute(src));
 
-			
+
 			//Tests if the DSDV hello message that arrived is useful
 			if(entrada_routing == NULL || (entrada_routing != NULL && (msgsequencenumber>(entrada_routing->getSequencenumber()) || (msgsequencenumber == (entrada_routing->getSequencenumber()) && numHops < (entrada_routing->getMetric()))))){
-				
-				//changes information that exists in routing table according to information in hello message					
+
+				//changes information that exists in routing table according to information in hello message
 				if(entrada_routing != NULL){
 					IPAddress netmask = IPAddress(par("netmask").stringValue());//reads from omnetpp.ini
-					entrada_routing->setHost(src);		
+					entrada_routing->setHost(src);
 					entrada_routing->setNetmask(netmask);
 					entrada_routing->setGateway(next);
 					entrada_routing->setInterface(interface80211ptr);
@@ -264,7 +267,7 @@ void DSDV_2::handleMessage(cMessage *msg)
 					entrada_routing->setMetric(numHops);
 					entrada_routing->setSequencenumber(msgsequencenumber);
 					entrada_routing->setInstallTime(simTime());
-			
+
 				}
 				//adds new information to routing table according to information in hello message
 				else {
@@ -279,7 +282,7 @@ void DSDV_2::handleMessage(cMessage *msg)
 					e->setMetric (numHops);
 					e->setSequencenumber(msgsequencenumber);
 					e->setInstallTime (simTime());
-					rt->addRoute(e);				
+					rt->addRoute(e);
 				}
 				try{
 						//forward useful message to other nodes
@@ -300,17 +303,17 @@ void DSDV_2::handleMessage(cMessage *msg)
 					error(e.what());
 				}
 			}
-		
 		//delete msg; ?
-
 		}
-		
+
 		else
 		{
-			//Error
-			error("Module  DSDV doesn't handle that kind of messages");
-
+			delete msg;
 		}
+	}
+	else
+	{
+		error ("Message not supported %s",msg->getName());
 	}
 }
 
