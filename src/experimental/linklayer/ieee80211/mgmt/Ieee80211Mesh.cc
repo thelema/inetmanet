@@ -179,21 +179,7 @@ void Ieee80211Mesh::handleMessage(cMessage *msg)
 		// process incoming frame
 		EV << "Frame arrived from MAC: " << msg << "\n";
         Ieee80211DataFrame *frame = dynamic_cast<Ieee80211DataFrame *>(msg);
-        if (routingModuleReactive && frame)
-        {
-        	uint64_t src = MacToUint64(frame->getAddress3());
-        	uint64_t dest = MacToUint64(frame->getAddress4());
-        	Uint128 next;
-        	int iface;
-        	if (routingModuleReactive->getNextHop(dest,next,iface))
-        	{
-        		ControlManetRouting *ctrlmanet = new ControlManetRouting();
-        		ctrlmanet->setOptionCode(MANET_ROUTE_UPDATE);
-        		ctrlmanet->setDestAddress(dest);
-        		ctrlmanet->setSrcAddress(src);
-        		send(ctrlmanet,"routingOutReactive");
-        	}
-        }
+		actualizeReactive(frame,false);
         processFrame(frame);
     }
 	//else if (msg->arrivedOn("agentIn"))
@@ -476,25 +462,6 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg)
 
     if (frame->getReceiverAddress().isUnspecified())
            ASSERT(!frame->getReceiverAddress().isUnspecified());
-
-
-    if (routingModuleReactive )
-    {
-    	uint64_t src = MacToUint64(frame->getAddress3());
-    	uint64_t dest = MacToUint64(frame->getAddress4());
-    	Uint128 next;
-    	int iface;
-     	if (routingModuleReactive->getNextHop(dest,next,iface))
-    	{
-    		//routingModuleReactive->setRefreshRoute(src,0,0,prev);
-    		ControlManetRouting *ctrlmanet = new ControlManetRouting();
-    		ctrlmanet->setOptionCode(MANET_ROUTE_UPDATE);
-    		ctrlmanet->setDestAddress(dest);
-    		ctrlmanet->setSrcAddress(src);
-    		send(ctrlmanet,"routingOutReactive");
-    	}
-    }
-
 	return frame;
 }
 
@@ -1919,3 +1886,56 @@ cPacket *Ieee80211Mesh::decapsulate(Ieee80211DataFrame *frame)
     return payload;
 }
 
+void Ieee80211Mesh::actualizeReactive(cPacket *pkt,bool out)
+{
+	Uint128 dest,prev,next,src;
+	if (!routingModuleReactive)
+		return;
+
+	Ieee80211DataFrame * frame = dynamic_cast<Ieee80211DataFrame*>(pkt);
+
+	if (!frame )
+		return;
+
+	if (!out)
+		return;
+
+/*
+	if (frame->getAddress4().isUnspecified() || frame->getAddress4().isBroadcast())
+		return;
+
+	ControlManetRouting *ctrlmanet = new ControlManetRouting();
+	dest=frame->getAddress4();
+	src=frame->getAddress3();
+	ctrlmanet->setOptionCode(MANET_ROUTE_UPDATE);
+	ctrlmanet->setDestAddress(dest);
+	ctrlmanet->setSrcAddress(src);
+	send(ctrlmanet,"routingOutReactive");
+	return;
+*/
+
+	if (out)
+	{
+		if (!frame->getAddress4().isUnspecified() && !frame->getAddress4().isBroadcast())
+			dest=frame->getAddress4();
+		if (!frame->getReceiverAddress().isUnspecified() && !frame->getReceiverAddress().isBroadcast())
+			next=frame->getReceiverAddress();
+
+	}
+	else
+	{
+		if (!frame->getAddress3().isUnspecified() && !frame->getAddress4().isBroadcast() )
+			dest=frame->getAddress3();
+		if (!frame->getTransmitterAddress().isUnspecified() && !frame->getTransmitterAddress().isBroadcast())
+			prev=frame->getTransmitterAddress();
+
+	}
+	routingModuleReactive->setRefreshRoute(src,dest,next,prev);
+
+}
+
+void Ieee80211Mesh::sendOrEnqueue(cPacket *frame)
+{
+	actualizeReactive(frame,true);
+    PassiveQueueBase::handleMessage(frame);
+}

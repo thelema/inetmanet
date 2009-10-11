@@ -78,8 +78,7 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 	virtual void mplsPurge (LWmpls_Forwarding_Structure *forwarding_ptr,bool purge_break);
 	virtual bool forwardMessage (Ieee80211DataFrame *);
 	virtual bool macLabelBasedSend (Ieee80211DataFrame *);
-
-
+	virtual void actualizeReactive(cPacket *pkt,bool out);
 
   public:
 		Ieee80211Mesh();
@@ -130,6 +129,8 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 
     virtual bool isUpperLayer(cMessage *);
     virtual cPacket * decapsulate(Ieee80211DataFrame *frame);
+
+    virtual void sendOrEnqueue(cPacket *frame);
 };
 
 #endif
