@@ -20,6 +20,7 @@
 #define __ManetManager_H__
 
 #include "INETDefs.h"
+#include "ICMPAccess.h"
 // ICMP type 2, code 4: fragmentation needed, but don't-fragment bit set
 
 
@@ -30,6 +31,7 @@
 class INET_API ManetManager : public cSimpleModule
 {
   private:
+	  ICMPAccess icmpAccess;
        enum RouteTypeProtocol
        {
         AODV,

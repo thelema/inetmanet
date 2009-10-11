@@ -25,6 +25,10 @@
 #include "ManetManager.h"
 #include "RoutingTableAccess.h"
 #include "IRoutingTable.h"
+#include "ControlManetRouting_m.h"
+#include "IPDatagram.h"
+
+
 
 Define_Module(ManetManager);
 Define_Module(ManetManagerStatic);
@@ -267,6 +271,7 @@ void ManetManager::handleMessage(cMessage *msg)
 /*
 	sendDirect(msg,0, routingModule, "ipIn");
 */
+	ControlManetRouting * controlRouting;
 	if (!manetActive)
 	{
 		delete msg;
@@ -295,16 +300,36 @@ void ManetManager::handleMessage(cMessage *msg)
 				send( msg, "to_dymo");
 			break;
 		case OLSR:
-			if (dynamicLoad)
-				sendDirect(msg,routingModule, "from_ip");
+			controlRouting =  dynamic_cast<ControlManetRouting *> (msg);
+			if (controlRouting)
+			{
+				if (controlRouting->getOptionCode() == MANET_ROUTE_NOROUTE)
+					icmpAccess.get()->sendErrorMessage((IPDatagram *)controlRouting->decapsulate(), ICMP_DESTINATION_UNREACHABLE, 0);
+				delete controlRouting;
+			}
 			else
-				send( msg, "to_olsr");
+			{
+				if (dynamicLoad)
+					sendDirect(msg,routingModule, "from_ip");
+				else
+					send( msg, "to_olsr");
+			}
 			break;
 		case DSDV:
-			if (dynamicLoad)
-				sendDirect(msg,routingModule, "ip_toDSDV");
+			controlRouting =  dynamic_cast<ControlManetRouting *> (msg);
+			if (controlRouting)
+			{
+				if (controlRouting->getOptionCode() == MANET_ROUTE_NOROUTE)
+					icmpAccess.get()->sendErrorMessage((IPDatagram *)controlRouting->decapsulate(), ICMP_DESTINATION_UNREACHABLE, 0);
+				delete controlRouting;
+			}
 			else
-				send( msg, "to_dsdv");
+			{
+				if (dynamicLoad)
+					sendDirect(msg,routingModule, "ip_toDSDV");
+				else
+					send( msg, "to_dsdv");
+			}
 			break;
 		}
 	}
