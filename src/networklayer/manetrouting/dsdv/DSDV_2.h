@@ -47,8 +47,8 @@ class INET_API DSDV_2 : public cSimpleModule
 			~forwardHello();
 			forwardHello();
 		};
-		list<forwardHello> *forwardList;
-		DSDV_HelloMessage *Hello;
+		list<forwardHello*> *forwardList;
+		//DSDV_HelloMessage *Hello;
 		InterfaceEntry *interface80211ptr;
 		int interfaceId;
 		unsigned int sequencenumber;

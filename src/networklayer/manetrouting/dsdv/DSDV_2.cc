@@ -16,7 +16,7 @@
 #include "DSDVhello_m.h"//created by opp_msgc 3.3 from DSDVhello.msg
 #include "DSDV_2.h"
 
-
+#define NOforwardHello
 Define_Module (DSDV_2);
 
 void DSDV_2::initialize(int stage)
@@ -59,7 +59,7 @@ void DSDV_2::initialize(int stage)
 		hellomsgperiod_DSDV = (simtime_t) par("hellomsgperiod_DSDV");
 	//HelloForward = new DSDV_HelloMessage("HelloForward");
 	// schedules a random periodic event: the hello message broadcast from DSDV module
-		forwardList = new list<forwardHello>;
+		forwardList = new list<forwardHello*>;
 		event = new cMessage("event");
 		scheduleAt( uniform(0, par("MaxVariance_DSDV"), par("RNGseed_DSDV") ) , event);
 
@@ -83,16 +83,27 @@ DSDV_2::DSDV_2()
 	// Set the pointer to NULL, so that the destructor won't crash
 	// even if initialize() doesn't get called because of a runtime
 	// error or user cancellation during the startup process.
-	event = Hello  = NULL;
+	event = NULL;
 }
 
 DSDV_2::~DSDV_2()
 {
 	// Dispose of dynamically allocated the objects
 	cancelAndDelete(event);
-
+	while (!forwardList->empty())
+	{
+		forwardHello *fh = forwardList->front();
+		if (fh->event)
+			cancelAndDelete(fh->event);
+		if (fh->event)
+			cancelAndDelete(fh->hello);
+		fh->event=NULL;
+		fh->hello=NULL;
+		forwardList->pop_front();
+		delete fh;
+	}
 	delete forwardList;
-	delete Hello;
+	//delete Hello;
 }
 
 void DSDV_2::handleMessage(cMessage *msg)
@@ -101,6 +112,7 @@ void DSDV_2::handleMessage(cMessage *msg)
 
 	forwardHello *fhp;
 	DSDV_HelloMessage *helloFor;
+	DSDV_HelloMessage * recHello=NULL;
 	// When DSDV module receives selfmessage (scheduled event)
 	// it means that it's time for Hello message broadcast event
 	// i.e. Brodcast Hello messages to other nodes when selfmessage=event
@@ -109,7 +121,7 @@ void DSDV_2::handleMessage(cMessage *msg)
 		if(msg==event){
 			//new hello message
 
-			Hello = new DSDV_HelloMessage("Hello");
+			DSDV_HelloMessage * Hello = new DSDV_HelloMessage("Hello");
 
 			//pointer to interface and routing table
 			if (!ift)
@@ -161,18 +173,21 @@ void DSDV_2::handleMessage(cMessage *msg)
 			Hello=NULL;
 
 			//schedule new brodcast hello message event
-			scheduleAt(simTime()+hellomsgperiod_DSDV, event);
+			scheduleAt(simTime()+hellomsgperiod_DSDV+uniform(0,0.01), event);
 			bubble("Sending new hello message");
 		}
 		else{
-			for(list<forwardHello>::iterator it = forwardList->begin(); it != forwardList->end(); it++){
-				if( it->event == msg ){
+			for(list<forwardHello*>::iterator it = forwardList->begin(); it != forwardList->end(); it++){
+				if( (*it)->event == msg ){
 					try{
-							EV << "Vou mandar forward do " << it->hello->getSrcIPAddress() << endl;
-							if( it->hello->getControlInfo() == NULL )
+							EV << "Vou mandar forward do " << (*it)->hello->getSrcIPAddress() << endl;
+							if( (*it)->hello->getControlInfo() == NULL )
 								error("Apanhei-o a nulo no for");
-							send(it->hello, "DSDV_toip");
-							it->hello = NULL;
+							send((*it)->hello, "DSDV_toip");
+							(*it)->hello = NULL;
+							delete (*it)->event;
+							(*it)->event=NULL;
+							delete (*it);
 							forwardList->erase(it);
 					}catch(exception &e){
 						error(e.what());
@@ -188,10 +203,8 @@ void DSDV_2::handleMessage(cMessage *msg)
 		// it adds/replaces the information in routing table for the one contained in the message
 		// but only if it's useful/up-to-date. If not the DSDV module ignores the message.
 		try{
-			fhp = new forwardHello();
-			//if( msg->getControlInfo() == NULL )
-			//	error("Apanha-o nulo quando recebi");
-			fhp->hello = (DSDV_HelloMessage *) (dynamic_cast<DSDV_HelloMessage *>(msg))->dup();
+			if(msg->getControlInfo() != NULL )
+							delete msg->removeControlInfo();
 			IPControlInfo *controlInfo = new IPControlInfo();
 			controlInfo->setDestAddr(IPAddress(255,255,255,255));//let's try the limited broadcast 255.255.255.255 but multicast goes from 224.0.0.0 to 239.255.255.255
 
@@ -207,26 +220,69 @@ void DSDV_2::handleMessage(cMessage *msg)
 			controlInfo->setSrcAddr(interface80211ptr->ipv4Data()->getIPAddress());
 			controlInfo->setProtocol(IP_PROT_MANET);
 			controlInfo->setInterfaceId(interface80211ptr->getInterfaceId());
+#ifdef NOforwardHello
+			recHello = dynamic_cast<DSDV_HelloMessage *>(msg);
+			recHello->setControlInfo(controlInfo);
+#else
+			fhp = new forwardHello();
+			fhp->hello = (DSDV_HelloMessage *) (dynamic_cast<DSDV_HelloMessage *>(msg))->dup();
+			fhp->hello = dynamic_cast<DSDV_HelloMessage *>(msg);
 			fhp->hello->setControlInfo(controlInfo);
 			if( fhp->hello->getControlInfo() == NULL )
 				error("Nulo quando copiei");
+#endif
 		}catch(exception &e){
 			error(e.what());
 		}
+#ifdef 	NOforwardHello
+		if (msg->arrivedOn("ip_toDSDV") && recHello){
+#else
 		if (msg->arrivedOn("ip_toDSDV") && fhp->hello){
+#endif
+
 
 			bubble("Received hello message");
+
+			IPAddress source = interface80211ptr->ipv4Data()->getIPAddress();
 
 			//pointer to interface and routing table
 			//rt = RoutingTableAccess_DSDV().get(); // RoutingTable *rt = nodeInfo[i].rt;
 			//ift = InterfaceTableAccess().get();//InterfaceTable *ift = nodeInfo[i].ift;
 
+
 			//reads DSDV hello message fields
+#ifdef 		NOforwardHello
+
+			IPAddress src = recHello->getSrcIPAddress();
+			unsigned int msgsequencenumber = recHello->getSequencenumber();
+			IPAddress next = recHello->getNextIPAddress();
+			int numHops = recHello->getHopdistance();
+
+			if(src==source){
+				EV << "Hello msg dropped. This message returned to the original creator.\n";
+				try{
+					delete recHello;
+				}catch(exception &e){
+					error(e.what());
+				}
+				return;
+			}
+#else
 			IPAddress src = fhp->hello->getSrcIPAddress();
 			unsigned int msgsequencenumber = fhp->hello->getSequencenumber();
 			IPAddress next = fhp->hello->getNextIPAddress();
 			int numHops = fhp->hello->getHopdistance();
 
+			if(src==source){
+				EV << "Hello msg dropped. This message returned to the original creator.\n";
+				try{
+					delete fhp;
+				}catch(exception &e){
+					error(e.what());
+				}
+				return;
+			}
+#endif
 			// count non-loopback interfaces
 			//int numIntf = 0;
 			//InterfaceEntry *ie = NULL;
@@ -236,21 +292,10 @@ void DSDV_2::handleMessage(cMessage *msg)
 			//
 			//Tests if the DSDV hello message that arrived is originally from another node
 			//IPAddress source = (ie->ipv4()->getIPAddress());
-			IPAddress source = interface80211ptr->ipv4Data()->getIPAddress();
 
-			if(src==source){
-				EV << "Hello msg dropped. This message returned to the original creator.\n";
-				try{
-					delete fhp;
-					delete msg;
-				}catch(exception &e){
-					error(e.what());
-				}
-				return;
-			}
+
 
 			IPRoute *entrada_routing =const_cast<IPRoute *> (rt->findBestMatchingRoute(src));
-
 
 			//Tests if the DSDV hello message that arrived is useful
 			if(entrada_routing == NULL || (entrada_routing != NULL && (msgsequencenumber>(entrada_routing->getSequencenumber()) || (msgsequencenumber == (entrada_routing->getSequencenumber()) && numHops < (entrada_routing->getMetric()))))){
@@ -284,8 +329,21 @@ void DSDV_2::handleMessage(cMessage *msg)
 					e->setInstallTime (simTime());
 					rt->addRoute(e);
 				}
+#ifdef 		NOforwardHello
+				recHello->setNextIPAddress(source);
+				numHops++;
+				recHello->setHopdistance(numHops);
+				//send(HelloForward, "DSDV_toip");//
+				//HelloForward=NULL;//
+				double waitTime = intuniform(1,50);
+				waitTime = waitTime/100;
+				EV << "waitime for forward before was " << waitTime <<" And host is " << source << "\n";
+				//waitTime= SIMTIME_DBL (simTime())+waitTime;
+				EV << "waitime for forward is " << waitTime <<" And host is " << source << "\n";
+				sendDelayed(recHello,waitTime,"DSDV_toip");
+#else
 				try{
-						//forward useful message to other nodes
+					//forward useful message to other nodes
 					fhp->hello->setNextIPAddress(source);
 					numHops++;
 					fhp->hello->setHopdistance(numHops);
@@ -298,14 +356,22 @@ void DSDV_2::handleMessage(cMessage *msg)
 					EV << "waitime for forward is " << waitTime <<" And host is " << source << "\n";
 					fhp->event = new cMessage("event2");
 					scheduleAt(waitTime, fhp->event);
-					forwardList->push_back(*fhp);
+					forwardList->push_back(fhp);
 				}catch(exception &e){
 					error(e.what());
 				}
+#endif
+			}
+			else
+			{
+#ifdef 		NOforwardHello
+				delete msg;
+#else
+				delete fhp;
+#endif
 			}
 		//delete msg; ?
 		}
-
 		else
 		{
 			delete msg;
