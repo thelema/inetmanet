@@ -113,10 +113,12 @@ void UDPBasicBurst2::initialize(int stage)
     WATCH(numDeleted);
 
     localPort = par("localPort");
+    destPort = par("destPort");
+
     if (localPort!=-1)
         bindToPort(localPort);
-
-    destPort = par("destPort");
+    else
+    	bindToPort(destPort);
 
     msgByteLength = par("messageLength").longValue();
 

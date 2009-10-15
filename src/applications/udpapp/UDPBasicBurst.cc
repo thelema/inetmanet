@@ -64,10 +64,12 @@ void UDPBasicBurst::initialize(int stage)
     WATCH(numDeleted);
 
     localPort = par("localPort");
+    destPort = par("destPort");
+
     if (localPort!=-1)
         bindToPort(localPort);
-
-    destPort = par("destPort");
+    else
+    	bindToPort(destPort);
 
     msgByteLength = par("messageLength").longValue();
 
@@ -227,6 +229,13 @@ void UDPBasicBurst::handleMessage(cMessage *msg)
 
 void UDPBasicBurst::processPacket(cPacket *msg)
 {
+
+	if (msg->getKind()== UDP_I_ERROR)
+	{
+		delete msg;
+		return;
+	}
+
     if (msg->hasPar("sourceId"))
     {
     // duplicate control
