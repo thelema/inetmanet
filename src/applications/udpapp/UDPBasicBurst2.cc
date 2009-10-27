@@ -215,6 +215,8 @@ void UDPBasicBurst2::initialize(int stage)
         return;
     }
 
+    destAddr.set("0.0.0.0");
+
     activeBurst= par("activeBurst");
     if (!activeBurst) // new burst
     {
@@ -232,6 +234,8 @@ void UDPBasicBurst2::initialize(int stage)
 IPvXAddress UDPBasicBurst2::chooseDestAddr(bool &fix)
 {
    // int k = intrand(destAddresses.size());
+	if (!destAddr.isUnspecified() && par("fixedDestination"))
+		return destAddr;
     int k =genk_intrand(randGenerator,destAddresses.size());
     fix =  destName[k];
     return destAddresses[k];

@@ -141,6 +141,8 @@ void UDPBasicBurst::initialize(int stage)
         return;
     }
 
+    destAddr.set("0.0.0.0");
+
     activeBurst= par("activeBurst");
     if (!activeBurst) // new burst
     {
@@ -156,6 +158,8 @@ void UDPBasicBurst::initialize(int stage)
 IPvXAddress UDPBasicBurst::chooseDestAddr()
 {
    // int k = intrand(destAddresses.size());
+	if (!destAddr.isUnspecified() && par("fixedDestination"))
+		return destAddr;
     int k =genk_intrand(randGenerator,destAddresses.size());
     return destAddresses[k];
 }
@@ -289,6 +293,9 @@ void UDPBasicBurst::generateBurst()
 		timeBurst = now + par("burstDuration");
 		destAddr = chooseDestAddr();
 	}
+	else
+		destAddr = chooseDestAddr();
+
 
 	if (nextPkt<now)
 	{
