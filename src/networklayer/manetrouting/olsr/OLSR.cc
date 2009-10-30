@@ -497,6 +497,7 @@ OLSR::check_packet(cPacket* msg,nsaddr_t &src_addr,int &index)
 {
 	cPacket *msg_aux=NULL;
 	OLSR_pkt *op;
+	index = getWlanInterfaceIndex(0);
 	if (isInMacLayer())
 	{
 		if (!dynamic_cast<OLSR_pkt  *>(msg)) // Check if olsr packet
@@ -2296,6 +2297,9 @@ uint32_t OLSR::getRoute(const Uint128 &dest,Uint128 add[])
 	for (int i=0;i<(int)rt_entry->route.size();i++)
 		add[i] = rt_entry->route[i];
 	add[rt_entry->route.size()]=dest;
+	OLSR_rt_entry* rt_entry_aux = rtable_.find_send_entry(rt_entry);
+	if (rt_entry_aux->next_addr()!= add[0])
+		opp_error("OLSR Data base error");
 	return rt_entry->dist();
 
 }
@@ -2306,7 +2310,14 @@ bool OLSR::getNextHop(const Uint128 &dest,Uint128 &add, int &iface)
 	OLSR_rt_entry* rt_entry = rtable_.lookup(dest);
 	if (!rt_entry)
 		return false;
-	add = rt_entry->route[0];
+	if (rt_entry->route.size())
+		add = rt_entry->route[0];
+	else
+		add = rt_entry->next_addr();
+	OLSR_rt_entry* rt_entry_aux = rtable_.find_send_entry(rt_entry);
+	if (rt_entry_aux->next_addr()!= add)
+		opp_error("OLSR Data base error");
+
 	InterfaceEntry * ie = getInterfaceWlanByAddress (rt_entry->iface_addr());
 	iface = ie->getInterfaceId();
 	return true;
