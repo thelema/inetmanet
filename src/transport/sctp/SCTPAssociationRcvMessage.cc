@@ -261,7 +261,7 @@ bool SCTPAssociation::process_RCV_Message(SCTPMessage *sctpmsg, IPvXAddress src,
 				sctpEV3<<"state="<<stateName(fsm->getState())<<"\n";
 				if (fsm->getState()==SCTP_S_SHUTDOWN_SENT || fsm->getState()==SCTP_S_SHUTDOWN_ACK_SENT)
 				{
-					trans=performStateTransition(SCTP_E_RCV_SHUTDOWN_ACK);	
+					trans=performStateTransition(SCTP_E_RCV_SHUTDOWN_ACK);
 					sendIndicationToApp(SCTP_I_CLOSED);
 					delete state->shutdownChunk;
 				}
@@ -657,7 +657,7 @@ bool trans=false;
 
 SCTPEventCode SCTPAssociation::processSackArrived(SCTPSackChunk* sackChunk)
 {
-	uint32 tsna, ackedBytes=0, osb=0, bufferPosition, osbPathBefore, osbBefore, lo, hi, hiAcked;
+	uint32 tsna, ackedBytes=0, osb=0, bufferPosition=0, osbPathBefore, osbBefore, lo, hi, hiAcked;
 	uint64 arwnd;
 	uint16 numGaps, numDups;
 	bool ctsnaAdvanced = false, rtxNecessary=false, lowestTsnRetransmitted = false;
@@ -1220,7 +1220,7 @@ SCTPEventCode SCTPAssociation::processDataArrived(SCTPDataChunk* dataChunk, uint
 	SCTPEventCode event;
 	uint32 tsn;
 	bool checkCtsnaChange=false;
-	
+
 	//recordScalar("delay", simulation.getSimTime()-dataChunk->getEnqueuingTime());
 	state->newChunkReceived = false;
 	state->lastDataSourceAddress = remoteAddr;
@@ -1242,22 +1242,22 @@ SCTPEventCode SCTPAssociation::processDataArrived(SCTPDataChunk* dataChunk, uint
 	sctpEV3<<"state->bytesRcvd now="<<state->bytesRcvd<<"\n";
 	SCTP::AssocStatMap::iterator iter=sctpMain->assocStatMap.find(assocId);
 	iter->second.rcvdBytes+=dataChunk->getBitLength()/8-SCTP_DATA_CHUNK_LENGTH;
-	
+
 	if (state->numGaps == 0)
 		state->highestTsnReceived = state->cTsnAck;
 	else
 		state->highestTsnReceived = state->gapStopList[state->numGaps-1];
-	
+
 	if (state->stopReceiving)
 	{
 		return SCTP_E_IGNORE;
 	}
-	
+
 	if (tsnLe(tsn, state->cTsnAck))
 	{
 
 			sctpEV3<<"sctp_handle_incoming_data_chunk: old TSN value...inserted to duplist - returning\n tsn="<<tsn<<"  lastAcked="<<state->cTsnAck<<"\n";
-			
+
 			state->dupList.push_back(tsn);
 			state->dupList.unique();
 			delete check_and_cast <SCTPSimpleMessage*>(dataChunk->decapsulate());
@@ -1270,7 +1270,7 @@ SCTPEventCode SCTPAssociation::processDataArrived(SCTPDataChunk* dataChunk, uint
 		if (tsnGt(tsn, state->highestTsnReceived))
 		{
 			sctpEV3<<"sctp_handle_incoming_data_chunk: dropping new chunk due to full receive buffer -- wait for rwnd to open up\n";
-			
+
 			return SCTP_E_IGNORE;
 		}
 		// changed 06.07.05 I.R.
@@ -1323,10 +1323,10 @@ SCTPEventCode SCTPAssociation::processDataArrived(SCTPDataChunk* dataChunk, uint
 	{
 		advanceCtsna();
 	}
-	event=SCTP_E_SEND; 
-	
+	event=SCTP_E_SEND;
+
 	sctpEV3<<"\ncTsnAck="<<state->cTsnAck<<" highestTsnReceived="<<state->highestTsnReceived<<"\n";
-	
+
 	if (state->newChunkReceived)
 	{
 		SCTPReceiveStreamMap::iterator iter=receiveStreams.find(dataChunk->getSid());
@@ -1377,7 +1377,7 @@ SCTPEventCode  SCTPAssociation::processHeartbeatAckArrived(SCTPHeartbeatAckChunk
 		path->pathSsthresh->record(path->ssthresh);
 		path->heartbeatTimeout= (double)sctpMain->par("hbInterval")+path->pathRto;
 	}
-		
+
 	if (path->activePath == false)
 	{
 		sctpEV3<<"HB-Ack arrived activePath=false. remoteAddress="<<path->remoteAddress<<" initialPP="<<state->initialPrimaryPath<<"\n";
@@ -1467,7 +1467,7 @@ void SCTPAssociation::process_TIMEOUT_HEARTBEAT_INTERVAL(SCTPPathVariables* path
 	path->heartbeatIntervalTimeout = (double)sctpMain->par("hbInterval") +  path->pathRto;
 	path->heartbeatTimeout = path->pathRto;
 	startTimer(path->HeartbeatIntervalTimer, path->heartbeatIntervalTimeout);
-	
+
 	if (simulation.getSimTime() - path->lastAckTime > path->heartbeatIntervalTimeout/2 || path->forceHb)
 	{
 		sendHeartbeat(path, false);
@@ -1680,7 +1680,7 @@ int32 SCTPAssociation::process_TIMEOUT_RTX(SCTPPathVariables* path)
 		/*========================================================================*/
 		/* only insert chunks that were sent to the path that has timed out 	  */
 		/*========================================================================*/
-		if ( ((chunk->hasBeenAcked == false && chunk->countsAsOutstanding) || chunk->hasBeenRemoved) && (chunk->lastDestination == path->remoteAddress) )
+		if (((chunk->hasBeenAcked == false && chunk->countsAsOutstanding) || chunk->hasBeenRemoved )&& chunk->lastDestination == path->remoteAddress )
 		{
 			iter->second->hasBeenFastRetransmitted = false;
 			iter->second->gapReports = 0;
@@ -1717,10 +1717,10 @@ int32 SCTPAssociation::process_TIMEOUT_RTX(SCTPPathVariables* path)
 				{
 					getPath(iter->second->lastDestination)->outstandingBytes -= iter->second->booksize;
 					sctpEV3<<"osb after substraction="<<getPath(iter->second->lastDestination)->outstandingBytes<<"\n";
-					iter->second->countsAsOutstanding = false; 
+					iter->second->countsAsOutstanding = false;
 				}
 				i->second -= ADD_PADDING(iter->second->booksize+SCTP_DATA_CHUNK_LENGTH);
-				
+
 				state->peerRwnd += (chunk->booksize);
 				SCTP::AssocStatMap::iterator iter=sctpMain->assocStatMap.find(assocId);
 				iter->second.numT3Rtx++;

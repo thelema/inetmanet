@@ -38,7 +38,7 @@
 // helper functions
 //
 inline uint32 uint32rand() {
-	return (uint32)intrand(0xffff) << 16 + (uint32)intrand(0xffff);
+	return ((uint32)intrand(0xffff) << 16) + (uint32)intrand(0xffff);
 }
 
 void SCTPAssociation::printSctpPathMap()
