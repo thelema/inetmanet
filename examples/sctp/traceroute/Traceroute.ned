@@ -63,9 +63,8 @@ network Traceroute //
             parameters:
                 IPForward = false;
                 routingFile = "cli4.mrt";
+                numExtInterfaces = 1;
             @display("p=40,295;i=laptop3");
-            gates:
-                ethg[1];
 	}
         cli5: StandardHost {
             parameters:
@@ -172,10 +171,10 @@ network Traceroute //
         extRouter: ExtRouter {
             parameters:
                 routingFile = "extRouter.mrt";
+                numExtInterfaces = 1;
                 @display("p=500,293;i=device/router_l");
             gates:
                 pppg[2];
-                extg[1];
 	}
     connections allowunconnected:
         cli1.ethg[0]  <--> switch1.ethg[0];
