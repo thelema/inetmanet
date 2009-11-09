@@ -26,7 +26,7 @@ SCTPMessage& SCTPMessage::operator=(const SCTPMessage& other)
     SCTPMessage_Base::operator=(other);
 
     this->setBitLength(SCTP_COMMON_HEADER*8);
-    this->setTag(0);
+    this->setTag(other.getTag());
     for (std::list<cPacket*>::const_iterator i=other.chunkList.begin(); i!=other.chunkList.end(); ++i)
         addChunk((cPacket *)(*i)->dup());
 
@@ -87,7 +87,7 @@ cPacket *SCTPMessage::removeChunk()
 {
 	if (chunkList.empty())
 		return NULL;
-	
+
 	cPacket *msg = chunkList.front();
 	chunkList.pop_front();
 	drop(msg);
@@ -99,7 +99,7 @@ cPacket *SCTPMessage::removeLastChunk()
 {
 	if (chunkList.empty())
 		return NULL;
-	
+
 	cPacket *msg = chunkList.back();
 	chunkList.pop_back();
 	drop(msg);
@@ -111,7 +111,7 @@ cPacket *SCTPMessage::peekFirstChunk()
 {
 	if (chunkList.empty())
 		return NULL;
-	
+
 	cPacket *msg = chunkList.front();
 	return msg;
 }
@@ -120,7 +120,7 @@ cPacket *SCTPMessage::peekLastChunk()
 {
 	if (chunkList.empty())
 		return NULL;
-	
+
 	cPacket *msg = chunkList.back();
 	return msg;
 }
