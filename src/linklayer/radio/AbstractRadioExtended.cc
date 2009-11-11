@@ -89,12 +89,17 @@ void AbstractRadioExtended::initialize(int stage)
         WATCH(noiseLevel);
         WATCH(rs);
 
-        if (par("attenuationModel").stdstringValue ()=="tworay")
-        	receptionModel = createReceptionModelTwoRay();
-        if (par("attenuationModel").stdstringValue ()=="pathlost")
-        	receptionModel = createReceptionModelPathLost();
+        if (cc->par("propagationModel").str()!="")
+        	receptionModel = (IReceptionModel *) createOne(cc->par("propagationModel").stringValue());
         else
-        	receptionModel = createReceptionModel();
+        {
+        	if (par("attenuationModel").stdstringValue ()=="tworay")
+               	receptionModel = createReceptionModelTwoRay();
+        	if (par("attenuationModel").stdstringValue ()=="pathlost")
+        		receptionModel = createReceptionModelPathLost();
+        	else
+        		receptionModel = createReceptionModel();
+        }
         receptionModel->initializeFrom(this);
 
         radioModel = createRadioModel();

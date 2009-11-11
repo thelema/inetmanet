@@ -18,6 +18,7 @@
 //
 
 package inet.linklayer.radio;
+import inet.linklayer.radio.PropagationModel;
 
 //
 // Physical layer for the IEEE 802.11 models. Its external interface
@@ -30,9 +31,10 @@ package inet.linklayer.radio;
 // @see Radio
 // @author Andras Varga Ahmed Ayadi
 //
-simple Ieee80211aRadio
+simple Ieee80211aRadio extends PropagationModel
 {
     parameters:
+        @class(Ieee80211aRadio);
         int channelNumber = default(0); // channel identifier
         double carrierFrequency @unit("Hz") = default(5.1GHz);
         double transmitterPower @unit("mW") = default(20mW); // power used for transmission of messages (in mW)
@@ -54,7 +56,7 @@ simple Ieee80211aRadio
         int ID = default(0);
         int channelModel = default (1); // 1=(Rayleigh) or 2= a (AWGN)
         
-        string attenuationModel = default("");// Values "pathlost" or "tworay" 
+        string attenuationModel = default("PathLossReceptionModel");// Values "pathlost" or "tworay" 
         @display("i=block/wrxtx");
     gates:
         input uppergateIn;   // from higher layer protocol (MAC)

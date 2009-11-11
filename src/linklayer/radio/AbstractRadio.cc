@@ -86,7 +86,10 @@ void AbstractRadio::initialize(int stage)
         WATCH(noiseLevel);
         WATCH(rs);
 
-        receptionModel = createReceptionModel();
+        if (cc->par("propagationModel").str()!="")
+        	receptionModel = (IReceptionModel *) createOne(cc->par("propagationModel").stringValue());
+        else
+        	createReceptionModel();
         receptionModel->initializeFrom(this);
 
         radioModel = createRadioModel();

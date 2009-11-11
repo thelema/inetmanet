@@ -17,6 +17,7 @@
 
 
 package inet.linklayer.radio;
+import inet.linklayer.radio.PropagationModel;
 
 //
 // Generic radio module. The implementation is largely based on the
@@ -25,9 +26,10 @@ package inet.linklayer.radio;
 // @see Radio
 // @author Andras Varga
 //
-simple GenericRadio
+simple GenericRadio extends PropagationModel
 {
     parameters:
+        @class(GenericRadio);
         int channelNumber = default(0); // channel identifier
         double carrierFrequency @unit("Hz") = default(2.4GHz);
         double transmitterPower @unit("mW") = default(20mW); // power used for transmission of messages (in mW)
@@ -39,7 +41,7 @@ simple GenericRadio
         int headerLengthBits @unit(b); // length of physical layer framing (preamble, etc)
         double bandwidth @unit("Hz"); // signal bandwidth, used for bit error calculation
         string modulation; // "BPSK", "16-QAM", "256-QAM" or "null"; selects bit error calculation method
-        string attenuationModel = default("");
+        string attenuationModel = default("PathLossReceptionModel");
     gates:
         input uppergateIn;   // from higher layer protocol (MAC)
         output uppergateOut; // to decider (decider connects to higher layer protocol, i.e. the MAC)

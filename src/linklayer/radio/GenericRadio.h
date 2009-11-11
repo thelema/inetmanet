@@ -26,7 +26,7 @@
 class INET_API GenericRadio : public AbstractRadio
 {
   protected:
-    virtual IReceptionModel *createReceptionModel() {return (IReceptionModel *)createOne("PathLossReceptionModel");}
+    virtual IReceptionModel *createReceptionModel() {return (IReceptionModel *)createOne(par("attenuationModel").stringValue());}
     virtual IRadioModel *createRadioModel() {return (IRadioModel *)createOne("GenericRadioModel");}
 };
 
