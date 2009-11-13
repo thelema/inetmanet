@@ -175,7 +175,7 @@ DYMO::~DYMO()
 	delete ownSeqNumLossTimeout;
 	if (ownSeqNumLossTimeoutMax)
 	delete ownSeqNumLossTimeoutMax;
-	
+
 
 	if (rateLimiterRREQ)
 	delete rateLimiterRREQ;
@@ -1071,16 +1071,16 @@ void DYMO::packetFailed(IPDatagram *dgram)
 	}
 	EV << "LINK FAILURE for dest=" << dgram->getSrcAddress();
 	DYMO_RoutingEntry *entry = dymo_routingTable->getByAddress(dgram->getDestAddress());
-
-	IPAddress nextHop = entry->routeNextHopAddress;
-
-
-	for(int i = 0; i < dymo_routingTable->getNumRoutes(); i++) {
-		DYMO_RoutingEntry *entry = dymo_routingTable->getRoute(i);
-		if (entry->routeNextHopAddress==nextHop)
-		{
-			entry->routeBroken = true;
-			//sendRERR(entry->routeAddress.getInt(),entry->routeSeqNum);
+	if (entry)
+	{
+		IPAddress nextHop = entry->routeNextHopAddress;
+		for(int i = 0; i < dymo_routingTable->getNumRoutes(); i++) {
+			DYMO_RoutingEntry *entry = dymo_routingTable->getRoute(i);
+			if (entry->routeNextHopAddress==nextHop)
+			{
+				entry->routeBroken = true;
+				//sendRERR(entry->routeAddress.getInt(),entry->routeSeqNum);
+			}
 		}
 	}
 	dymo_routingTable->maintainAssociatedRoutingTable();
