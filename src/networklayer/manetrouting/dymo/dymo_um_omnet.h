@@ -24,9 +24,9 @@
 #define _DYMO_UM_OMNET_H
 
 // This define activate the new queue timer
-//#define TIMERMAPLIST
+#define TIMERMAPLIST
 // This define activate the new routing table
-// #define MAPROUTINGTABLE
+#define MAPROUTINGTABLE
 
 /* Constants for interface queue packet buffering/dropping */
 #define IFQ_BUFFER 0
