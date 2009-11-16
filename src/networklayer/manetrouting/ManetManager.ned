@@ -13,7 +13,7 @@ simple ManetManager
         // Manager parameters
         string routingProtocol;
         bool manetActive;
-        bool manetPurgeRoutingTables;
+        bool manetPurgeRoutingTables = default (true);
     gates:
         input from_ip;
         output to_ip;

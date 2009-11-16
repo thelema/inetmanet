@@ -16,8 +16,7 @@ module ManetRouting
                 // Manager parameters
                 // eliminate in the routing table all the initial reference to wlan interfaces
                 manetActive = true;
-                //		manetPurgeRoutingTables=true,
-                manetPurgeRoutingTables = true;
+               // manetPurgeRoutingTables = true;
                 @display("p=90,48;b=40,24");
         }
     connections allowunconnected:
