@@ -179,6 +179,7 @@ void Ieee80211Mesh::handleMessage(cMessage *msg)
 		// process incoming frame
 		EV << "Frame arrived from MAC: " << msg << "\n";
         Ieee80211DataFrame *frame = dynamic_cast<Ieee80211DataFrame *>(msg);
+        frame->setTTL(frame->getTTL()-1);
 		actualizeReactive(frame,false);
         processFrame(frame);
     }
@@ -265,6 +266,7 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg)
 	if (dest.isBroadcast())
 	{
 		frame->setReceiverAddress(dest);
+		frame->setTTL(1);
 		uint32_t cont;
 
 		mplsData->getBroadCastCounter(cont);
@@ -470,7 +472,10 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg,MACAddress dest)
    Ieee80211DataFrame *frame = new Ieee80211DataFrame(msg->getName());
 
    if (msg->getControlInfo())
-   	delete msg->removeControlInfo();
+	   delete msg->removeControlInfo();
+   LWMPLSPacket* msgAux = dynamic_cast<LWMPLSPacket*> (msg);
+   if (msgAux)
+	   frame->setTTL(msgAux->getTTL());
    frame->setReceiverAddress(dest);
    frame->encapsulate(msg);
 
@@ -480,6 +485,8 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg,MACAddress dest)
 	   strcpy(name,msg->getName());
 	   opp_error ("Ieee80211Mesh::encapsulate Bad Address");
    }
+   if (frame->getReceiverAddress().isBroadcast())
+	   frame->setTTL(1);
    return frame;
 }
 
@@ -519,6 +526,7 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 	cPacket *msg = decapsulate(frame);
 	LWMPLSPacket *lwmplspk = dynamic_cast<LWMPLSPacket*> (msg);
 	mplsData->lwmpls_refresh_mac(MacToUint64(source),simTime());
+	short ttl = frame->getTTL();
 
 	if (!lwmplspk)
 	{
@@ -575,6 +583,7 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 			sendUp(msg);
 		return;
 	}
+	lwmplspk->setTTL(ttl);
 	mplsDataProcess(lwmplspk,source);
 }
 
@@ -1275,9 +1284,15 @@ void Ieee80211Mesh::mplsForwardData(int label,LWMPLSPacket *mpls_pk_ptr,MACAddre
 		}
 		else
 		{
-			cPacket *seg_pkptr =  mpls_pk_ptr->decapsulate();
-			delete mpls_pk_ptr;
-			mplsDataProcess((LWMPLSPacket*)seg_pkptr,sta_addr);
+			if (dynamic_cast<LWMPLSPacket*>(mpls_pk_ptr->getEncapsulatedMsg ()))
+			{
+				LWMPLSPacket *seg_pkptr =  dynamic_cast<LWMPLSPacket*>(mpls_pk_ptr->decapsulate());
+				seg_pkptr->setTTL(mpls_pk_ptr->getTTL());
+				delete mpls_pk_ptr;
+				mplsDataProcess((LWMPLSPacket*)seg_pkptr,sta_addr);
+			}
+			else
+				delete mpls_pk_ptr;
 		}
 				// printf("To application %d normal %f \n",time);
 	}
@@ -1799,6 +1814,12 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 	uint64_t prev = MacToUint64(frame->getTransmitterAddress());
 	uint64_t next = mplsData->getForwardingMacKey(src,dest,prev);
 
+	if (frame->getTTL()<=0)
+	{
+		delete frame;
+		return true;
+	}
+
 	if (next)
 	{
 		frame->setReceiverAddress(Uint64ToMac(next));
@@ -1936,6 +1957,12 @@ void Ieee80211Mesh::actualizeReactive(cPacket *pkt,bool out)
 
 void Ieee80211Mesh::sendOrEnqueue(cPacket *frame)
 {
+	Ieee80211Frame * frameAux = dynamic_cast<Ieee80211Frame*>(frame);
+	if (frameAux && frameAux->getTTL()<=0)
+	{
+		delete frame;
+		return;
+	}
 	actualizeReactive(frame,true);
     PassiveQueueBase::handleMessage(frame);
 }

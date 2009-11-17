@@ -61,6 +61,7 @@ packet LWMPLSPacket
      byteLength = 4;
      MACAddress source; // This fields are in the 4 address I'm include here for simplicity
      MACAddress dest;   //
+     short TTL;
      MACAddress vectorAddress[];
 };
 
