@@ -42,6 +42,7 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 
   protected:
 	cMessage WMPLSCHECKMAC;
+	double limitDelay;
 	NotificationBoard *nb;
 	bool proactiveFeedback;
 	int maxHopProactiveFeedback; // Maximun number of hops for to use the proactive feedback

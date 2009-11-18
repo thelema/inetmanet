@@ -30,6 +30,7 @@ simple Ieee80211Mesh
         int maxHopProactiveFeedback=default(-1); // Maximun number of hops for to use the proactive feedback, not used yet, TO-DO
         int maxHopProactive=default(-1); // Maximun number of hops in the fix part of the network with the proactive feedback
         int maxHopReactive=default(-1); // Maximun number of hops by the reactive part for to use the proactive feedback, not used yet, TO-DO
+        double maxDelay=default(0.1);
  //       int Willingness = default(3); //ms
  //       int Hello_ival = default(2); // sec
  //       int Tc_ival = default(5); // sec

@@ -185,3 +185,10 @@ packet Ieee80211LBMSReport extends Ieee80211DataOrMgmtFrame
         double snr;
 }
 
+packet Ieee80211MeshFrame extends Ieee80211DataFrame
+{
+    type = ST_DATA;
+    byteLength = 38;
+    short TTL = 15; // Is used by experimental 80211 mesh protocol
+    long seqNumber;
+}

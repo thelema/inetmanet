@@ -83,6 +83,7 @@ void Ieee80211Mesh::initialize(int stage)
 
     if (stage==1)
     {
+		limitDelay = par("maxDelay").doubleValue();
 		mplsData = new LWMPLSDataStructure;
 		cModuleType *moduleType;
 		cModule *module;
@@ -178,14 +179,10 @@ void Ieee80211Mesh::handleMessage(cMessage *msg)
     {
 		// process incoming frame
 		EV << "Frame arrived from MAC: " << msg << "\n";
-		simtime_t delay = simTime() - msg->getTimestamp();
-		if (SIMTIME_DBL(delay)>0.01)
-		{
-			delete msg;
-			return;
-		}
         Ieee80211DataFrame *frame = dynamic_cast<Ieee80211DataFrame *>(msg);
-        frame->setTTL(frame->getTTL()-1);
+        Ieee80211MeshFrame *frame2  = dynamic_cast<Ieee80211MeshFrame *>(msg);
+        if (frame2)
+        	frame2->setTTL(frame2->getTTL()-1);
 		actualizeReactive(frame,false);
         processFrame(frame);
     }
@@ -255,8 +252,8 @@ void Ieee80211Mesh::handleCommand(int msgkind, cPolymorphic *ctrl)
 
 Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg)
 {
-	Ieee80211DataFrame *frame = new Ieee80211DataFrame(msg->getName());
-	frame->setTimestamp();
+	Ieee80211MeshFrame *frame = new Ieee80211MeshFrame(msg->getName());
+	frame->setTimestamp(msg->getCreationTime());
 	LWMPLSPacket *lwmplspk = NULL;
 	LWmpls_Forwarding_Structure *forwarding_ptr=NULL;
 
@@ -273,7 +270,9 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg)
 	if (dest.isBroadcast())
 	{
 		frame->setReceiverAddress(dest);
-		frame->setTTL(1);
+	    Ieee80211MeshFrame *frame2  = dynamic_cast<Ieee80211MeshFrame *>(msg);
+	    if (frame2)
+	    	frame2->setTTL(1);
 		uint32_t cont;
 
 		mplsData->getBroadCastCounter(cont);
@@ -476,14 +475,18 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg)
 
 Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg,MACAddress dest)
 {
-   Ieee80211DataFrame *frame = new Ieee80211DataFrame(msg->getName());
-   frame->setTimestamp();
+	Ieee80211MeshFrame *frame = new Ieee80211MeshFrame(msg->getName());
+   frame->setTimestamp(msg->getCreationTime());
 
    if (msg->getControlInfo())
 	   delete msg->removeControlInfo();
    LWMPLSPacket* msgAux = dynamic_cast<LWMPLSPacket*> (msg);
+   Ieee80211MeshFrame *frame2  = dynamic_cast<Ieee80211MeshFrame *>(msg);
    if (msgAux)
-	   frame->setTTL(msgAux->getTTL());
+   {
+	    if (frame2)
+	    	frame2->setTTL(msgAux->getTTL());
+   }
    frame->setReceiverAddress(dest);
    frame->encapsulate(msg);
 
@@ -493,8 +496,8 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg,MACAddress dest)
 	   strcpy(name,msg->getName());
 	   opp_error ("Ieee80211Mesh::encapsulate Bad Address");
    }
-   if (frame->getReceiverAddress().isBroadcast())
-	   frame->setTTL(1);
+   if (frame->getReceiverAddress().isBroadcast() && frame2)
+	   frame2->setTTL(1);
    return frame;
 }
 
@@ -531,7 +534,10 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 			return;
 
 	MACAddress source= frame->getTransmitterAddress();
-	short ttl = frame->getTTL();
+    Ieee80211MeshFrame *frame2  = dynamic_cast<Ieee80211MeshFrame *>(frame);
+    short ttl = 15;
+    if (frame2)
+    	ttl = frame2->getTTL();
 	cPacket *msg = decapsulate(frame);
 	LWMPLSPacket *lwmplspk = dynamic_cast<LWMPLSPacket*> (msg);
 	mplsData->lwmpls_refresh_mac(MacToUint64(source),simTime());
@@ -750,8 +756,8 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 			//int dist = mpls_pk_ptr->getDist();
 			//mpls_pk_ptr->setDist(0);
 			/*op_pk_nfd_set_int32 (mpls_pk_ptr, "label",forwarding_ptr->output_label);*/
-			Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
-			frame->setTimestamp();
+			Ieee80211MeshFrame *frame = new Ieee80211MeshFrame(mpls_pk_ptr->getName());
+			frame->setTimestamp(mpls_pk_ptr->getCreationTime());
 			if (usedOutLabel<=0 || usedIntLabel<=0)
 				opp_error("mplsCreateNewPath Error in label");
 
@@ -867,8 +873,8 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 
 			mpls_pk_ptr->setLabel(forwarding_ptr->return_label_input);
 			mpls_pk_ptr->setLabelReturn(0);
-			Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
-			frame->setTimestamp();
+			Ieee80211MeshFrame *frame = new Ieee80211MeshFrame(mpls_pk_ptr->getName());
+			frame->setTimestamp(mpls_pk_ptr->getCreationTime());
 			frame->setReceiverAddress(Uint64ToMac(forwarding_ptr->mac_address));
 			frame->setAddress4(mpls_pk_ptr->getDest());
 			frame->setAddress3(mpls_pk_ptr->getSource());
@@ -1016,8 +1022,8 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 		}
 
 // Send to next node
-		Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
-		frame->setTimestamp();
+		Ieee80211MeshFrame *frame = new Ieee80211MeshFrame(mpls_pk_ptr->getName());
+		frame->setTimestamp(mpls_pk_ptr->getCreationTime());
 		frame->setReceiverAddress(Uint64ToMac(forwarding_ptr->mac_address));
 		frame->setAddress4(mpls_pk_ptr->getDest());
 		frame->setAddress3(mpls_pk_ptr->getSource());
@@ -1086,8 +1092,8 @@ void Ieee80211Mesh::mplsBasicSend (LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr
 		mpls_pk_ptr->setByteLength(0);
 		if (pk)
 			mpls_pk_ptr->encapsulate(pk);
-   		Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
-   		frame->setTimestamp();
+		Ieee80211MeshFrame *frame = new Ieee80211MeshFrame(mpls_pk_ptr->getName());
+   		frame->setTimestamp(mpls_pk_ptr->getCreationTime());
 		frame->setAddress4(mpls_pk_ptr->getDest());
 		frame->setAddress3(mpls_pk_ptr->getSource());
 
@@ -1137,8 +1143,8 @@ void Ieee80211Mesh::mplsBreakPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddress
 
 	if ((forwarding_ptr->order==LWMPLS_CHANGE) && (!send_mac_addr.isUnspecified()))
 	{
-		Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
-		frame->setTimestamp();
+		Ieee80211MeshFrame *frame = new Ieee80211MeshFrame(mpls_pk_ptr->getName());
+		frame->setTimestamp(mpls_pk_ptr->getCreationTime());
 		frame->setReceiverAddress(send_mac_addr);
 		frame->setAddress4(mpls_pk_ptr->getDest());
 		frame->setAddress3(mpls_pk_ptr->getSource());
@@ -1185,8 +1191,8 @@ void Ieee80211Mesh::mplsNotFoundPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAddr
 
 		if ((forwarding_ptr->order==LWMPLS_CHANGE)&&(!send_mac_addr.isUnspecified()))
 		{
-			Ieee80211DataFrame *frame = new Ieee80211DataFrame(mpls_pk_ptr->getName());
-			frame->setTimestamp();
+			Ieee80211MeshFrame *frame = new Ieee80211MeshFrame(mpls_pk_ptr->getName());
+			frame->setTimestamp(mpls_pk_ptr->getCreationTime());
 			frame->setReceiverAddress(send_mac_addr);
 			frame->setAddress4(mpls_pk_ptr->getDest());
 			frame->setAddress3(mpls_pk_ptr->getSource());
@@ -1828,8 +1834,10 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 	uint64_t src = MacToUint64(frame->getAddress3());
 	uint64_t prev = MacToUint64(frame->getTransmitterAddress());
 	uint64_t next = mplsData->getForwardingMacKey(src,dest,prev);
+    Ieee80211MeshFrame *frame2  = dynamic_cast<Ieee80211MeshFrame *>(frame);
 
-	if (frame->getTTL()<=0)
+	double  delay = SIMTIME_DBL(simTime() - frame->getTimestamp());
+	if ((frame2 && frame2->getTTL()<=0) || (delay > limitDelay))
 	{
 		delete frame;
 		return true;
@@ -1972,7 +1980,7 @@ void Ieee80211Mesh::actualizeReactive(cPacket *pkt,bool out)
 
 void Ieee80211Mesh::sendOrEnqueue(cPacket *frame)
 {
-	Ieee80211Frame * frameAux = dynamic_cast<Ieee80211Frame*>(frame);
+	Ieee80211MeshFrame * frameAux = dynamic_cast<Ieee80211MeshFrame*>(frame);
 	if (frameAux && frameAux->getTTL()<=0)
 	{
 		delete frame;
