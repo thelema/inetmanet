@@ -398,6 +398,7 @@ struct OLSR_msg;
 packet OLSR_pkt
 {
     @omitGetVerb(true);
+    bool reduceFuncionality=false;
     short pkt_seq_num;			///< Packet sequence number.
     long sn; /// CapProbe packet sequence number
     double send_time; /// Packet sending timestamp

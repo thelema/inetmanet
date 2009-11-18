@@ -10,6 +10,7 @@ simple OLSR
         int use_mac = default(0);
         bool UseIndex = default(false); // use the interface index instead the ip to identify the interface EXPERIMENTAL
         string ExcludedInterfaces = default(""); // list of interfaces excluded by the manet routing protocol
+        bool reduceFuncionality = default (false);
     gates:
         input from_ip;
         output to_ip;

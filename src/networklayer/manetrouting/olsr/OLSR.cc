@@ -507,6 +507,12 @@ OLSR::check_packet(cPacket* msg,nsaddr_t &src_addr,int &index)
 		}
 		else
 		{
+			op =  check_and_cast<OLSR_pkt  *>(msg);
+			if (op->reduceFuncionality() && par("reduceFuncionality").boolValue())
+			{
+				delete msg;
+				return NULL;
+			}
 			Ieee802Ctrl* ctrl = check_and_cast<Ieee802Ctrl*>(msg->removeControlInfo());
 			src_addr = ctrl->getSrc();
 			delete ctrl;
@@ -539,6 +545,12 @@ OLSR::check_packet(cPacket* msg,nsaddr_t &src_addr,int &index)
 	}
 // Extract information and delete the cantainer without more use
 	op =  check_and_cast<OLSR_pkt  *>(msg_aux);
+	if (op->reduceFuncionality() && par("reduceFuncionality"))
+	{
+		delete msg;
+		delete op;
+		return NULL;
+	}
 	IPControlInfo* controlInfo = check_and_cast<IPControlInfo*>(msg->removeControlInfo());
 	src_addr = controlInfo->getSrcAddr().getInt();
 	index = -1;
@@ -1348,6 +1360,7 @@ OLSR::send_pkt() {
 
 		op->setByteLength( OLSR_PKT_HDR_SIZE );
 		op->setPkt_seq_num( pkt_seq());
+		op->setReduceFuncionality(par("reduceFuncionality").boolValue());
 
 		int j = 0;
 		for (std::vector<OLSR_msg>::iterator it = msgs_.begin(); it != msgs_.end();) {
