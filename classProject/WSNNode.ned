@@ -28,7 +28,7 @@ import inet.networklayer.ipv4.RoutingTable;
 import inet.nodes.inet.NetworkLayerGlobalArp;
 import inet.transport.tcp.TCP;
 
-//import inet.networklayer.manetrouting.ManetRouting;
+import inet.networklayer.manetrouting.ManetRouting;
 import inet.networklayer.manetrouting.DSDV_2;
 
 //
@@ -83,8 +83,8 @@ module WSNNode
                 ifIn[1];
                 ifOut[1];
         }
-//        manetrouting: ManetRouting {
-		routing: DSDV_2 {
+        manetrouting: ManetRouting {
+//		routing: DSDV_2 {
             parameters:
                 @display("p=153,247;i=block/network2");
         }
@@ -108,11 +108,11 @@ module WSNNode
         tcp.ipOut --> networkLayer.tcpIn;
         tcp.ipIn <-- networkLayer.TCPOut;
 
- //       networkLayer.MANETOut --> manetrouting.from_ip;
-  //      networkLayer.MANETIn <-- manetrouing.to_ip;
+        networkLayer.MANETOut --> manetrouting.from_ip;
+        networkLayer.MANETIn <-- manetrouting.to_ip;
   
-        networkLayer.MANETOut --> routing.ip_toDSDV;
-        networkLayer.MANETIn <-- routing.DSDV_toip;
+//        networkLayer.MANETOut --> routing.ip_toDSDV;
+//        networkLayer.MANETIn <-- routing.DSDV_toip;
 
         // connections to network outside
         radioIn --> wlan.radioIn;
