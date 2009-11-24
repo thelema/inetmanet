@@ -997,14 +997,15 @@ bool  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const int &iface
 	nextAddr.s_addr = add;
 	rt_table_t * fwd_rt = rt_table_find(destAddr);
 
-
-
+	omnet_chg_rte (dest,dest,dest,1,true);
 	if (fwd_rt!=NULL)
 		rt_table_delete(fwd_rt);
 	if (add == (Uint128)0)
 		return true;
 	if (ifaceIndex>=getNumInterfaces())
 		return false;
+	Uint128 mask = add.getIPAddress().getNetworkMask().getInt();
+	omnet_chg_rte(dest, add,mask, hops,false,ifaceIndex);
 	return (rt_table_insert(destAddr,nextAddr,hops,0xFFFF,0,IMMORTAL,0, ifaceIndex)!=NULL);
 }
 
@@ -1015,11 +1016,13 @@ bool  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const char  *ifa
 	destAddr.s_addr = dest;
 	nextAddr.s_addr = add;
 	rt_table_t * fwd_rt = rt_table_find(destAddr);
+	omnet_chg_rte (dest,dest,dest,1,true);
 
 	if (fwd_rt!=NULL)
 		rt_table_delete(fwd_rt);
 	if (add == (Uint128)0)
 		return true;
+
 	int index;
 	for (index = 0; index <getNumInterfaces(); index++)
 	{
@@ -1027,5 +1030,7 @@ bool  NS_CLASS setRoute(const Uint128 &dest,const Uint128 &add, const char  *ifa
 	}
 	if (index>=getNumInterfaces())
 		return false;
+	Uint128 mask = add.getIPAddress().getNetworkMask().getInt();
+	omnet_chg_rte(dest, add,mask, hops,false,index);
 	return (rt_table_insert(destAddr,nextAddr,hops,0xFFFF,0,IMMORTAL,0, index)!=NULL);
 }
