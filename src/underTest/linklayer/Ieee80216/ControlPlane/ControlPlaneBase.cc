@@ -169,6 +169,7 @@ ServiceFlow *ControlPlaneBase::getServiceFlowForCID( int cid ) {
 		else EV << "getServiceFlowForCID("<< cid <<"): SFID not found!\n";
 	}
 	else EV << "getServiceFlowForCID("<< cid <<"): CID not found!\n";
+	return NULL;
 }
 
 int ControlPlaneBase::getSFIDForCID( int cid ) {
