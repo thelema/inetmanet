@@ -481,11 +481,9 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg,MACAddress dest)
    if (msg->getControlInfo())
 	   delete msg->removeControlInfo();
    LWMPLSPacket* msgAux = dynamic_cast<LWMPLSPacket*> (msg);
-   Ieee80211MeshFrame *frame2  = dynamic_cast<Ieee80211MeshFrame *>(msg);
    if (msgAux)
    {
-	    if (frame2)
-	    	frame2->setTTL(msgAux->getTTL());
+    	frame->setTTL(msgAux->getTTL());
    }
    frame->setReceiverAddress(dest);
    frame->encapsulate(msg);
@@ -496,8 +494,8 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg,MACAddress dest)
 	   strcpy(name,msg->getName());
 	   opp_error ("Ieee80211Mesh::encapsulate Bad Address");
    }
-   if (frame->getReceiverAddress().isBroadcast() && frame2)
-	   frame2->setTTL(1);
+   if (frame->getReceiverAddress().isBroadcast())
+	   frame->setTTL(1);
    return frame;
 }
 
