@@ -420,6 +420,11 @@ OLSR::initialize(int stage) {
 		mid_ival_=par("Mid_ival");
 		use_mac_=par("use_mac");
 
+		if (par("reduceFuncionality"))
+			EV << "reduceFuncionality true" << endl;
+		else
+			EV << "reduceFuncionality false" << endl;
+
 		pkt_seq_	= OLSR_MAX_SEQ_NUM;
 		msg_seq_	= OLSR_MAX_SEQ_NUM;
 		ansn_		= OLSR_MAX_SEQ_NUM;
