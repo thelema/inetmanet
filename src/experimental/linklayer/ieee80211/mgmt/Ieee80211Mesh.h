@@ -54,6 +54,7 @@ class INET_API Ieee80211Mesh : public Ieee80211MgmtBase
 
 	IInterfaceTable *ift;
 	bool useLwmpls;
+	int maxTTL;
 
 	LWMPLSDataStructure * mplsData;
 
