@@ -574,7 +574,7 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 			msg->setControlInfo(controlInfo);
 			if (routingModuleReactive->getDestAddress(msg,dest))
 			{
-				Uint128 add[20];
+				Uint128 add[MAX_ADDR_SIZE];
 				Uint128 src = controlInfo->getSrc();
 				int dist = 0;
 				if (routingModuleProactive && proactiveFeedback)
@@ -582,7 +582,7 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 					// int neig = routingModuleProactive))->getRoute(src,add);
 					controlInfo->setPreviousFix(true); // This node is fix
 					dist = routingModuleProactive->getRoute(dest,NULL);
-					if (dist>0 && dist<20)
+					if (dist>0 && dist<MAX_ADDR_SIZE)
 						dist = routingModuleProactive->getRoute(dest,add);
 					else
 						dist = 0;
@@ -797,13 +797,13 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 					mpls_pk_ptr->getVectorAddressArraySize()==0 )
 					//mpls_pk_ptr->getDist()==0 )
 				{
-					Uint128 add[20];
+					Uint128 add[MAX_ADDR_SIZE];
 					int dist = 0;
 
 					if (routingModuleProactive)
 					{
 						dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),NULL);
-						if (dist >0 && dist < 20)
+						if (dist >0 && dist < MAX_ADDR_SIZE)
 							dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
 						else
 							dist =0;
@@ -851,12 +851,12 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 					else
 					{
 // Local route
-						Uint128 add[20];
+						Uint128 add[MAX_ADDR_SIZE];
 						int dist = 0;
 						if (routingModuleProactive)
 						{
 							dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),NULL);
-							if (dist >0 && dist < 20)
+							if (dist >0 && dist < MAX_ADDR_SIZE)
 								dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
 							else
 								dist =0;
@@ -959,12 +959,12 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 			mpls_pk_ptr->getVectorAddressArraySize()==0 )
 			//mpls_pk_ptr->getDist()==0 )
 		{
-			Uint128 add[20];
+			Uint128 add[MAX_ADDR_SIZE];
 			int dist = 0;
 			if (routingModuleProactive)
 			{
 				dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),NULL);
-				if (dist >0 && dist < 20)
+				if (dist >0 && dist < MAX_ADDR_SIZE)
 					dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
 				else
 					dist =0;
@@ -1018,10 +1018,16 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 // Local route o discard?
 				// delete mpls_pk_ptr
 				// return;
-				Uint128 add[20];
+				Uint128 add[MAX_ADDR_SIZE];
 				int dist = 0;
 				if (routingModuleProactive)
-					dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+				{
+					dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),NULL);
+					if (dist>0 && dist < MAX_ADDR_SIZE)
+						dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+					else
+						dist =0;
+				}
 				if (dist==0 && routingModuleReactive)
 				{
 					int iface;
@@ -1089,13 +1095,13 @@ void Ieee80211Mesh::mplsBasicSend (LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr
 	}
 	else
 	{
-		Uint128 add[20];
+		Uint128 add[MAX_ADDR_SIZE];
 		int dist=0;
 
 		if (routingModuleProactive)
 		{
 			dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),NULL);
-			if (dist >0 && dist < 20)
+			if (dist >0 && dist < MAX_ADDR_SIZE)
 				dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
 			else
 				dist =0;
@@ -1889,7 +1895,7 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 	}
 	else
 	{
-		Uint128 add[20];
+		Uint128 add[MAX_ADDR_SIZE];
 		int dist=0;
 		int iface;
 		if (routingModuleProactive)
