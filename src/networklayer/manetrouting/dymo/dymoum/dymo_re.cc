@@ -732,6 +732,7 @@ int NS_CLASS re_mustAnswer(RE *re,u_int32_t ifindex)
 	int mustAnswer = 0;
 	rtable_entry_t *entry;
 	struct in_addr target_addr;
+	struct in_addr src_addr;
 
 #ifdef OMNETPP
 	bool haveRoute= false;
@@ -744,7 +745,12 @@ int NS_CLASS re_mustAnswer(RE *re,u_int32_t ifindex)
 				MeshControlInfo * controlInfo = dynamic_cast<MeshControlInfo*>(re->getControlInfo());
 				if (controlInfo->getVectorAddressArraySize()>0)
 				{
-					haveRoute= true;
+					src_addr.s_addr = re->re_blocks[0].re_node_addr;
+					entry = rtable_find(src_addr);
+					if (entry && (entry->rt_hopcnt+controlInfo->getVectorAddressArraySize()<=(unsigned int)NET_DIAMETER))
+						haveRoute= true;
+					else
+						delete re->removeControlInfo();
 				}
 			}
 			else
