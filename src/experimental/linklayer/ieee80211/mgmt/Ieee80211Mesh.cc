@@ -576,11 +576,14 @@ void Ieee80211Mesh::handleDataFrame(Ieee80211DataFrame *frame)
 				{
 					// int neig = routingModuleProactive))->getRoute(src,add);
 					controlInfo->setPreviousFix(true); // This node is fix
-					dist = routingModuleProactive->getRoute(dest,add);
+					dist = routingModuleProactive->getRoute(dest,NULL);
+					if (dist>0 && dist<20)
+						dist = routingModuleProactive->getRoute(dest,add);
+					else
+						dist = 0;
 				}
 				else
 					controlInfo->setPreviousFix(false); // This node is not fix
-
 				if (maxHopProactive>0 && dist>maxHopProactive)
 					dist = 0;
 				if (dist!=0 && proactiveFeedback)

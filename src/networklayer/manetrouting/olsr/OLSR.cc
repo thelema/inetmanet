@@ -2312,6 +2312,8 @@ uint32_t OLSR::getRoute(const Uint128 &dest,Uint128 add[])
 	OLSR_rt_entry* rt_entry = rtable_.lookup(dest);
 	if (!rt_entry)
 		return 0;
+	if (add==NULL)
+		return rt_entry->dist();
 	for (int i=0;i<(int)rt_entry->route.size();i++)
 		add[i] = rt_entry->route[i];
 	add[rt_entry->route.size()]=dest;
