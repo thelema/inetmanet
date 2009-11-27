@@ -42,6 +42,7 @@
 #define WLAN_MPLS_TIME_REFRESH 3
 
 #define _WLAN_BAD_PKT_TIME_ 30
+#define MAX_ADDR_SIZE 20
 
 
 #if !defined (UINT32_MAX)
@@ -365,13 +366,17 @@ Ieee80211DataFrame *Ieee80211Mesh::encapsulate(cPacket *msg)
 	}
 	else
 	{
-		Uint128 add[20];
+		Uint128 add[MAX_ADDR_SIZE];
 		int dist = 0;
 		bool noRoute;
 
 		if (routingModuleProactive)
 		{
-			dist = routingModuleProactive->getRoute(dest,add);
+			dist = routingModuleProactive->getRoute(dest,NULL);
+			if (dist>0 && dist < MAX_ADDR_SIZE )
+				dist = routingModuleProactive->getRoute(dest,add);
+			else
+				dist =0;
 			noRoute = false;
 		}
 
@@ -796,7 +801,13 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 					int dist = 0;
 
 					if (routingModuleProactive)
-						dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+					{
+						dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),NULL);
+						if (dist >0 && dist < 20)
+							dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+						else
+							dist =0;
+					}
 
 					if (dist==0 && routingModuleReactive)
 					{
@@ -843,7 +854,13 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 						Uint128 add[20];
 						int dist = 0;
 						if (routingModuleProactive)
-							dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+						{
+							dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),NULL);
+							if (dist >0 && dist < 20)
+								dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+							else
+								dist =0;
+						}
 
 						if (dist==0 && routingModuleReactive)
 						{
@@ -945,7 +962,13 @@ void Ieee80211Mesh::mplsCreateNewPath(int label,LWMPLSPacket *mpls_pk_ptr,MACAdd
 			Uint128 add[20];
 			int dist = 0;
 			if (routingModuleProactive)
-				dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+			{
+				dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),NULL);
+				if (dist >0 && dist < 20)
+					dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+				else
+					dist =0;
+			}
 			if (dist==0 && routingModuleReactive)
 			{
 				int iface;
@@ -1070,7 +1093,13 @@ void Ieee80211Mesh::mplsBasicSend (LWMPLSPacket *mpls_pk_ptr,MACAddress sta_addr
 		int dist=0;
 
 		if (routingModuleProactive)
-			dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+		{
+			dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),NULL);
+			if (dist >0 && dist < 20)
+				dist = routingModuleProactive->getRoute(mpls_pk_ptr->getDest(),add);
+			else
+				dist =0;
+		}
 		if (dist==0 && routingModuleReactive)
 		{
 			int iface;
@@ -1862,12 +1891,15 @@ bool Ieee80211Mesh::macLabelBasedSend (Ieee80211DataFrame *frame)
 	{
 		Uint128 add[20];
 		int dist=0;
+		int iface;
 		if (routingModuleProactive)
-			dist = routingModuleProactive->getRoute(dest,add);
+		{
+			if (routingModuleProactive->getNextHop(dest,add[0],iface))
+					dist = 1;
+		}
 
 		if (dist==0 && routingModuleReactive)
 		{
-			int iface;
 			if (routingModuleReactive->getNextHop(dest,add[0],iface))
 					dist = 1;
 		}
