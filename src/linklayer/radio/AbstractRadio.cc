@@ -209,6 +209,7 @@ AirFrame *AbstractRadio::encapsulatePacket(cPacket *frame)
     airframe->setBitrate(ctrl ? ctrl->getBitrate() : rs.getBitrate());
     airframe->setDuration(radioModel->calculateDuration(airframe));
     airframe->setSenderPos(getMyPosition());
+    airframe->setSenderID(this->getId());
     delete ctrl;
 
     EV << "Frame (" << frame->getClassName() << ")" << frame->getName()

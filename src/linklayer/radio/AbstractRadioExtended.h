@@ -26,7 +26,7 @@
 #include "IReceptionModel.h"
 #include "SnrList.h"
 
-
+#define MAX_SENDER_ID 1000
 
 /**
  * Abstract base class for radio modules. Radio modules deal with the
@@ -58,6 +58,7 @@ class INET_API AbstractRadioExtended : public ChannelAccessExtended
   public:
 	  AbstractRadioExtended();
     virtual ~AbstractRadioExtended();
+
 
   protected:
     virtual void initialize(int stage);
@@ -153,6 +154,9 @@ class INET_API AbstractRadioExtended : public ChannelAccessExtended
 
 
   protected:
+
+	NotificationBoard *nb;
+    double RSS[MAX_SENDER_ID]; // FIXME: HOW BIG SHOULD THIS BE?
 
     IRadioModel *radioModel;
     IReceptionModel *receptionModel;

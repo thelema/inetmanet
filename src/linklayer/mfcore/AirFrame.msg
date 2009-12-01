@@ -55,6 +55,7 @@ packet AirFrame
     double lossRate;
     double powRec; // Power in the receiver
     Coord senderPos;
+    int senderID;
 }
 //
 // Support of multiples gates

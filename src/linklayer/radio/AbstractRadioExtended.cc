@@ -24,7 +24,6 @@
 #include "Radio80211aControlInfo_m.h"
 
 
-
 #define MK_TRANSMISSION_OVER  1
 #define MK_RECEPTION_COMPLETE 2
 
@@ -80,6 +79,9 @@ void AbstractRadioExtended::initialize(int stage)
         numReceivedCorrectly = 0;
         lostVector.setName("MAC loss rate");
 
+        nb = NotificationBoardAccess().getIfExists();
+        for(int i=0;i<MAX_SENDER_ID;i++) RSS[i]=0;
+
         // Initialize radio state. If thermal noise is already to high, radio
         // state has to be initialized as RECV
         rs.setState(RadioState::IDLE);
@@ -89,17 +91,12 @@ void AbstractRadioExtended::initialize(int stage)
         WATCH(noiseLevel);
         WATCH(rs);
 
-        if (cc->par("propagationModel").str()!="")
-        	receptionModel = (IReceptionModel *) createOne(cc->par("propagationModel").stringValue());
+        if (par("attenuationModel").stdstringValue ()=="tworay")
+        	receptionModel = createReceptionModelTwoRay();
+        if (par("attenuationModel").stdstringValue ()=="pathlost")
+        	receptionModel = createReceptionModelPathLost();
         else
-        {
-        	if (par("attenuationModel").stdstringValue ()=="tworay")
-               	receptionModel = createReceptionModelTwoRay();
-        	if (par("attenuationModel").stdstringValue ()=="pathlost")
-        		receptionModel = createReceptionModelPathLost();
-        	else
-        		receptionModel = createReceptionModel();
-        }
+        	receptionModel = createReceptionModel();
         receptionModel->initializeFrom(this);
 
         radioModel = createRadioModel();
@@ -336,6 +333,9 @@ void AbstractRadioExtended::handleUpperMsg(AirFrameExtended *airframe)
 
     cMessage *timer = new cMessage(NULL, MK_TRANSMISSION_OVER);
     scheduleAt(simTime() + airframe->getDuration(), timer);
+    // set the source ID, which is the name of the node. e.g: "Node1"
+    // the problem is how to get the name of the current node being
+    // about to send this airframe
     sendDown(airframe);
 }
 
@@ -490,6 +490,12 @@ void AbstractRadioExtended::handleLowerMsgStart(AirFrame* airframe)
     airframe->setPowRec(rcvdPower);
     // store the receive power in the recvBuff
     recvBuff[airframe] = rcvdPower;
+    int sid = airframe->getSenderID();
+
+	RSS[sid] = rcvdPower;
+
+//	nb->fireChangeNotification(1001,&RSS);
+	EV << "Updating RSS (new: " << rcvdPower << ")" << endl;
 
     // if receive power is bigger than sensitivity and if not sending
     // and currently not receiving another message and the message has
