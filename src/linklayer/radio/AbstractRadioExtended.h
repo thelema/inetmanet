@@ -155,7 +155,6 @@ class INET_API AbstractRadioExtended : public ChannelAccessExtended
 
   protected:
 
-	NotificationBoard *nb;
     double RSS[MAX_SENDER_ID]; // FIXME: HOW BIG SHOULD THIS BE?
 
     IRadioModel *radioModel;

@@ -79,7 +79,6 @@ void AbstractRadioExtended::initialize(int stage)
         numReceivedCorrectly = 0;
         lostVector.setName("MAC loss rate");
 
-        nb = NotificationBoardAccess().getIfExists();
         for(int i=0;i<MAX_SENDER_ID;i++) RSS[i]=0;
 
         // Initialize radio state. If thermal noise is already to high, radio
