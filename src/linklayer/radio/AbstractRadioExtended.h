@@ -25,6 +25,7 @@
 #include "IRadioModel.h"
 #include "IReceptionModel.h"
 #include "SnrList.h"
+#include "PowerArray.h"
 
 #define MAX_SENDER_ID 1000
 
@@ -155,7 +156,7 @@ class INET_API AbstractRadioExtended : public ChannelAccessExtended
 
   protected:
 
-    double RSS[MAX_SENDER_ID]; // FIXME: HOW BIG SHOULD THIS BE?
+    PowerArray powerData;
 
     IRadioModel *radioModel;
     IReceptionModel *receptionModel;

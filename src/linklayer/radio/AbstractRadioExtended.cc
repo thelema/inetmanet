@@ -79,8 +79,6 @@ void AbstractRadioExtended::initialize(int stage)
         numReceivedCorrectly = 0;
         lostVector.setName("MAC loss rate");
 
-        for(int i=0;i<MAX_SENDER_ID;i++) RSS[i]=0;
-
         // Initialize radio state. If thermal noise is already to high, radio
         // state has to be initialized as RECV
         rs.setState(RadioState::IDLE);
@@ -491,10 +489,11 @@ void AbstractRadioExtended::handleLowerMsgStart(AirFrame* airframe)
     recvBuff[airframe] = rcvdPower;
     int sid = airframe->getSenderID();
 
-	RSS[sid] = rcvdPower;
-
-//	nb->fireChangeNotification(1001,&RSS);
 	EV << "Updating RSS (new: " << rcvdPower << ")" << endl;
+	powerData.addMeasurement(sid,rcvdPower);
+
+	nb->fireChangeNotification(1001,&powerData);
+
 
     // if receive power is bigger than sensitivity and if not sending
     // and currently not receiving another message and the message has
