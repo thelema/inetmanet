@@ -14,6 +14,8 @@ simple ManetManager
         string routingProtocol;
         bool manetActive;
         bool manetPurgeRoutingTables = default (true);
+        bool AUTOASSIGN_ADDRESS = default (false);
+        string AUTOASSIGN_ADDRESS_BASE = default("10.0.0.0");
     gates:
         input from_ip;
         output to_ip;

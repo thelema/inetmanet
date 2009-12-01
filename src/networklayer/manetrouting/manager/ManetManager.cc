@@ -24,7 +24,9 @@
 #include "IPRoute.h"
 #include "ManetManager.h"
 #include "RoutingTableAccess.h"
+#include "InterfaceTableAccess.h"
 #include "IRoutingTable.h"
+#include "IPv4InterfaceData.h"
 #include "ControlManetRouting_m.h"
 #include "IPDatagram.h"
 
@@ -36,7 +38,7 @@ Define_Module(ManetManagerStatic);
 
 void ManetManager::initialize(int stage)
 {
-bool manetPurgeRoutingTables=false;
+	bool manetPurgeRoutingTables=false;
 	if (stage==4)
 	{
 		manetActive = (bool) par("manetActive");
@@ -59,6 +61,23 @@ bool manetPurgeRoutingTables=false;
 					}
 				}
 			}
+			if (par("AUTOASSIGN_ADDRESS"))
+			{
+				IPAddress AUTOASSIGN_ADDRESS_BASE(par("AUTOASSIGN_ADDRESS_BASE").stringValue());
+				if (AUTOASSIGN_ADDRESS_BASE.getInt() != 0)
+					opp_error("ManetManager needs AUTOASSIGN_ADDRESS_BASE to be set to 0.0.0.0");
+				IInterfaceTable *ift = InterfaceTableAccess ().get();
+				IPAddress myAddr (AUTOASSIGN_ADDRESS_BASE.getInt() + uint32(getParentModule()->getId()));
+				for (int k=0; k<ift->getNumInterfaces(); k++)
+				{
+					InterfaceEntry *ie = ift->getInterface(k);
+					if (strstr (ie->getName(),"wlan")!=NULL)
+					{
+						ie->ipv4Data()->setIPAddress(myAddr);
+						ie->ipv4Data()->setNetmask(IPAddress::ALLONES_ADDRESS); // full address must match for local delivery
+					}
+				}
+			}
 		   /* for use dinamic modules in the future */
 
 			if (strcmp("AODV", routingProtocol)==0)
@@ -68,7 +87,7 @@ bool manetPurgeRoutingTables=false;
 					dynamicLoad = true;
 					cModuleType *moduleType = cModuleType::find("inet.networklayer.manetrouting.AODVUU");
 					routingModule = moduleType->create("manetroutingprotocol", this);
-					// set up parameters and gate sizes before we set up its submodules
+				// set up parameters and gate sizes before we set up its submodules
 				//	routingModule->par("unidir_hack") = par("unidir_hack");
 				//	routingModule->par("rreq_gratuitous") = par("rreq_gratuitous");
 				//	routingModule->par("expanding_ring_search") = par("expanding_ring_search");
@@ -92,7 +111,7 @@ bool manetPurgeRoutingTables=false;
 				   //			gate("to_aodv")->connectTo(routingModule->gate("ipIn"));
 				}
 			}
-  			else if (strcmp("DYMO", routingProtocol)==0)
+			else if (strcmp("DYMO", routingProtocol)==0)
 			{
 				if (!gate("to_dymo")->isConnected())
 				{
