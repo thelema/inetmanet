@@ -31,6 +31,7 @@ public:
 	double getIntfCost(IPAddress add);
 private:
 	map<const IPAddress,double> data;
+	double totalData;
 };
 
 #endif /* POWERARRAY_H_ */
