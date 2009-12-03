@@ -16,13 +16,13 @@
 #include "PowerArray.h"
 
 PowerArray::PowerArray() {
-	for(int i=0;i<1000;i++) data[i]=0.0;
+	// No init
 }
 
 PowerArray::~PowerArray() {
 	// TODO Auto-generated destructor stub
 }
 
-void PowerArray::addMeasurement(int nodeId, double recdPower) {
-	data[nodeId] = recdPower;
-}
+void PowerArray::addMeasurement(IPAddress add, double recdPower) { data[add] = recdPower; }
+
+double PowerArray::getIntfCost(IPAddress add) { return data[add]; }

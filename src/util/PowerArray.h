@@ -18,14 +18,19 @@
 
 #include <omnetpp.h>
 #include "INETDefs.h"
+#include "IPDatagram.h"
+#include <map>
+
+using namespace std;
 
 class PowerArray : public cPolymorphic {
 public:
 	PowerArray();
 	virtual ~PowerArray();
-	void addMeasurement(int nodeId, double recdPower);
+	void addMeasurement(IPAddress add, double recdPower);
+	double getIntfCost(IPAddress add);
 private:
-	double data[1000];
+	map<const IPAddress,double> data;
 };
 
 #endif /* POWERARRAY_H_ */

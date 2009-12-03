@@ -22,6 +22,7 @@
 #include "PhyControlInfo_m.h"
 #include "Ieee80211Consts.h"  //XXX for the COLLISION and BITERROR msg kind constants
 #include "Radio80211aControlInfo_m.h"
+#include "IPDatagram.h"
 
 
 #define MK_TRANSMISSION_OVER  1
@@ -487,12 +488,19 @@ void AbstractRadioExtended::handleLowerMsgStart(AirFrame* airframe)
     airframe->setPowRec(rcvdPower);
     // store the receive power in the recvBuff
     recvBuff[airframe] = rcvdPower;
-    int sid = airframe->getSenderID();
+	cPacket *eth_pkt = airframe->getEncapsulatedMsg();
+	cPacket *ip_pkt = eth_pkt->getEncapsulatedMsg();
+	if (ip_pkt != NULL) {
+		IPDatagram *datagram = check_and_cast <IPDatagram *> (ip_pkt);
+		IPAddress src = datagram->getSrcAddress();
+		IPAddress dst = datagram->getDestAddress();
 
-	EV << "Updating RSS (new: " << rcvdPower << ")" << endl;
-	powerData.addMeasurement(sid,rcvdPower);
 
-	nb->fireChangeNotification(1001,&powerData);
+		EV << "Updating RSS (new: " << rcvdPower << ") from Radio: " << src  << " for Radio: " << dst << endl;
+		powerData.addMeasurement(src,rcvdPower);
+
+		nb->fireChangeNotification(1001,&powerData);
+	} else { EV << "NULL IP" << endl; }
 
 
     // if receive power is bigger than sensitivity and if not sending
