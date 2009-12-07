@@ -767,6 +767,11 @@ void DSRUU::receiveChangeNotification(int category, const cPolymorphic *details)
 			}
 		}
     }
+    else if (category == 1001)
+    {
+    	//handle PowerArray from link layer
+    	powerData = check_and_cast <PowerArray *> (details);
+    }
 }
 #endif
 
@@ -1156,7 +1161,9 @@ double DSRUU::getCost(IPAddress add)
 	ETXEntry *entry = (*it).second;
 	if (entry->deliveryReverse==0 || entry->deliveryDirect==0)
 		return -1;
-	return (1/(entry->deliveryReverse * entry->deliveryDirect));
+	double powercost = powerData->getIntfCost(add);
+	double cost = powercost * (1/(entry->deliveryReverse * entry->deliveryDirect));
+	return cost;
 }
 
 void DSRUU::ExpandCost(struct dsr_pkt *dp)

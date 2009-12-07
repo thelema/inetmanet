@@ -38,6 +38,7 @@
 #endif
 
 #include <map>
+#include "PowerArray.h"
 
 // generate ev prints
 #ifdef _WIN32
@@ -240,6 +241,7 @@ class DSRUU:public cSimpleModule, public INotifiable {
    	};
 // In dsr-uu-omnet.cc used for ETX
 	ETXNeighborTable etxNeighborTable;
+	PowerArray *powerData;
 	void EtxMsgSend(unsigned long data);
 	void EtxMsgProc(cMessage *msg);
 	double getCost(IPAddress add);
