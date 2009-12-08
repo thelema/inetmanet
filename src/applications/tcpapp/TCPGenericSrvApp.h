@@ -30,6 +30,7 @@ class INET_API TCPGenericSrvApp : public cSimpleModule
   protected:
     simtime_t delay;
     simtime_t maxMsgDelay;
+    cOutVector endToEndDelayVec; //to record the end to end latency
 
     long msgsRcvd;
     long msgsSent;

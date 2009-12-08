@@ -37,6 +37,8 @@ void TCPGenericSrvApp::initialize()
     socket.setOutputGate(gate("tcpOut"));
     socket.bind(address[0] ? IPvXAddress(address) : IPvXAddress(), port);
     socket.listen();
+    endToEndDelayVec.setName("End-to-End Delay"); // to record latency
+
 }
 
 void TCPGenericSrvApp::sendOrSchedule(cMessage *msg, simtime_t delay)
@@ -53,6 +55,9 @@ void TCPGenericSrvApp::sendBack(cMessage *msg)
 
 	if (appmsg)
 	{
+		simtime_t eed = simTime() - appmsg->getCreationTime();
+		endToEndDelayVec.record(eed);
+
 		msgsSent++;
 		bytesSent += appmsg->getByteLength();
 
