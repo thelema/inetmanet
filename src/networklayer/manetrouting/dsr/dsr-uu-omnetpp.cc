@@ -299,6 +299,11 @@ void DSRUU::initialize (int stage)
 		else
 			confvals[TryPassiveAcks] = 0;
 
+		if(par("UseInterference"))
+			confvals[useInterference] = 1;
+		else
+			confvals[useInterference] = 0;
+
 		aux_var=par("PassiveAckTimeout");
 		if (aux_var!=-1)
 			confvals[PassiveAckTimeout]= par("PassiveAckTimeout");
@@ -1161,7 +1166,7 @@ double DSRUU::getCost(IPAddress add)
 	ETXEntry *entry = (*it).second;
 	if (entry->deliveryReverse==0 || entry->deliveryDirect==0)
 		return -1;
-	double powercost = powerData->getIntfCost(add);
+	double powercost = confvals[useInterference] ? powerData->getIntfCost(add) : 1.0;
 	double cost = powercost * (1/(entry->deliveryReverse * entry->deliveryDirect));
 	return cost;
 }

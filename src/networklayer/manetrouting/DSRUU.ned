@@ -23,6 +23,7 @@ simple DSRUU
         int MaintHoldoffTime= default(250); // mseconds
         int MaxMaintRexmt= default(2);
         bool TryPassiveAcks= default(true);
+        bool useInterference= default(false);
         int PassiveAckTimeout= default(100);// mseconds
         int GratReplyHoldOff= default(1); // seconds
         int MAX_SALVAGE_COUNT= default(15);

@@ -86,6 +86,7 @@ enum confval {
 	PathCache,
 	RetryPacket,
 #endif
+	useInterference,
 	CONFVAL_MAX,
 };
 
@@ -206,7 +207,7 @@ static inline void dsr_node_init(struct dsr_node *dn, char *ifname)
 	dn->slave_indev = NULL;
 	dn->slave_dev = NULL;
 	memcpy(dn->slave_ifname, ifname, IFNAMSIZ);
-	
+
 	spin_lock_init(&dn->lock);
 
 	for (i = 0; i < CONFVAL_MAX; i++) {
