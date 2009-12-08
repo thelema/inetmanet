@@ -69,6 +69,11 @@ void Ieee80211MgmtBase::initialize(int stage)
     }
 }
 
+void Ieee80211MgmtBase::finish() {
+	for(map<string,int>::const_iterator it = bytes_recd.begin(); it != bytes_recd.end(); ++it) {
+		recordScalar(it->first.c_str(), it->second);
+	}
+}
 
 void Ieee80211MgmtBase::handleMessage(cMessage *msg)
 {
@@ -83,6 +88,10 @@ void Ieee80211MgmtBase::handleMessage(cMessage *msg)
         // process incoming frame
         EV << "Frame arrived from MAC: " << msg << "\n";
         Ieee80211DataOrMgmtFrame *frame = check_and_cast<Ieee80211DataOrMgmtFrame *>(msg);
+        cPacket *inner1 = frame->getEncapsulatedMsg();
+        double bytes = inner1->getByteLength();
+        string name = inner1->getSenderModule()->getFullPath();
+        bytes_recd[name] += bytes;
         processFrame(frame);
     }
     else if (msg->arrivedOn("agentIn"))

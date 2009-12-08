@@ -25,7 +25,9 @@
 #include "Ieee80211Frame_m.h"
 #include "Ieee80211MgmtFrames_m.h"
 #include "IInterfaceTable.h"
+#include <map>
 
+using namespace std;
 
 /**
  * Abstract base class for 802.11 infrastructure mode management components.
@@ -47,6 +49,7 @@ class INET_API Ieee80211MgmtBase : public PassiveQueueBase, public INotifiable
     cQueue mgmtQueue; // queue for management frames (higher priority than data frames)
 
     // statistics
+    map<string, int> bytes_recd;
     long numDataFramesReceived;
     long numMgmtFramesReceived;
     long numMgmtFramesDropped;
@@ -58,6 +61,7 @@ class INET_API Ieee80211MgmtBase : public PassiveQueueBase, public INotifiable
   protected:
     virtual int numInitStages() const {return 2;}
     virtual void initialize(int);
+    virtual void finish();
 
     /** Dispatches incoming messages to handleTimer(), handleUpperMessage() or processFrame(). */
     virtual void handleMessage(cMessage *msg);
