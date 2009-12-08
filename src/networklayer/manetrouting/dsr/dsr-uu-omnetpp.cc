@@ -299,7 +299,7 @@ void DSRUU::initialize (int stage)
 		else
 			confvals[TryPassiveAcks] = 0;
 
-		if(par("UseInterference"))
+		if(par("useInterference"))
 			confvals[useInterference] = 1;
 		else
 			confvals[useInterference] = 0;
