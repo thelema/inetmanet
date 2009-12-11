@@ -32,6 +32,7 @@ public:
 private:
 	map<const IPAddress,double> data;
 	double totalData;
+	double minPower;
 };
 
 #endif /* POWERARRAY_H_ */

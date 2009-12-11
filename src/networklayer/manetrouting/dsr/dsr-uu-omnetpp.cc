@@ -429,6 +429,7 @@ void DSRUU::initialize (int stage)
 		macaddr_ = interface80211ptr->getMacAddress();
 		nb = NotificationBoardAccess().get();
 		nb->subscribe(this, NF_LINK_BREAK);
+		nb->subscribe(this, 1001);
 		if (get_confval(PromiscOperation))
 			nb->subscribe(this, NF_LINK_PROMISCUOUS);
 #else
@@ -1166,8 +1167,10 @@ double DSRUU::getCost(IPAddress add)
 	ETXEntry *entry = (*it).second;
 	if (entry->deliveryReverse==0 || entry->deliveryDirect==0)
 		return -1;
-	double powercost = confvals[useInterference] ? powerData->getIntfCost(add) : 1.0;
-	double cost = powercost * (1/(entry->deliveryReverse * entry->deliveryDirect));
+	double urss = confvals[useInterference] && powerData != NULL ? powerData->getIntfCost(add) : 1.0;
+	double etx = (1/(entry->deliveryReverse * entry->deliveryDirect));
+	double cost = urss * etx;
+	EV << "URSS=" << urss << " ETX=" << etx << " cost=" << cost << endl;
 	return cost;
 }
 

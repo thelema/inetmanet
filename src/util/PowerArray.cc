@@ -17,6 +17,7 @@
 
 PowerArray::PowerArray() {
 	totalData = 0.0;
+	minPower = 1.0;
 }
 
 PowerArray::~PowerArray() {
@@ -28,8 +29,11 @@ void PowerArray::addMeasurement(IPAddress add, double recdPower) {
 		data[add] = recdPower;
 		totalData += data[add];
 	}
+	if (recdPower < minPower) {
+		minPower = recdPower;
+	}
 }
 
 double PowerArray::getIntfCost(IPAddress add) {
-	return (totalData - data[add]);
+	return (totalData - data[add]) / minPower;
 }
