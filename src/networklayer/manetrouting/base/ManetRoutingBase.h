@@ -53,11 +53,11 @@ public:
 typedef std::multimap <simtime_t, ManetTimer *> TimerMultiMap;
 class INET_API ManetRoutingBase : public cSimpleModule, public INotifiable
 {
-
+	protected:
+		NotificationBoard *nb;
 	private:
 		 IRoutingTable *inet_rt;
 		 IInterfaceTable *inet_ift;
-		 NotificationBoard *nb;
 		 bool mac_layer_;
 		 Uint128	hostAddress;
 		 Uint128	routerId;
