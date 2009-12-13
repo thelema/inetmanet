@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
 use Data::Dumper;
+use List::Util qw[min max];
 
 
 my $ned = shift;
@@ -19,8 +20,6 @@ while (<NED>) {
 
 close NED;
 $i = 0;
-$min = 1000000000;
-$max = 0;
 foreach my $sca (@ARGV) {
     
     
@@ -28,19 +27,13 @@ foreach my $sca (@ARGV) {
     while (<SCA>) {
 	if (/scalar \w+.(\w+).wlan.mgmt\s+\w+.(\w+).networkLayer.arp\s+(\d+)/) {
 	    $data{$2}{$1}[$i]=$3;
-	    $max = $3 if $3 > $max;
-	    $min = $3 if $3 < $min;
 	} elsif (/scalar \w+.(\w+).+\s+TRSS\s+(\d+)/) {
 	    $nodes{$1}{cost} = $2;
 	}
     }
     close SCA;
-    
-    
     $i++;
 }
-
-$range = $max - $min;
 
 foreach my $name (keys %nodes) {
     $pos = $nodes{$name}{pos};
@@ -48,6 +41,9 @@ foreach my $name (keys %nodes) {
     print "  $name [label=\"$name [$cost]\" pos=\"$pos!\"];\n";
 }
 
+
+my $min = 100000000000;
+my $max = 0;
 foreach my $src (keys %data) {
     foreach my $dst (keys %{$data{$src}}) {
 	next if $dst le $src;
@@ -56,18 +52,20 @@ foreach my $src (keys %data) {
 	my $d2 = $data{$dst}{$src}[0];
 	my $d3 = $data{$dst}{$src}[1] || 0;
 
-	my $diff = $d0 - $d1;
-	my $w = log (abs $diff/$range) + 10;
-	$color = ($diff > 0) ? "red" : "blue";
-	
-	print "  $src -> $dst [color=$color penwidth=$w];\n";
-
-	$diff = $d2 - $d3;
-	$w = log (abs $diff/$range) + 10;
-	$color = ($diff > 0) ? "red" : "blue";
-	
-	print "  $dst -> $src [color=$color penwidth=$w];\n";
+	push @edges, {diff => $d0-$d1, src => $src, dst => $dst};
+	push @edges, {diff => $d2-$d3, src => $dst, dst => $src};
+	$min = min [$d0-$d1, $d2-$d3,$min];
+	$max = max [$d0-$d1, $d2-$d3,$max];
     }
+}
+
+#my $mindist = min (map {abs $_->{diff}} @edges);
+#my $maxdist = max (map {abs $_->{diff}} @edges);
+
+foreach my $e (@edges) {
+    my $color = $e->{diff} > 0 ? "red" : "green";
+    my $w = log $e->{diff} - log $max;
+    print "  $e->{src} -> $e->{dst} [color=$color penwidth=\"$w\"];\n";
 }
 
 print "}\n";

@@ -80,7 +80,7 @@ class QueueElement : public cPacket
 //===========================================================================================
 // class DYMO: implements the network layer to route incoming messages
 //===========================================================================================
-class DYMO : public ManetRoutingBase, public INotifiable {
+class DYMO : public ManetRoutingBase {
 	public:
 		int numInitStages() const  {return 5;}
 		void initialize(int);
@@ -176,7 +176,6 @@ class DYMO : public ManetRoutingBase, public INotifiable {
 		//===============================================================================
 		// MEMBER VARIABLES
 		//===============================================================================
-		NotificationBoard nb;
 
 		/** @brief pointer to the routing table */
 		DYMO_RoutingTable * dymo_routingTable;

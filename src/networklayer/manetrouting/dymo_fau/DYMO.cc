@@ -117,7 +117,8 @@ void DYMO::initialize(int aStage) {
 		registerRoutingModule ();
 		myAddr = getAddress().toUint();
 		linkLayerFeeback();
-	}
+        nb->subscribe(this, 1001);
+        }
 }
 
 
@@ -138,6 +139,8 @@ void DYMO::finish() {
 	recordScalar("DYMO_RERRFwd", statsRERRFwd);
 
 	recordScalar("DYMO_DYMORcvd", statsDYMORcvd);
+
+	if (power != NULL) recordScalar("TRSS", power->getTRSS());
 
 	if(discoveryLatency > 0 && disSamples > 0)
 		recordScalar("discovery latency", discoveryLatency/disSamples);
@@ -188,6 +191,7 @@ DYMO::~DYMO()
 void DYMO::receiveChangeNotification(int category, const cPolymorphic *details) {
 	if (category == 1001) {
 		power = check_and_cast <PowerArray *> (details);
+		EV << "PowerArray updated" << endl;
 	}
 }
 
@@ -451,7 +455,7 @@ void DYMO::handleLowerRMForRelay(DYMO_RM *routingMsg) {
 		delete routingMsg;
 		return;
 	}
-	int trss = 10;
+	uint32_t trss = 10;
 	if (power != NULL) trss = power->getTRSS();
 
 	routingMsg->getOrigNode().incrementDistIfAvailable(trss);

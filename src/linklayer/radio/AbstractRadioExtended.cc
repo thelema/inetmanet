@@ -497,9 +497,8 @@ void AbstractRadioExtended::handleLowerMsgStart(AirFrame* airframe)
 
 
 		EV << "Updating RSS (new: " << rcvdPower << ") from Radio: " << src  << " for Radio: " << dst << endl;
-		powerData.addMeasurement(src,rcvdPower);
-
-		nb->fireChangeNotification(1001,&powerData);
+		if (powerData.addMeasurement(src,rcvdPower))
+			nb->fireChangeNotification(1001,&powerData);
 	} else { EV << "NULL IP" << endl; }
 
 

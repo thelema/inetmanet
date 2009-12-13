@@ -27,9 +27,9 @@ class PowerArray : public cPolymorphic {
 public:
 	PowerArray();
 	virtual ~PowerArray();
-	void addMeasurement(IPAddress add, double recdPower);
+	int addMeasurement(IPAddress add, double recdPower);
 	double getIntfCost(IPAddress add);
-	uint8_t getTRSS();
+	uint32_t getTRSS();
 private:
 	map<const IPAddress,double> data;
 	double totalData;

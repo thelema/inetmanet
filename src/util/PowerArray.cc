@@ -24,23 +24,26 @@ PowerArray::~PowerArray() {
 	// TODO Auto-generated destructor stub
 }
 
-void PowerArray::addMeasurement(IPAddress add, double recdPower) {
-	if (data[add] == 0.0) {
+int PowerArray::addMeasurement(IPAddress add, double recdPower) {
+	int ret = data[add] != recdPower;
+	if (ret) {
 		data[add] = recdPower;
 		totalData += data[add];
 	}
 	if (recdPower < minPower) {
 		minPower = recdPower;
 	}
+	return ret;
 }
 
 double PowerArray::getIntfCost(IPAddress add) {
 	return (totalData - data[add]) / minPower;
 }
 
-uint8_t PowerArray::getTRSS() {
-	uint8_t trss = totalData / minPower;
+uint32_t PowerArray::getTRSS() {
+	uint32_t trss = totalData / minPower;
+
 	if (trss < 1) trss=1;
-	if (trss > 20) trss=20;
-	return 1;
+	if (trss > 200000000) trss=200000000;
+	return trss;
 }
