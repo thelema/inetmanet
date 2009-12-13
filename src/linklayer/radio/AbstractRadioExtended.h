@@ -136,7 +136,7 @@ class INET_API AbstractRadioExtended : public ChannelAccessExtended
     virtual IRadioModel *createRadioModel() = 0;
 
     virtual IReceptionModel *createReceptionModelPathLost() {return (IReceptionModel *)createOne("PathLossReceptionModel");}
-    virtual IReceptionModel *createReceptionModelTwoRay() {return (IReceptionModel *)createOne("TwoRayMode");}
+    virtual IReceptionModel *createReceptionModelTwoRay() {return (IReceptionModel *)createOne("TwoRayModel");}
 
     /** @brief updates the sensitivity value if the bitrate varies */
     virtual void updateSensitivity(double bitrate);
