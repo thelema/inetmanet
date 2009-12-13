@@ -126,11 +126,11 @@ class DYMO_AddressBlock
 			this->dist = dist;
 		}
 
-		void incrementDistIfAvailable()
+		void incrementDistIfAvailable(uint8_t by_x)
 		{
 			if (!this->hasDist()) return;
-			if (this->getDist() == 0xFF) throw std::runtime_error("Tried to increment Dist from AddressBlock, but uint8_t would overflow");
-			this->setDist(this->getDist() + 1);
+			if (this->getDist() > 0xFF - by_x) throw std::runtime_error("Tried to increment Dist from AddressBlock, but uint8_t would overflow");
+			this->setDist(this->getDist() + by_x);
 		}
 
 };

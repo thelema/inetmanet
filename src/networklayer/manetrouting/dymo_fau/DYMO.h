@@ -33,6 +33,8 @@
 #include "IPDatagram.h"
 
 #include "ManetRoutingBase.h"
+#include "NotificationBoard.h"
+#include "PowerArray.h"
 
 #include "DYMO_Packet_m.h"
 #include "DYMO_RoutingTable.h"
@@ -78,7 +80,7 @@ class QueueElement : public cPacket
 //===========================================================================================
 // class DYMO: implements the network layer to route incoming messages
 //===========================================================================================
-class DYMO : public ManetRoutingBase {
+class DYMO : public ManetRoutingBase, public INotifiable {
 	public:
 		int numInitStages() const  {return 5;}
 		void initialize(int);
@@ -90,6 +92,7 @@ class DYMO : public ManetRoutingBase {
 
 		void onOutboundDataPacket(const cPacket* packet);
 
+		void receiveChangeNotification(int category, const cPolymorphic *details);
 
 		/** @brief change the address we think we are reachable at. Does not(!) make sure we are actually reachable there. The change request will be ignored if this node has already participated in DYMO */
 		void setMyAddr(unsigned int myAddr);
@@ -100,8 +103,9 @@ class DYMO : public ManetRoutingBase {
 		/** @brief guesses which router the given address belongs to, might return 0 */
 		cModule* getRouterByAddress(IPAddress address);
 
-
 	private:
+		PowerArray *power;
+
 		  friend class DYMO_RoutingTable;
 
 		 void processPacket (const IPDatagram* datagram);
@@ -172,6 +176,8 @@ class DYMO : public ManetRoutingBase {
 		//===============================================================================
 		// MEMBER VARIABLES
 		//===============================================================================
+		NotificationBoard nb;
+
 		/** @brief pointer to the routing table */
 		DYMO_RoutingTable * dymo_routingTable;
 
