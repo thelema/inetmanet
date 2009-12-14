@@ -29,7 +29,7 @@ public:
 	virtual ~PowerArray();
 	int addMeasurement(IPAddress add, double recdPower);
 	double getIntfCost(IPAddress add);
-	uint32_t getTRSS();
+	uint32_t getTRSS(double calib);
 private:
 	map<const IPAddress,double> data;
 	double totalData;

@@ -27,8 +27,9 @@ PowerArray::~PowerArray() {
 int PowerArray::addMeasurement(IPAddress add, double recdPower) {
 	int ret = data[add] != recdPower;
 	if (ret) {
+		totalData -= data[add];
 		data[add] = recdPower;
-		totalData += data[add];
+		totalData += recdPower;
 	}
 	if (recdPower < minPower) {
 		minPower = recdPower;
@@ -40,10 +41,7 @@ double PowerArray::getIntfCost(IPAddress add) {
 	return (totalData - data[add]) / minPower;
 }
 
-uint32_t PowerArray::getTRSS() {
-	uint32_t trss = totalData / minPower;
-
-	if (trss < 1) trss=1;
-	if (trss > 200000000) trss=200000000;
+uint32_t PowerArray::getTRSS(double calib) {
+	uint32_t trss = totalData / calib;
 	return trss;
 }

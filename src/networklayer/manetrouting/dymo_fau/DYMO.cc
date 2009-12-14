@@ -31,6 +31,9 @@
 Define_Module( DYMO );
 
 #define DYMO_PORT 653
+// -85dBm
+#define RSS_CALIB ( 0.000000003 )
+
 namespace {
 	const int DYMO_RM_HEADER_LENGTH = 13; /**< length (in bytes) of a DYMO RM header */
 	const int DYMO_RBLOCK_LENGTH = 10; /**< length (in bytes) of one DYMO RBlock */
@@ -140,7 +143,7 @@ void DYMO::finish() {
 
 	recordScalar("DYMO_DYMORcvd", statsDYMORcvd);
 
-	if (power != NULL) recordScalar("TRSS", power->getTRSS());
+	if (power != NULL) recordScalar("TRSS", power->getTRSS(RSS_CALIB));
 
 	if(discoveryLatency > 0 && disSamples > 0)
 		recordScalar("discovery latency", discoveryLatency/disSamples);
@@ -456,7 +459,7 @@ void DYMO::handleLowerRMForRelay(DYMO_RM *routingMsg) {
 		return;
 	}
 	uint32_t trss = 10;
-	if (power != NULL) trss = power->getTRSS();
+	if (power != NULL) trss = power->getTRSS(RSS_CALIB); // constant = -85dB
 
 	routingMsg->getOrigNode().incrementDistIfAvailable(trss);
 	for (unsigned int i = 0; i < additional_nodes.size(); i++) {
@@ -774,7 +777,7 @@ void DYMO::sendReplyAsIntermediateRouter(const DYMO_AddressBlock& origNode, cons
 	// TODO: The draft is unclear about when to increment ownSeqNum for intermediate DYMO router RREP creation
 	incSeqNum();
 
-	int trss = power == NULL ? 10 : power->getTRSS();
+	int trss = power == NULL ? 10 : power->getTRSS(RSS_CALIB);
 	// create rrepToOrigNode
 	DYMO_RREP* rrepToOrigNode = new DYMO_RREP("RREP");
 	rrepToOrigNode->setMsgHdrHopLimit(MAX_HOPLIMIT);

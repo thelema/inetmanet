@@ -104,6 +104,7 @@ class DYMO : public ManetRoutingBase {
 		cModule* getRouterByAddress(IPAddress address);
 
 	private:
+
 		PowerArray *power;
 
 		  friend class DYMO_RoutingTable;
