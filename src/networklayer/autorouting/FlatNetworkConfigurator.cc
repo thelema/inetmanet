@@ -94,6 +94,7 @@ void FlatNetworkConfigurator::assignAddresses(cTopology& topo, NodeInfoVector& n
 
         // find interface table and assign address to all (non-loopback) interfaces
         IInterfaceTable *ift = nodeInfo[i].ift;
+        recordScalar(topo.getNode(i)->getModule()->getFullName(), addr);
         for (int k=0; k<ift->getNumInterfaces(); k++)
         {
             InterfaceEntry *ie = ift->getInterface(k);
