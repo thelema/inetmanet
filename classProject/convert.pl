@@ -47,20 +47,17 @@ my $max = 0;
 foreach my $src (keys %data) {
     foreach my $dst (keys %{$data{$src}}) {
 	next if $dst le $src;
-	my $d0 = $data{$src}{$dst}[0];
-	my $d1 = $data{$src}{$dst}[1] || 0;
-	my $d2 = $data{$dst}{$src}[0];
-	my $d3 = $data{$dst}{$src}[1] || 0;
+	my $d0 = $data{$src}{$dst}[0] - ($data{$src}{$dst}[1] || 0);
+	my $d1 = $data{$dst}{$src}[0] - ($data{$dst}{$src}[1] || 0);
 
-	push @edges, {diff => $d0-$d1, src => $src, dst => $dst};
-	push @edges, {diff => $d2-$d3, src => $dst, dst => $src};
-	$min = min [$d0-$d1, $d2-$d3,$min];
-	$max = max [$d0-$d1, $d2-$d3,$max];
+	push @edges, {diff => $d0, src => $src, dst => $dst};
+	push @edges, {diff => $d1, src => $dst, dst => $src};
+	$min = $d0 if $d0 < $min;
+	$max = $d0 if $d0 > $max;
+	$min = $d1 if $d1 < $min;
+	$max = $d1 if $d1 > $max;
     }
 }
-
-#my $mindist = min (map {abs $_->{diff}} @edges);
-#my $maxdist = max (map {abs $_->{diff}} @edges);
 
 foreach my $e (@edges) {
     my $color = $e->{diff} > 0 ? "red" : "green";
