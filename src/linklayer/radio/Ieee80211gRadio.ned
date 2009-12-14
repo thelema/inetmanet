@@ -46,15 +46,6 @@ simple Ieee80211gRadio extends PropagationModel
         int phyOpMode= default(2); // 1='b', 2='g'
         int channelModel = default (1); // 1=(Rayleigh) or 2= a (AWGN)
         
-        // Parameters for TwoRayModel
-        double systemLoss = default (1.0);
-        double receiverAntennaGain = default (1.0);
-        double ht @unit("m") = default(1.0m);
-        double hr @unit("m") = default(1.0m);
-        
-        //parameters for RiceModel
-        double K @unit("dB") = default(4dB);
-        
         string attenuationModel = default("PathLossReceptionModel"); 
         @display("i=block/wrxtx");
     gates:
