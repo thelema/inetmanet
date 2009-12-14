@@ -45,13 +45,7 @@ simple Ieee80211aRadio extends PropagationModel
         double sensitivity @unit("dBm"); // received signals with power below sensitivity are ignored
 
 
-        double systemLoss = default(1); // Loss rate due to system 1 The system don't have power loss : numeric const, // 
-        double ht @unit("m") = default(30m); // Two ray model : numeric const,
-        double hr @unit("m") = default(10m); // two ray model : numeric const,
-        double pathLossExponent = default(2);  // Shadow model
-        double shadowingVariance= default(2);  // Shadow model
-        int shadowingNumberofSamples = default(10); // Shadow model
-        double receiverAntennaGain = default(1); // Multiplier factor 1 isotropic
+
         int phyOpMode= default(3); // 1='b', 2='g', 3='a'
         int ID = default(0);
         int channelModel = default (1); // 1=(Rayleigh) or 2= a (AWGN)
