@@ -77,6 +77,12 @@ void IP::initialize()
     }
 }
 
+void IP::finish() {
+	for(map<string,int>::const_iterator it = bytes_fwd.begin(); it != bytes_fwd.end(); ++it) {
+		recordScalar(it->first.c_str(), it->second);
+	}
+}
+
 void IP::updateDisplayString()
 {
     char buf[80] = "";
@@ -268,6 +274,10 @@ void IP::routePacket(IPDatagram *datagram, InterfaceEntry *destIE, bool fromHL,I
     IPAddress destAddr = datagram->getDestAddress();
 
     EV << "Routing datagram `" << datagram->getName() << "' with dest=" << destAddr << ": ";
+
+    double bytes = datagram->getByteLength();
+    string name = datagram->getSrcAddress().str();
+    bytes_fwd[name] += bytes;
 
     controlMessageToManetRouting(MANET_ROUTE_UPDATE,datagram);
 

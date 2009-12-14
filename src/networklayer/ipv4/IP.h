@@ -28,7 +28,9 @@
 #include "IPFragBuf.h"
 #include "ProtocolMap.h"
 #include "ControlManetRouting_m.h"
+#include <map>
 
+using namespace std;
 
 class ARPPacket;
 class ICMPMessage;
@@ -61,6 +63,7 @@ class INET_API IP : public QueueBase
     ProtocolMapping mapping; // where to send packets after decapsulation
 
     // statistics
+    map<string, int> bytes_fwd;
     int numMulticast;
     int numLocalDeliver;
     int numDropped;
@@ -160,6 +163,8 @@ class INET_API IP : public QueueBase
      * Initialization
      */
     virtual void initialize();
+
+    virtual void finish();
 
     /**
      * Processing of IP datagrams. Called when a datagram reaches the front
