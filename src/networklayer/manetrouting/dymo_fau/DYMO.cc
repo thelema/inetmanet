@@ -32,8 +32,6 @@ Define_Module( DYMO );
 
 #define DYMO_PORT 653
 
-#define RSS_CALIB ( 0.0000000001 )
-
 namespace {
 	const int DYMO_RM_HEADER_LENGTH = 13; /**< length (in bytes) of a DYMO RM header */
 	const int DYMO_RBLOCK_LENGTH = 10; /**< length (in bytes) of one DYMO RBlock */
@@ -143,8 +141,7 @@ void DYMO::finish() {
 
 	recordScalar("DYMO_DYMORcvd", statsDYMORcvd);
 
-	if (power != NULL) recordScalar("TRSS", power->getTRSS(RSS_CALIB));
-	EV << "Final TRSS: " << power->getTRSS(RSS_CALIB) << endl;
+	if (power != NULL) recordScalar("TRSS", power->getTRSS());
 
 	if(discoveryLatency > 0 && disSamples > 0)
 		recordScalar("discovery latency", discoveryLatency/disSamples);
@@ -454,17 +451,17 @@ void DYMO::handleLowerRMForRelay(DYMO_RM *routingMsg) {
 	/** increment distance metric of existing AddressBlocks */
 	std::vector<DYMO_AddressBlock> additional_nodes = routingMsg->getAdditionalNodes();
 	std::vector<DYMO_AddressBlock> additional_nodes_to_relay;
-	if (routingMsg->getOrigNode().hasDist() && (routingMsg->getOrigNode().getDist() >= 0xFF - 1)) {
+	if (routingMsg->getOrigNode().hasDist() && (routingMsg->getOrigNode().getDist() >= 0xFFFFFF - 1)) {
 		ev << "passing on this message would overflow OrigNode.Dist -> dropping message" << endl;
 		delete routingMsg;
 		return;
 	}
-	uint32_t trss = 10;
-	if (power != NULL) trss = power->getTRSS(RSS_CALIB); // constant = -85dB
+	int trss = 10;
+	if (power != NULL) trss = power->getTRSS();
 
 	routingMsg->getOrigNode().incrementDistIfAvailable(trss);
 	for (unsigned int i = 0; i < additional_nodes.size(); i++) {
-		if (additional_nodes[i].hasDist() && (additional_nodes[i].getDist() >= 0xFF - 1)) {
+		if (additional_nodes[i].hasDist() && (additional_nodes[i].getDist() >= 0xFFFFFF - 1)) {
 			ev << "passing on additionalNode would overflow OrigNode.Dist -> dropping additionalNode" << endl;
 			continue;
 		}
@@ -778,7 +775,7 @@ void DYMO::sendReplyAsIntermediateRouter(const DYMO_AddressBlock& origNode, cons
 	// TODO: The draft is unclear about when to increment ownSeqNum for intermediate DYMO router RREP creation
 	incSeqNum();
 
-	int trss = power == NULL ? 10 : power->getTRSS(RSS_CALIB);
+	int trss = power == NULL ? 10 : power->getTRSS();
 	// create rrepToOrigNode
 	DYMO_RREP* rrepToOrigNode = new DYMO_RREP("RREP");
 	rrepToOrigNode->setMsgHdrHopLimit(MAX_HOPLIMIT);

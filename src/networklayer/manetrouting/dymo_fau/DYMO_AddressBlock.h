@@ -28,7 +28,7 @@ class DYMO_AddressBlock
 		uint32_t address; /**< The IP address of an additional node that can be reached via the DYMO router adding this information.  Each AdditionalNode.Address must have an associated Node.SeqNum in the address TLV block. */
 		uint16_t seqNum; /**< The DYMO sequence number associated with this routing information. */
 		uint8_t prefix; /**< The Node.Address is a network address with a particular prefix length. */
-		uint32_t dist; /**< A metric of the distance to reach the associated Node.Address. This field is incremented by at least one at each intermediate DYMO router, except the TargetNode.AddTLV.Dist.  The TargetNode's distance information is not modified. */
+		int dist; /**< A metric of the distance to reach the associated Node.Address. This field is incremented by at least one at each intermediate DYMO router, except the TargetNode.AddTLV.Dist.  The TargetNode's distance information is not modified. */
 		bool hasAddress_var; /**< true if the @c address member was assigned a value */
 		bool hasSeqNum_var; /**< true if the @c seqNum member was assigned a value */
 		bool hasPrefix_var; /**< true if the @c prefix member was assigned a value */
@@ -114,22 +114,23 @@ class DYMO_AddressBlock
 			return hasDist_var;
 		}
 
-		uint32_t getDist() const
+		int getDist() const
 		{
 			if (!hasDist()) throw std::runtime_error("Tried to read Dist from AddressBlock, but found none");
 			return dist;
 		}
 
-		void setDist(uint32_t dist)
+		void setDist(int dist)
 		{
 			this->hasDist_var = true;
 			this->dist = dist;
 		}
 
-		void incrementDistIfAvailable(uint32_t by_x)
+		void incrementDistIfAvailable(int by_x)
 		{
 			if (!this->hasDist()) return;
-			if (this->getDist() > 0xFFFFFFFF - by_x) throw std::runtime_error("Tried to increment Dist from AddressBlock, but uint32_t would overflow");
+			if (this->getDist() + by_x < 0)
+				throw std::runtime_error("Tried to increment Dist from AddressBlock, but int would overflow");
 			this->setDist(this->getDist() + by_x);
 		}
 

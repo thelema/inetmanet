@@ -23,17 +23,18 @@
 
 using namespace std;
 
+
+#define RSS_CALIB ( 10000000000 )
+
 class PowerArray : public cPolymorphic {
 public:
 	PowerArray();
 	virtual ~PowerArray();
 	int addMeasurement(IPAddress add, double recdPower);
 	double getIntfCost(IPAddress add);
-	uint32_t getTRSS(double calib);
+	uint32_t getTRSS();
 private:
 	map<const IPAddress,double> data;
-	double totalRSS;
-	double minPower;
 };
 
 #endif /* POWERARRAY_H_ */
