@@ -16,8 +16,8 @@
 #include "PowerArray.h"
 
 PowerArray::PowerArray() {
-	totalData = 0.0;
-	minPower = 1.0;
+	totalRSS = 0.0;
+//	minPower = 1.0;
 }
 
 PowerArray::~PowerArray() {
@@ -25,23 +25,22 @@ PowerArray::~PowerArray() {
 }
 
 int PowerArray::addMeasurement(IPAddress add, double recdPower) {
-	int ret = data[add] != recdPower;
-	if (ret) {
-		totalData -= data[add];
-		data[add] = recdPower;
-		totalData += recdPower;
-	}
-	if (recdPower < minPower) {
-		minPower = recdPower;
-	}
-	return ret;
+//	if (data[add] != 0.0) return false;
+//	if (data[add] == recdPower) return false;
+//	totalRSS += recdPower - data[add];
+	data[add] = recdPower;
+	return true;  //return whether or not we added the measurement
 }
 
 double PowerArray::getIntfCost(IPAddress add) {
-	return (totalData - data[add]) / minPower;
+	return (totalRSS - data[add]) / minPower;
 }
 
 uint32_t PowerArray::getTRSS(double calib) {
-	uint32_t trss = totalData / calib;
+	double sum = 0.0;
+	for(map<const IPAddress, double>::const_iterator it = data.begin(); it != data.end(); ++it) {
+		sum += it->second; // accumulate the RSS values
+	}
+	uint32_t trss = sum / calib;
 	return trss;
 }

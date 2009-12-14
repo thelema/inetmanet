@@ -52,16 +52,16 @@ foreach my $src (keys %data) {
 
 	push @edges, {diff => $d0, src => $src, dst => $dst};
 	push @edges, {diff => $d1, src => $dst, dst => $src};
-	$min = $d0 if $d0 < $min;
-	$max = $d0 if $d0 > $max;
-	$min = $d1 if $d1 < $min;
-	$max = $d1 if $d1 > $max;
+	$min = $d0 if abs $d0 < $min;
+	$max = $d0 if abs $d0 > $max;
+	$min = $d1 if abs $d1 < $min;
+	$max = $d1 if abs $d1 > $max;
     }
 }
 
 foreach my $e (@edges) {
     my $color = $e->{diff} > 0 ? "red" : "green";
-    my $w = log $e->{diff} - log $max;
+    my $w = (log abs $e->{diff} - log abs $max) / log 2;
     print "  $e->{src} -> $e->{dst} [color=$color penwidth=\"$w\"];\n";
 }
 

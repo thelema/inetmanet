@@ -38,7 +38,7 @@ network Test4
                 netmask = "255.255.0.0";
                 @display("p=41,128;i=block/cogwheel_s");
         }
-        Sink: WSNNode {
+        Node14: WSNNode {
             @display("p=752,239;i=old/bwsink");
         }
         Node1: WSNNode {
@@ -60,7 +60,7 @@ network Test4
             @display("p=649,82");
         }
         Node7: WSNNode {
-            @display("p=401,181");
+            @display("p=377,217");
         }
         Node8: WSNNode {
             @display("p=487,418");
@@ -72,7 +72,7 @@ network Test4
             @display("p=581,128");
         }
         Node11: WSNNode {
-            @display("p=437,105");
+            @display("p=439,181");
         }
         Node12: WSNNode {
             @display("p=315,251");
@@ -80,7 +80,7 @@ network Test4
         Node13: WSNNode {
             @display("p=222,251");
         }
-        Node14: WSNNode {
+        Sink: WSNNode {
             @display("p=120,251");
         }
 }

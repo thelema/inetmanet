@@ -31,8 +31,8 @@
 Define_Module( DYMO );
 
 #define DYMO_PORT 653
-// -85dBm
-#define RSS_CALIB ( 0.000000003 )
+
+#define RSS_CALIB ( 0.0000000001 )
 
 namespace {
 	const int DYMO_RM_HEADER_LENGTH = 13; /**< length (in bytes) of a DYMO RM header */
@@ -144,6 +144,7 @@ void DYMO::finish() {
 	recordScalar("DYMO_DYMORcvd", statsDYMORcvd);
 
 	if (power != NULL) recordScalar("TRSS", power->getTRSS(RSS_CALIB));
+	EV << "Final TRSS: " << power->getTRSS(RSS_CALIB) << endl;
 
 	if(discoveryLatency > 0 && disSamples > 0)
 		recordScalar("discovery latency", discoveryLatency/disSamples);

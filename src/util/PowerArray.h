@@ -32,7 +32,7 @@ public:
 	uint32_t getTRSS(double calib);
 private:
 	map<const IPAddress,double> data;
-	double totalData;
+	double totalRSS;
 	double minPower;
 };
 
