@@ -88,7 +88,10 @@ TCPEventCode TCPConnection::process_RCV_SEGMENT(TCPSegment *tcpseg, IPvXAddress 
 
     if (rcvSeqVector) rcvSeqVector->record(tcpseg->getSequenceNo());
     if (rcvAckVector) rcvAckVector->record(tcpseg->getAckNo());
-
+    //if (rcvAckVector){
+    	simtime_t eed = simTime() - tcpseg->getCreationTime();
+    	rcvAckdelayVector->record(eed);
+    //}
     //
     // Note: this code is organized exactly as RFC 793, section "3.9 Event
     // Processing", subsection "SEGMENT ARRIVES".

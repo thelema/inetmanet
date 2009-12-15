@@ -67,7 +67,7 @@ TCPStateVariables::TCPStateVariables()
     ack_now = false;
 
     afterRto = false;
-	
+
     sack_support = false;       // will be set from configureStateVariables()
     sack_enabled = false;
     snd_sack_perm = false;
@@ -150,7 +150,7 @@ TCPConnection::TCPConnection()
     tcpAlgorithm = NULL;
     state = NULL;
     the2MSLTimer = connEstabTimer = finWait2Timer = synRexmitTimer = NULL;
-    sndWndVector = rcvWndVector = rcvAdvVector = sndNxtVector = sndAckVector = rcvSeqVector = rcvAckVector = unackedVector =
+    sndWndVector = rcvWndVector = rcvAdvVector = sndNxtVector = sndAckVector = rcvSeqVector = rcvAckVector = unackedVector =rcvAckdelayVector=
     dupAcksVector = sndSacksVector = rcvSacksVector = rcvOooSegVector =
     tcpRcvQueueBytesVector = tcpRcvQueueDropsVector = pipeVector = sackedBytesVector = NULL;
 }
@@ -198,6 +198,7 @@ TCPConnection::TCPConnection(TCP *_mod, int _appGateIndex, int _connId)
     sndAckVector = NULL;
     rcvSeqVector = NULL;
     rcvAckVector = NULL;
+    rcvAckdelayVector= NULL;
     unackedVector = NULL;
 
     dupAcksVector = NULL;
@@ -218,6 +219,7 @@ TCPConnection::TCPConnection(TCP *_mod, int _appGateIndex, int _connId)
         sndAckVector = new cOutVector("sent ack");
         rcvSeqVector = new cOutVector("rcvd seq");
         rcvAckVector = new cOutVector("rcvd ack");
+        rcvAckdelayVector= new cOutVector("rcvd delay");
         unackedVector = new cOutVector("unacked bytes");
         dupAcksVector = new cOutVector("rcvd dupAcks");
         pipeVector = new cOutVector("pipe");
@@ -251,6 +253,7 @@ TCPConnection::~TCPConnection()
     delete sndAckVector;
     delete rcvSeqVector;
     delete rcvAckVector;
+    delete rcvAckdelayVector;
     delete unackedVector;
     delete dupAcksVector;
     delete sndSacksVector;

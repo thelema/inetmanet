@@ -337,6 +337,7 @@ class INET_API TCPConnection
     cOutVector *sndAckVector;   // sent ackNo
     cOutVector *rcvSeqVector;   // received seqNo
     cOutVector *rcvAckVector;   // received ackNo (= snd_una)
+    cOutVector *rcvAckdelayVector;
     cOutVector *unackedVector;  // number of bytes unacknowledged
 
     cOutVector *dupAcksVector;   // current number of received dupAcks
