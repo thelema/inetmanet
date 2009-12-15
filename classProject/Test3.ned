@@ -24,7 +24,7 @@ network Test3
         double playgroundSizeX;
         double playgroundSizeY;
 
-        @display("bgb=823,520");
+        @display("bgb=823,546");
     submodules:
         channelControl: ChannelControl {
             parameters:
@@ -39,48 +39,48 @@ network Test3
                 @display("p=41,128;i=block/cogwheel_s");
         }
         Sink: WSNNode {
-            @display("p=752,239;i=old/bwsink");
+            @display("p=751,256;i=old/bwsink");
         }
         Node1: WSNNode {
-            @display("p=623,158");
+            @display("p=622,175");
         }
         Node2: WSNNode {
-            @display("p=623,326");
+            @display("p=622,343");
         }
         Node3: WSNNode {
-            @display("p=474,429");
+            @display("p=473,446");
         }
         Node4: WSNNode {
-            @display("p=467,239");
+            @display("p=466,256");
         }
         Node5: WSNNode {
-            @display("p=467,69");
+            @display("p=466,86");
         }
         Node6: WSNNode {
-            @display("p=356,69");
+            @display("p=355,86");
         }
         Node7: WSNNode {
-            @display("p=410,158");
+            @display("p=409,175");
         }
         Node8: WSNNode {
-            @display("p=410,491");
+            @display("p=409,508");
         }
         Node9: WSNNode {
-            @display("p=356,429");
+            @display("p=355,446");
         }
         Node10: WSNNode {
-            @display("p=271,6");
+            @display("p=270,23");
         }
         Node11: WSNNode {
-            @display("p=271,133");
+            @display("p=270,150");
         }
         Node12: WSNNode {
-            @display("p=271,253");
+            @display("p=270,270");
         }
         Node13: WSNNode {
-            @display("p=271,366");
+            @display("p=270,383");
         }
         Node14: WSNNode {
-            @display("p=271,491");
+            @display("p=270,508");
         }
 }
